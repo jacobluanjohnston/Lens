@@ -1,0 +1,10 @@
+fastapi
+uvicorn             # runs FastAPI server
+sqlalchemy          # ORM / query builder
+alembic             # migrations
+psycopg2-binary     # postgres driver
+geopandas           # spatial ETL in the pipeline
+pandas
+shapely             # geometry operations (geopandas dep)
+requests            # Socrata API calls if needed
+python-dotenv       # .env
