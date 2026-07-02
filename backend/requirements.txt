@@ -8,3 +8,4 @@ pandas
 shapely             # geometry operations (geopandas dep)
 requests            # Socrata API calls if needed
 python-dotenv       # .env
+ruff                # linter
