@@ -44,3 +44,5 @@ services:
 
 volumes:
   pgdata:
+
+# https://docs.docker.com/compose/intro/compose-application-model/
