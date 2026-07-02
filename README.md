@@ -51,10 +51,20 @@ Check the API is running:
 curl http://localhost:8000/health
 ```
 
-Once the frontend is scaffolded:
+To include the frontend:
 
 ```bash
 docker compose --profile frontend up
+```
+
+The frontend will be available at `http://localhost:5173`. Auto-reloads on code changes.
+
+Optionally, to run the frontend locally without Docker:
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
 ---
