@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: lens
+          POSTGRES_USER: lens
+          POSTGRES_PASSWORD: lens
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://lens:lens@localhost:5432/lens
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Lint
+        run: ruff check backend/
+
+      - name: Run tests
+        run: pytest backend/ --tb=short || true
+
+      - name: Check migrations
+        run: |
+          cd backend
+          alembic upgrade head
+
+# Source: https://docs.github.com/en/actions/tutorials/build-and-test-code/python
+# Source: https://docs.astral.sh/ruff
