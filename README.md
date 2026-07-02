@@ -26,13 +26,36 @@ A retrospective analysis tool for auditing police enforcement patterns using ope
 **Prerequisites:** Docker and Docker Compose.
 
 ```bash
-# Coming soon — one-command bring-up
 docker compose up
 ```
 
-The stack will include a PostGIS-enabled Postgres instance, a FastAPI backend, and a React frontend. Full setup instructions will live in `docs/setup.md` once the Docker Compose file is written.
+Optionally, if instead you want to run Python scripts locally outside of Docker, set up a virtual environment first:
 
-_PostGIS is a spatial extension for PostgreSQL that adds geometry types and fast geographic queries. We will assign each incident to its containing neighborhood polygon across 10M+ rows._
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+Either way, this starts the database (PostgreSQL + PostGIS) and the backend API. The backend will be available at `http://localhost:8000`. Auto-reloads on code changes.
+
+Once up, verify PostGIS is working:
+
+```bash
+docker compose exec db psql -U lens -d lens -c "SELECT PostGIS_Version();"
+```
+
+Check the API is running:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Once the frontend is scaffolded:
+
+```bash
+docker compose --profile frontend up
+```
 
 ---
 
