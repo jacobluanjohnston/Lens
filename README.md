@@ -4,6 +4,13 @@ A retrospective analysis tool for auditing police enforcement patterns using ope
 
 **The thesis:** at first glance, police incident records appear to capture crime. They capture police contact. Lens makes that visible by cross-referencing enforcement data with auxiliary sources (311 service requests, business density, building violations, census population, and public health indicators) to separate genuine need from patrol intensity. The same incident data, normalized three different ways and set against that broader context, tells three different stories; Lens shows all of them, and surfaces bias and data-quality issues explicitly rather than hiding them.
 
+**Who cares?** An analyst walks away with a specific, citable finding like: “District X has 2.1x the citywide proactive enforcement rate* but 0.7x the victim-reported serious crime rate*, and a 22% lower burglary clearance rate*. This is consistent with over-enforcement relative to need.”
+
+**Definitions**:
+* Proactive enforcement (officer-initiated stops, drug arrests, loitering citations) is something police generate by being present.
+* Victim-reported serious crime (burglaries, assaults, car thefts someone called in) is the closest thing to an independent measure of actual need. A victim generated it, not an officer.
+* Clearance rate shows if police presence is translating to better outcomes for actual crime victims.
+
 ---
 
 ## Stack
