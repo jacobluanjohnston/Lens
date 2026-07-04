@@ -46,18 +46,6 @@ pip install -r backend/requirements.txt
 
 Either way, this starts the database (PostgreSQL + PostGIS) and the backend API. The backend will be available at `http://localhost:8000`. Auto-reloads on code changes.
 
-Once up, verify PostGIS is working:
-
-```bash
-docker compose exec db psql -U lens -d lens -c "SELECT PostGIS_Version();"
-```
-
-Check the API is running:
-
-```bash
-curl http://localhost:8000/health
-```
-
 To include the frontend:
 
 ```bash
@@ -65,6 +53,21 @@ docker compose --profile frontend up
 ```
 
 The frontend will be available at `http://localhost:5173`. Auto-reloads on code changes.
+
+**Verify everything is working:**
+
+```bash
+# PostGIS
+docker compose exec db psql -U lens -d lens -c "SELECT PostGIS_Version();"
+
+# FastAPI
+curl http://localhost:8000/health
+
+# Alembic
+docker compose exec backend alembic upgrade head
+```
+
+- **Leaflet** — open `http://localhost:5173`, you should see a map of SF
 
 Optionally, to run the frontend locally without Docker:
 
