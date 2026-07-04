@@ -1,0 +1,16 @@
+# Environment
+.env
+.env.*
+
+# Public datasets
+data/*.csv
+
+# Project docs (local only)
+CLAUDE.md
+STATUS.md
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
