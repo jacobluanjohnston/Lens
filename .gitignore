@@ -3,7 +3,8 @@
 .env.*
 
 # Public datasets
-data/*.csv
+data/sf/*.csv
+data/chicago/*.csv
 
 # Project docs (local only)
 CLAUDE.md
