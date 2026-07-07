@@ -40,7 +40,7 @@ jobs:
         run: ruff check backend/
 
       - name: Run tests
-        run: pytest backend/ --tb=short || true # Remove || true once real tests exist
+        run: pytest backend/ pipeline/ --tb=short
 
       - name: Check migrations
         run: |
