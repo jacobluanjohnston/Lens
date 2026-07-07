@@ -12,6 +12,8 @@ A retrospective analysis tool for auditing police enforcement patterns using ope
 
 An interactive map of SF police incidents. Open the app, pick a date range, and see where incidents occurred. Filter by crime type to narrow the view.
 
+![demo_sprint_1.png](demo/demo_sprint_1.png)
+
 ---
 
 ## Stack
