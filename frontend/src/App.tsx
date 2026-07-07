@@ -31,7 +31,9 @@ export default function App() {
     setLoading(true)
     setError(null)
     try {
-      const params = new URLSearchParams({ start: s, end: e })
+      // The API end date is exclusive, so add one day to make the picker inclusive.
+      const endExclusive = isoDate(new Date(new Date(e).getTime() + 86_400_000))
+      const params = new URLSearchParams({ start: s, end: endExclusive })
       if (cat) params.set('category', cat)
       const res = await fetch(`/incidents?${params}`)
       if (!res.ok) {
@@ -92,7 +94,7 @@ export default function App() {
         {!loading && incidents.length > 0 && (
           <span style={{ fontSize: 13, color: '#555' }}>
             {incidents.length.toLocaleString()} incidents
-            {incidents.length === 20000 ? ' (cap — narrow the range)' : ''}
+            {incidents.length === 100000 ? ' (cap — narrow the range)' : ''}
           </span>
         )}
         {error && <span style={{ fontSize: 13, color: '#c00' }}>{error}</span>}

@@ -18,7 +18,7 @@ router = APIRouter()
 
 _DB_URL = os.environ.get("DATABASE_URL", "postgresql://lens:lens@localhost:5432/lens")
 
-_LIMIT = 20_000
+_LIMIT = 100_000
 
 _QUERY = """
     SELECT lat, lon, category_primary AS category, occurred_at
