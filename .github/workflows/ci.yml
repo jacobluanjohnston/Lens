@@ -39,13 +39,13 @@ jobs:
       - name: Lint
         run: ruff check backend/
 
-      - name: Run tests
-        run: pytest backend/ pipeline/ --tb=short
-
-      - name: Check migrations
+      - name: Run migrations
         run: |
           cd backend
           alembic upgrade head
+
+      - name: Run tests
+        run: pytest backend/ pipeline/ --tb=short
 
 # Source: https://docs.github.com/en/actions/tutorials/build-and-test-code/python
 # Source: https://docs.astral.sh/ruff
