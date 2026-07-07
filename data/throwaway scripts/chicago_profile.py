@@ -26,6 +26,47 @@ print(f"{'Memory (MB):':<{WIDTH - 10}} {memory_mb:>8.2f}")
 print(f"Rows: {len(df):,}")
 print(f"Unique Case Numbers: {df['Case Number'].nunique():,}")
 
+print(f'\n{"=" * WIDTH}')
+print("Incident Consistency")
+print("=" * WIDTH)
+
+# One incident may have multiple offense codes (multiple rows)
+arrests_per_incident = (
+    df.groupby("Case Number")["Arrest"]
+      .nunique()
+)
+
+incidents_with_multiple_codes = (
+    df[df.duplicated("Case Number", keep=False)]["Case Number"]
+      .unique()
+)
+
+arrest_varies = arrests_per_incident[arrests_per_incident > 1]
+
+codes_per_incident = (
+    df.groupby("Case Number")["Arrest"]
+      .count()
+)
+
+multi_code_incidents = codes_per_incident[codes_per_incident > 1]
+
+print(f"{'Total incidents:':<{WIDTH - 10}} {arrests_per_incident.shape[0]:>8,}")
+print(f"{'Incidents with multiple codes:':<{WIDTH - 10}} {len(incidents_with_multiple_codes):>8,}")
+print(f"{'Arrest varies across codes:':<{WIDTH - 10}} {arrest_varies.shape[0]:>8,}")
+
+if not multi_code_incidents.empty:
+    print(f"{'Max codes on one incident:':<{WIDTH - 10}} {multi_code_incidents.max():>8,}")
+    print(f"{'Mean codes (multi-code only):':<{WIDTH - 10}} {multi_code_incidents.mean():>8.2f}")
+else:
+    print(f"{'Max codes on one incident:':<{WIDTH - 10}} {'0':>8}")
+    print(f"{'Mean codes (multi-code only):':<{WIDTH - 10}} {'0.00':>8}")
+
+if arrest_varies.empty:
+    print("\nArrest status is consistent across all multi-code incidents.")
+else:
+    print("\nSample of incidents where Arrest differs:")
+    print(arrest_varies.head(25))
+
 print("\nColumns:")
 for column in df.columns:
     print(f" - {column}")
