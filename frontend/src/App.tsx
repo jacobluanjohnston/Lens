@@ -19,17 +19,21 @@ const thirtyDaysAgo = new Date(today)
 thirtyDaysAgo.setDate(today.getDate() - 30)
 
 export default function App() {
-  const [start, setStart] = useState(isoDate(thirtyDaysAgo))
-  const [end, setEnd]     = useState(isoDate(today))
-  const [incidents, setIncidents] = useState<Incident[]>([])
-  const [loading, setLoading]     = useState(false)
-  const [error, setError]         = useState<string | null>(null)
+  const [start, setStart]       = useState(isoDate(thirtyDaysAgo))
+  const [end, setEnd]           = useState(isoDate(today))
+  const [category, setCategory] = useState('')
+  const [categories, setCategories] = useState<string[]>([])
+  const [incidents, setIncidents]   = useState<Incident[]>([])
+  const [loading, setLoading]       = useState(false)
+  const [error, setError]           = useState<string | null>(null)
 
-  async function fetchIncidents(s: string, e: string) {
+  async function fetchIncidents(s: string, e: string, cat: string) {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/incidents?start=${s}&end=${e}`)
+      const params = new URLSearchParams({ start: s, end: e })
+      if (cat) params.set('category', cat)
+      const res = await fetch(`/incidents?${params}`)
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.detail ?? `HTTP ${res.status}`)
@@ -42,8 +46,13 @@ export default function App() {
     }
   }
 
-  // Load on first render so the map isn't empty
-  useEffect(() => { fetchIncidents(start, end) }, [])
+  useEffect(() => {
+    fetch('/categories')
+      .then(r => r.json())
+      .then(setCategories)
+      .catch(() => {})
+    fetchIncidents(start, end, category)
+  }, [])
 
   return (
     <div style={{ position: 'relative', height: '100vh' }}>
@@ -63,8 +72,18 @@ export default function App() {
           To&nbsp;
           <input type="date" value={end} onChange={e => setEnd(e.target.value)} />
         </label>
+        <select
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+          style={{ fontSize: 14 }}
+        >
+          <option value=''>All crime types</option>
+          {categories.map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
         <button
-          onClick={() => fetchIncidents(start, end)}
+          onClick={() => fetchIncidents(start, end, category)}
           disabled={loading}
           style={{ padding: '4px 12px', cursor: loading ? 'default' : 'pointer' }}
         >

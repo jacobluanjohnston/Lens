@@ -10,6 +10,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/incidents': apiTarget,
+      '/categories': apiTarget,
       '/health':    apiTarget,
     },
   },

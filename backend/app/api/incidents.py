@@ -41,6 +41,23 @@ class IncidentPoint(BaseModel):
     occurred_at: str
 
 
+@router.get("/categories", response_model=list[str])
+def get_categories():
+    """All normalised category values present in the incidents table, sorted."""
+    conn = psycopg2.connect(_DB_URL)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT DISTINCT category_primary
+                FROM incidents
+                WHERE city = 'sf' AND category_primary IS NOT NULL
+                ORDER BY category_primary
+            """)
+            return [row[0] for row in cur.fetchall()]
+    finally:
+        conn.close()
+
+
 @router.get("/incidents", response_model=list[IncidentPoint])
 def get_incidents(
     start: date = Query(..., description="Start date (inclusive), YYYY-MM-DD"),
