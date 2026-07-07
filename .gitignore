@@ -10,6 +10,14 @@ data/chicago/*.csv
 CLAUDE.md
 STATUS.md
 
+# Logs
+*.log
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
 # JetBrains
 .idea/
 *.iml
