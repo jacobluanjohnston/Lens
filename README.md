@@ -4,12 +4,41 @@ A retrospective analysis tool for auditing police enforcement patterns using ope
 
 **The thesis:** at first glance, police incident records appear to capture crime. They capture police contact. Lens makes that visible by cross-referencing enforcement data with auxiliary sources (311 service requests, business density, building violations, census population, and public health indicators) to separate genuine need from patrol intensity. The same incident data, normalized three different ways and set against that broader context, tells three different stories; Lens shows all of them, and surfaces bias and data-quality issues explicitly rather than hiding them.
 
-**Who cares?** An analyst walks away with a specific, citable finding like: “District X has 2.1x the citywide proactive enforcement rate* but 0.7x the victim-reported serious crime rate*, and a 22% lower burglary clearance rate*. This is consistent with over-enforcement relative to need.”
+**Who cares?** An analyst walks away with a specific, citable finding like: "District X has 2.1x the citywide discretionary enforcement rate* but 0.7x the victim-reported serious crime rate*, and burglaries there end in a recorded arrest within 12 months* about half as often as the citywide rate for the same period."
 
-**Definitions**:
-* Proactive enforcement (officer-initiated stops, drug arrests, loitering citations) is something police generate by being present.
-* Victim-reported serious crime (burglaries, assaults, car thefts someone called in) is the closest thing to an independent measure of actual need. A victim generated it, not an officer.
-* Clearance rate shows if police presence is translating to better outcomes for actual crime victims.
+---
+
+## The three lenses
+ 
+**1. Incidence** — where police contact concentrates. Case-level incident counts and density by neighborhood, category, and time.
+
+
+---
+
+## What's been built (Sprint 1)
+
+### Data model and ingestion pipeline (#9)
+
+We pulled the San Francisco Police Department's public incident report dataset (about 1 million reports, 2018 to present) and loaded it into the database. Two database tables were created:
+
+- **`raw_reports`** — one row for every individual police report filed, exactly as it came from the city, plus a few cleaned-up fields (e.g. typos in category names fixed, resolution status mapped to a consistent set of values)
+- **`incidents`** — one row per *case* (a police case can have multiple reports filed against it — an initial report plus follow-up supplements). This table tracks whether a case was eventually resolved, what the final resolution was, where the incident happened, and what kind of crime it was
+
+The ingestion script (`pipeline/adapters/sf/ingest.py`) is what loads the data. You point it at the CSV file and a database URL, and it handles the whole pipeline.
+
+### Filter-by-crime-and-date API endpoint (#14)
+
+Added a `GET /incidents` endpoint to the backend API. It takes a date range (required) and an optional crime category, and returns a list of incidents with their coordinates and timestamps — ready to render as points on a map.
+
+```bash
+# All incidents in Q1 2025 (~16k results, returns in under 300ms)
+curl "http://localhost:8000/incidents?start=2025-01-01&end=2025-04-01"
+
+# Just burglaries in March 2025
+curl "http://localhost:8000/incidents?start=2025-03-01&end=2025-04-01&category=Burglary"
+```
+
+The endpoint is capped at 20,000 results so the browser map doesn't choke on large date ranges.
 
 ---
 
