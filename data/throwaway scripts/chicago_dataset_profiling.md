@@ -12,7 +12,8 @@ affect the Lens ingestion pipeline and downstream analyses.
 
 **Source**
 
-Chicago Crimes (2001–Present) https://data.cityofchicago.org/api/views/ijzp-q8t2/rows.csv?accessType=DOWNLOAD
+Chicago Crimes (2001–Present)  
+https://data.cityofchicago.org/api/views/ijzp-q8t2/rows.csv?accessType=DOWNLOAD
 
 **Rows (offense records)**
 
@@ -32,7 +33,7 @@ Chicago Crimes (2001–Present) https://data.cityofchicago.org/api/views/ijzp-q8
 
 ### Observation
 
-Each row represents a recorded offense. Multiple rows may share the same
+Each row represents a recorded offense. Multiple rows may share the
 **Case Number**, indicating multiple offense codes associated with a single
 police incident.
 
@@ -46,7 +47,7 @@ to verify consistency across multi-code incidents.
 
 | Metric | Value |
 |---------|------:|
-| Total incidents | 8,586,614 |
+| Total unique incidents | 8,586,614 |
 | Incidents with multiple codes | 521 |
 | Arrest varies across codes | 5 |
 | Maximum codes on one incident | 6 |
@@ -100,6 +101,53 @@ The dataset contains 22 columns describing each offense record.
 
 - Arrest
 - Domestic
+
+---
+
+## MoSCoW Prioritization
+
+### Must Have
+
+Required for ingestion and core Lens analyses.
+
+- ID
+- Case Number
+- Date
+- Primary Type
+- Description
+- Arrest
+- District
+- Latitude
+- Longitude
+
+### Should Have
+
+Important contextual information that improves geographic and analytical
+capabilities.
+
+- Community Area
+- Ward
+- Domestic
+- Location Description
+- IUCR
+- FBI Code
+
+### Could Have
+
+Potentially useful for future analysis, but not required for Sprint 1.
+
+- Beat
+- Block
+
+### Won't Have (Sprint 1)
+
+Fields that are redundant or metadata and will not be used during the initial
+ingestion pipeline.
+
+- Updated On
+- X Coordinate
+- Y Coordinate
+- Location
 
 ---
 
@@ -185,11 +233,33 @@ Approximately three-quarters of offense records did not result in an arrest.
 
 ---
 
-## Questions / Follow-up
+## Missing Information and Dataset Limitations
 
-- Why are Community Area and Ward largely missing in 2001–2002?
-- Should the five incidents with inconsistent Arrest values be retained,
-  corrected, or excluded?
-- How should records without Community Area be handled during ingestion?
-- Should records without GPS coordinates participate in spatial analyses, or
-  only aggregate statistics?
+Several characteristics of the Chicago dataset should be considered during
+ingestion and downstream analysis.
+
+- Chicago does not include a **Resolution** field like the San Francisco
+  dataset. **Arrest (True/False)** is the closest available outcome measure.
+
+- Chicago does not include a **CAD-equivalent** field, so victim-initiated
+  reports cannot be distinguished from officer-initiated incidents.
+
+- Approximately **7%** of records are missing **Community Area** and **Ward**
+  values. This missingness is primarily temporal rather than geographic:
+  Community Area is missing for roughly **98.69%** of records in 2001,
+  **27.24%** in 2002, and becomes nearly complete after 2003.
+
+- **76 records** contain an invalid **Community Area** value (0). These should
+  be treated as missing rather than valid neighborhood identifiers.
+
+- Approximately **1.13%** of records are missing GPS coordinates, preventing
+  those records from participating in map-based analyses.
+
+- A small number of coordinate pairs fall outside the geographic boundaries
+  of Chicago. These records should be flagged or excluded during spatial
+  analysis.
+
+- The most recent months of data may be incomplete because reports and arrest
+  information continue to be updated after publication. Recent records should
+  be treated cautiously during temporal analyses, and July 2026 data should
+  not be used for analysis until the dataset stabilizes.
