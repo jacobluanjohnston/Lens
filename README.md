@@ -8,37 +8,9 @@ A retrospective analysis tool for auditing police enforcement patterns using ope
 
 ---
 
-## The three lenses
- 
-**1. Incidence** — where police contact concentrates. Case-level incident counts and density by neighborhood, category, and time.
-
-
----
-
 ## What's been built (Sprint 1)
 
-### Data model and ingestion pipeline (#9)
-
-We pulled the San Francisco Police Department's public incident report dataset (about 1 million reports, 2018 to present) and loaded it into the database. Two database tables were created:
-
-- **`raw_reports`** — one row for every individual police report filed, exactly as it came from the city, plus a few cleaned-up fields (e.g. typos in category names fixed, resolution status mapped to a consistent set of values)
-- **`incidents`** — one row per *case* (a police case can have multiple reports filed against it — an initial report plus follow-up supplements). This table tracks whether a case was eventually resolved, what the final resolution was, where the incident happened, and what kind of crime it was
-
-The ingestion script (`pipeline/adapters/sf/ingest.py`) is what loads the data. You point it at the CSV file and a database URL, and it handles the whole pipeline.
-
-### Filter-by-crime-and-date API endpoint (#14)
-
-Added a `GET /incidents` endpoint to the backend API. It takes a date range (required) and an optional crime category, and returns a list of incidents with their coordinates and timestamps — ready to render as points on a map.
-
-```bash
-# All incidents in Q1 2025 (~16k results, returns in under 300ms)
-curl "http://localhost:8000/incidents?start=2025-01-01&end=2025-04-01"
-
-# Just burglaries in March 2025
-curl "http://localhost:8000/incidents?start=2025-03-01&end=2025-04-01&category=Burglary"
-```
-
-The endpoint is capped at 20,000 results so the browser map doesn't choke on large date ranges.
+An interactive map of SF police incidents. Open the app, pick a date range, and see where incidents occurred. Filter by crime type to narrow the view.
 
 ---
 
