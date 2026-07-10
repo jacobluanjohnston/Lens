@@ -3,13 +3,13 @@ import pandas as pd
 DATASETS = [
     {
         "name": "Current (2018-present)",
-        "path": "../../data/sf/Police_Department_Incident_Reports__2018_to_Present.csv",
+        "path": "data/sf/Police_Department_Incident_Reports__2018_to_Present.csv",
         "incident_id": "Incident ID",
         "resolution": "Resolution",
     },
     {
         "name": "Historical (2003-2017)",
-        "path": "../../data/sf/Police_Department_Incident_Reports__Historical_2003_to_May_2018.csv",
+        "path": "data/sf/Police_Department_Incident_Reports__Historical_2003_to_May_2018.csv",
         "incident_id": "IncidntNum",
         "resolution": "Resolution",
     },

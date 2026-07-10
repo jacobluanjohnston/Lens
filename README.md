@@ -86,11 +86,30 @@ npm run dev
 
 ```
 lens/
-├── backend/          # FastAPI app
-├── pipeline/         # ETL: fetch → normalize → load
-├── frontend/         # React + Vite + TS
-├── db/               # schema docs, seed data
-└── docker-compose.yml
+├── backend/
+│   ├── app/
+│   │   ├── api/              # route handlers (incidents, categories)
+│   │   └── main.py           # FastAPI app entry point
+│   ├── alembic/              # migrations — never hand-edit schema
+│   │   └── versions/
+│   ├── tests/                # API endpoint tests
+│   └── requirements.txt
+├── pipeline/
+│   ├── adapters/
+│   │   └── sf/               # SF-specific field mappings and ingest script
+│   ├── analysis/             # exploratory scripts used to generate spike findings
+│   ├── sources/              # Socrata API client
+│   └── tests/                # transform unit tests
+├── frontend/
+│   └── src/
+│       └── App.tsx           # map, date pickers, category filter
+├── docs/
+│   ├── adr/                  # architecture decision records
+│   ├── spikes/               # spike findings: what we learned, therefore what we did
+│   └── methodology.md        # lens definitions, flag definitions, denominators, limitations
+├── demo/
+├── docker-compose.yml
+└── pytest.ini
 ```
 
 ---
