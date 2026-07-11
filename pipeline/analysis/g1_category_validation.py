@@ -1,9 +1,13 @@
 """G1 validation — category screen table.
 
-Runs the four G1 checks against the loaded incidents and raw_reports tables:
+Runs three G1 checks against the loaded incidents and raw_reports tables:
   1. At-filing arrest share per category (from incidents.resolution_initial)
   2. Supplement lift per category (share of supplemented cases where resolution changed)
   3. Coplogic share per category (from raw_reports.report_type on initial rows only)
+
+The fourth check — the station test ("would this category produce zero records if officers
+stayed in the station?") — is a conceptual check applied manually when reading these results,
+not a SQL query.
 
 Findings inform bucket assignments for Lens 2 and confirm the Lens 3 join is worthwhile.
 See docs/adr/001_category_bucket_assignments.md for the outcome of this run.
@@ -20,6 +24,7 @@ import psycopg2
 DB_URL = os.environ.get("DATABASE_URL", "postgresql://lens:lens@localhost:5432/lens")
 WIDTH = 100
 
+# Read-only analysis script — connection closed at process exit, no context manager needed.
 conn = psycopg2.connect(DB_URL)
 
 # ── 1. At-filing arrest share + supplement lift per category ──────────────────

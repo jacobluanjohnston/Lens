@@ -20,6 +20,7 @@ DB_URL = os.environ.get("DATABASE_URL", "postgresql://lens:lens@localhost:5432/l
 WIDTH = 90
 BUCKET_A = ('Burglary', 'Robbery', 'Motor Vehicle Theft', 'Assault')
 
+# Read-only analysis script — connection closed at process exit, no context manager needed.
 conn = psycopg2.connect(DB_URL)
 
 # ── Build the days-to-resolution dataset ─────────────────────────────────────
