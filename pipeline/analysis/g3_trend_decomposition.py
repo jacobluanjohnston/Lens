@@ -29,6 +29,7 @@ DB_URL = os.environ.get("DATABASE_URL", "postgresql://lens:lens@localhost:5432/l
 WIDTH = 100
 BREAKPOINT = '2024-08-01'
 
+# Read-only analysis script — connection closed at process exit, no context manager needed.
 conn = psycopg2.connect(DB_URL)
 
 # ── 1. Overall resolution rate by month ───────────────────────────────────────
