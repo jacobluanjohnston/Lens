@@ -9,7 +9,7 @@
 
 LENS was originally scaffolded with React + Vite. The rationale in CLAUDE.md was: no SSR need → no Next.js. The concern was that Next.js adds server-side rendering complexity, and that Leaflet (the map library) is browser-only and fights SSR.
 
-When the frontend work was assigned to a teammate for Sprint 2, she raised the question of switching to Next.js, which she has more experience with.
+When the frontend work was assigned to a teammate for Sprint 2, they raised the question of switching to Next.js, which they have more experience with.
 
 ---
 
@@ -101,7 +101,7 @@ In Docker, replace `localhost:8000` with the backend service name (same pattern 
 
 ## Consequences
 
-- Teammate can work in a framework she knows well
+- Teammate can work in a framework they knows well
 - Future features (shareable URLs, auth, public pages) are easier to add
 - Leaflet requires `dynamic()` wrapping — one-time setup cost, not ongoing friction
 - CLAUDE.md tech stack table updated to reflect this decision
