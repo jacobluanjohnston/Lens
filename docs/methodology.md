@@ -85,12 +85,14 @@ Every category gets exactly one bucket. Nothing is silently dropped — excluded
 | Bucket | Name | Categories | Used in |
 |---|---|---|---|
 | A | Resolution-eligible | Burglary, Robbery, Aggravated Assault, Motor Vehicle Theft | Lens 2 denominator, Lens 3 |
-| B | Officer-initiated | Drug Offense, Drug Violation, Warrant, Prostitution, Civil Sidewalks, Stolen Property (narrow); + Traffic Violation Arrest, Weapons Carrying, Disorderly Conduct (broad) | Lens 2 numerator |
+| B | Officer-initiated (confirmed core, G1 validated) | Drug Offense, Drug Violation, Warrant, Prostitution, Traffic Violation Arrest, Weapons Carrying | Lens 2 numerator |
 | C | Censored | Homicide, Rape, Sex Offense, Human Trafficking, Offences Against Family and Children | Censoring exhibit only — visible counts vs. official figures |
 | D | Victim harm, unclearable | Larceny Theft, Vandalism, Fraud/Forgery/Embezzlement, Arson, Missing Person | Lens 1 only |
 | E | Administrative | Recovered Vehicle, Case Closure, Non-Criminal, Lost Property, Courtesy Report, Suspicious Occ | Excluded from all numerators and denominators |
 
-The rationale for these assignments is in `docs/adr/001_lens2_category_membership.md`.
+Removed from bucket B after G1 validation: Disorderly Conduct (27.8% at-filing arrest — not reliably officer-initiated), Civil Sidewalks (70.8% — civilians report nuisance behaviour), Stolen Property (67.9% — selection-dependent). All three run as sensitivity checks only.
+
+The rationale for these assignments is in `docs/adr/001_category_bucket_assignments.md`.
 
 ---
 
