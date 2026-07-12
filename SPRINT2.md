@@ -10,10 +10,11 @@
 
 | Who | What |
 |---|---|
-| **Jacob** | Everything touching the database, pipeline, and API — spikes first (they determine the schema), then migrations, batch job, and endpoints |
-| **Teammate** | Everything in the React app — builds against a mock JSON fixture matching the agreed API shape, wires to real API at the end |
+| **Jacob** | Spikes, API contract, GET /neighborhoods, GET /lens/1,2,3 endpoints |
+| **Louisa** | Everything in the Next.js frontend — choropleth, lens toggle, neighbourhood sidebar, resolution trend banner, wire to real API |
+| **Ishita** | Data infrastructure — geography dimension table, precomputed aggregate tables, batch aggregation job |
 
-**The only coordination point:** agree on the API response shape (what fields `/lens/2` returns) at the start of the sprint. After that you are completely parallel with zero conflict.
+**The only coordination point:** agree on the API response shape at the start of the sprint. After that all three are parallel with zero conflict.
 
 ---
 
