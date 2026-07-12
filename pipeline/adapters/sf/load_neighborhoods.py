@@ -22,10 +22,6 @@ LOW_CONFIDENCE = {
     "Treasure Island", "Twin Peaks", "Glen Park",
 }
 
-# False = store real ACS values + set per_capita_applicable=false (recommended, honest).
-# True  = null out population for the 4 (matches the card's literal wording).
-NULL_ZERO_POP = False
-
 def slugify(name: str) -> str:
     return name.lower().replace("/", "-").replace(" ", "-")
 
@@ -74,9 +70,10 @@ def main() -> None:
                 if name not in population_lookup and name not in ZERO_POP:
                     skipped.append(name)     # no population + not a known park -> log
                     continue
+                # Keep real ACS values even for parks/Presidio — per_capita_applicable=false
+                # handles display suppression; nulling real data would violate LENS's
+                # no-silent-imputation principle.
                 pop = population_lookup.get(name)
-                if NULL_ZERO_POP and name in ZERO_POP:
-                    pop = None
                 cur.execute(
                     """
                     INSERT INTO neighborhoods
@@ -101,6 +98,8 @@ def main() -> None:
         raise
     finally:
         conn.close()
+    if loaded != 41:
+        raise ValueError(f"Expected 41 neighborhoods, loaded {loaded}")
     print(f"loaded {loaded} neighborhoods; skipped {len(skipped)}: {skipped}")
 if __name__ == "__main__":
     main()
