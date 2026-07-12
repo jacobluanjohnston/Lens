@@ -20,7 +20,9 @@
 
 All 41 neighborhoods matched. The geometry/boundary dataset (`p5b7-5n3h`, "Analysis Neighborhoods") contains polygon geometry only — no population column.
 
-**Four zero-population neighborhoods:** Golden Gate Park, Lincoln Park, McLaren Park, and the Presidio have no residential population — they are parks and a military base. Per-capita is undefined for these. Decision: show them on the choropleth but grey out with a tooltip ("no residential population — per-capita not applicable") for Lens 1 per-capita and Lens 2 views.
+**Four parks/military neighborhoods have per-capita suppressed:** Golden Gate Park, Lincoln Park, McLaren Park, and the Presidio. The ACS data reports non-zero population for all four — the census tracts grouped into these "neighborhoods" include streets and residents adjacent to the park or base. However, per-capita enforcement comparisons are meaningless here because the land use is dominated by non-residential space. Decision: load real ACS values, set `per_capita_applicable = false`, grey out on choropleth with a tooltip for Lens 1 per-capita and Lens 2 views. Do not null the population — that would replace real data with nothing.
+
+**The Farallones:** The tract-to-neighborhood crosswalk contains a 42nd entry ("The Farallones" — uninhabited islands off the SF coast, technically SF County) with no matching polygon in the 41-neighborhood GeoJSON. The load script logs this and drops it. Not a problem — expected data artifact.
 
 **Per-capita meaningfully changes the story:**
 
@@ -48,6 +50,6 @@ Financial District ranking 1st per-capita makes sense — daytime workers inflat
 
 **Population source to use:** ACS B01003 at census tract level, joined to neighborhoods via the "Analysis Neighborhoods - 2020 census tracts assigned to neighborhoods" dataset on DataSF. The placeholder values in `pipeline/analysis/per_capita_spike.py` were estimates only — do not use them in production. Pull from ACS.
 
-**Zero-population neighborhoods:** grey out on choropleth for any per-capita view, with a tooltip. Raw count (Lens 1 raw) still displays normally for these neighborhoods.
+**Parks/military neighborhoods:** grey out on choropleth for any per-capita view (`per_capita_applicable = false`), with a tooltip. Raw count (Lens 1 raw) still displays normally. Real ACS population values are stored — `per_capita_applicable` handles display suppression.
 
 **API shape implication:** the `/neighborhoods` GeoJSON response should carry `population` and `per_capita_applicable` (false for the 4 parks/Presidio) as properties, so the frontend can handle the grey-out without a separate call.

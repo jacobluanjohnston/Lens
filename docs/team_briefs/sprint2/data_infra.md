@@ -91,9 +91,12 @@ Examples:
 
 Do not invent a different format. Jacob's API endpoints use the same rule — they join on this key.
 
-**Population column name — check the CSV header when you download it:**
+**ACS and crosswalk column names — confirmed:**
 
-Download the population CSV from DataSF (URL in Step 1 below). Open it and look at the header row. The column containing 2020 population will be obvious from its name — it will be something like `pop2020` or `total_population`. Use whatever the actual column is called. Do not assume the name.
+- ACS B01003 population column: **`B01003001`** (not obvious from the name — it's the Census variable ID)
+- ACS GEOID column: **`geoid`** — comes with a `14000US` prefix that must be stripped before joining (e.g. `"14000US06075010100"` → `"06075010100"`)
+- Crosswalk neighborhood column: **`neighborhoods_analysis_boundaries`**
+- Crosswalk GEOID column: **`geoid`** (no prefix — joins directly after stripping the ACS prefix)
 
 ### Step 1: Get the data from DataSF and Census
 
@@ -129,6 +132,8 @@ Western Addition, West of Twin Peaks
 ```
 
 Note: it is `Oceanview/Merced/Ingleside` with no space (not "Ocean View").
+
+**The Farallones:** the crosswalk CSV contains a 42nd entry ("The Farallones") with no matching polygon in the GeoJSON. This is expected — they're uninhabited islands technically in SF County. The load script logs and drops them. Do not be alarmed if you see 42 rows in the crosswalk.
 
 ### Step 2: Create the Alembic migration
 
