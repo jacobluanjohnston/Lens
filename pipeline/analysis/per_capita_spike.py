@@ -30,11 +30,14 @@ import psycopg2
 DB_URL = os.environ.get("DATABASE_URL", "postgresql://lens:lens@localhost:5432/lens")
 WIDTH = 90
 
-# Known 2020 Census population estimates for SF Analysis Neighborhoods.
-# Source: DataSF — https://data.sfgov.org/Geographic-Locations-and-Boundaries/Analysis-Neighborhoods-2010-census-tracts-assigned/p5b7-5n3h
-# These are tract-based aggregations published by DataSF, aligned to the
-# same 41 Analysis Neighborhood boundaries used in the incidents table.
-# This means NO areal interpolation is needed — DataSF has already done it.
+# ESTIMATES ONLY — do not use in production.
+# NOTE (2026-07-11): The source comment below was wrong. DataSF does not
+# publish pre-aggregated population per neighborhood. The correct pipeline
+# is ACS B01003 at census tract level joined via the 2020 tract-to-neighborhood
+# crosswalk (DataSF "Analysis Neighborhoods - 2020 census tracts assigned to
+# neighborhoods"). No areal interpolation is still correct — neighborhoods are
+# whole-tract aggregates — but for the right reason, not because DataSF pre-aggregates.
+# See docs/spikes/per_capita_denominator.md and pipeline/adapters/sf/load_neighborhoods.py.
 NEIGHBORHOOD_POPULATION = {
     "Bayview Hunters Point": 35543,
     "Bernal Heights": 26894,
@@ -185,12 +188,15 @@ print("Interpretation")
 print(f'{"=" * WIDTH}')
 print("""
   Per-capita is computable for SF Analysis Neighborhoods WITHOUT areal
-  interpolation. DataSF publishes pre-aggregated 2020 Census population
-  figures aligned to the same 41 neighborhood boundaries used in the
-  incidents table. We use those directly.
+  interpolation. Neighborhoods are defined as whole-tract aggregates, so
+  ACS B01003 tract populations sum exactly to neighborhood level.
+  NOTE: the original claim that "DataSF publishes pre-aggregated population"
+  was wrong — see docs/spikes/per_capita_denominator.md for the correction.
 
-  Zero-population neighborhoods (parks, Presidio) are shown on the
-  choropleth but greyed out for per-capita and Lens 2 views.
+  Parks/Presidio neighborhoods are shown on the choropleth but greyed out
+  for per-capita and Lens 2 views. ACS reports non-zero population for all
+  4 — adjacent residential tracts are included. per_capita_applicable=false
+  handles display suppression; real values are stored.
 
   Write findings in docs/spikes/per_capita_denominator.md.
 """)
