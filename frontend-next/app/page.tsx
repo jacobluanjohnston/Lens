@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import type { Incident } from "@/types/incident";
+import type { LensData } from "@/types/lens";
 
 import Map from "@/components/Map";
 import Controls from "@/components/Controls";
 import LensPanel from "@/components/LensPanel";
 import FlagsPanel from "@/components/FlagsPanel";
+import NeighborhoodPanel from "@/components/NeighborhoodPanel";
 
 function isoDate(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -20,6 +22,11 @@ export default function Home() {
   const [start, setStart] = useState(isoDate(thirtyDaysAgo));
   const [end, setEnd] = useState(isoDate(today));
   const [category, setCategory] = useState("");
+
+  const [activeLens, setActiveLens] = useState<1 | 2 | 3>(1);
+
+  const [selectedNeighborhood, setSelectedNeighborhood] =
+    useState<LensData | null>(null);
 
   const [categories, setCategories] = useState<string[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -44,17 +51,18 @@ export default function Home() {
   return (
     <main
       style={{
-        display: "flex",
+        position: "relative",
         height: "100vh",
+        overflow: "hidden",
         background: "#f4f4f4",
       }}
     >
-      {/* Left Side */}
+      {/* Map */}
       <div
         style={{
-          flex: 1,
+          width: "100%",
+          height: "100%",
           position: "relative",
-          overflow: "hidden",
         }}
       >
         <Controls
@@ -71,24 +79,50 @@ export default function Home() {
           }}
         />
 
-        <Map />
+        <Map
+          activeLens={activeLens}
+          onSelectNeighborhood={setSelectedNeighborhood}
+        />
       </div>
 
-      {/* Right Sidebar */}
+      {/* Floating Right Panels */}
       <div
         style={{
-          width: "380px",
+          position: "absolute",
+          top: 20,
+          right: 20,
+          width: 360,
+
+          maxHeight: "calc(100vh - 40px)",
+
           display: "flex",
           flexDirection: "column",
           gap: 16,
-          padding: 16,
-          background: "#f8f9fa",
-          borderLeft: "1px solid #d1d5db",
+
           overflowY: "auto",
+
+          zIndex: 1000,
+          pointerEvents: "none",
+
+          paddingRight: 4,
         }}
       >
-        <LensPanel />
-        <FlagsPanel />
+        <div style={{ pointerEvents: "auto" }}>
+          <LensPanel
+            activeLens={activeLens}
+            onLensChange={setActiveLens}
+          />
+        </div>
+
+        <div style={{ pointerEvents: "auto" }}>
+          <NeighborhoodPanel
+            neighborhood={selectedNeighborhood}
+          />
+        </div>
+
+        <div style={{ pointerEvents: "auto" }}>
+          <FlagsPanel />
+        </div>
       </div>
     </main>
   );
