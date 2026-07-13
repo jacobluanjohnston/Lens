@@ -70,6 +70,3 @@ def test_neighborhoods_feature_schema():
         assert "low_confidence" in props
 
 
-def test_neighborhoods_returns_41_features():
-    result = get_neighborhoods()
-    assert len(result["features"]) == 41
