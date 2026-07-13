@@ -67,7 +67,7 @@ export default function LensPanel({
           marginBottom: 18,
           color: "#4b5563",
           lineHeight: 1.5,
-          fontSize: 13,
+          fontSize: 14,
         }}
       >
         Choose an analytical perspective to explore police activity throughout

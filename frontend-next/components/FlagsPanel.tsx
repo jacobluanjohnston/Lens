@@ -27,8 +27,11 @@ export default function FlagsPanel() {
     >
       <h2
         style={{
-          marginTop: 0,
-          marginBottom: 8,
+          margin: 0,
+          fontSize: 22,
+          fontWeight: 700,
+          letterSpacing: "-0.03em",
+          color: "#111827",
         }}
       >
         Analysis Flags
@@ -36,10 +39,11 @@ export default function FlagsPanel() {
 
       <p
         style={{
-          marginTop: 0,
-          marginBottom: 22,
+          marginTop: 6,
+          marginBottom: 20,
           color: "#4b5563",
-          lineHeight: 1.6,
+          fontSize: 14,
+          lineHeight: 1.5,
         }}
       >
         Automated neighborhood insights will appear here after an analysis is
