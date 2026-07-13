@@ -1,4 +1,4 @@
-"""Tests for the /incidents and /categories endpoints.
+"""Tests for the /incidents, /categories, and /neighborhoods endpoints.
 
 Call the route handler functions directly rather than over HTTP so we don't
 need an extra dependency (httpx). These work against an empty database — they
@@ -11,6 +11,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.api.incidents import get_categories, get_incidents
+from app.api.neighborhoods import get_neighborhoods
 
 
 def test_reversed_date_range_raises_422():
@@ -46,3 +47,26 @@ def test_get_categories_returns_list_of_strings():
     result = get_categories()
     assert isinstance(result, list)
     assert all(isinstance(c, str) for c in result)
+
+
+# ── /neighborhoods ────────────────────────────────────────────────────────────
+
+def test_neighborhoods_returns_feature_collection():
+    result = get_neighborhoods()
+    assert result["type"] == "FeatureCollection"
+    assert isinstance(result["features"], list)
+
+
+def test_neighborhoods_feature_schema():
+    result = get_neighborhoods()
+    for feature in result["features"]:
+        assert feature["type"] == "Feature"
+        assert "geometry" in feature
+        props = feature["properties"]
+        assert "neighborhood_id" in props
+        assert "neighborhood_name" in props
+        assert "population" in props
+        assert "per_capita_applicable" in props
+        assert "low_confidence" in props
+
+

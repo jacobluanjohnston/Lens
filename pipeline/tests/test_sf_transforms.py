@@ -14,6 +14,7 @@ from pipeline.adapters.sf.ingest import (
     _norm_category,
     _norm_resolution,
 )
+from pipeline.adapters.sf.load_neighborhoods import slugify
 
 # ── Category normalisation ────────────────────────────────────────────────────
 
@@ -57,3 +58,13 @@ def test_nan_resolution_becomes_open():
 
 def test_unknown_resolution_becomes_other_historical():
     assert _norm_resolution("Some Future Value") == "other_historical"
+
+
+# ── Neighborhood slug ─────────────────────────────────────────────────────────
+
+def test_slugify():
+    assert slugify("Tenderloin") == "tenderloin"
+    assert slugify("Financial District/South Beach") == "financial-district-south-beach"
+    assert slugify("Oceanview/Merced/Ingleside") == "oceanview-merced-ingleside"
+    assert slugify("West of Twin Peaks") == "west-of-twin-peaks"
+    assert slugify("Bayview Hunters Point") == "bayview-hunters-point"
