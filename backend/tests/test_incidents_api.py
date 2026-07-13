@@ -11,6 +11,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.api.incidents import get_categories, get_incidents
+from app.api.lens import get_lens1, get_lens2, get_lens3
 from app.api.neighborhoods import get_neighborhoods
 
 
@@ -68,5 +69,76 @@ def test_neighborhoods_feature_schema():
         assert "population" in props
         assert "per_capita_applicable" in props
         assert "low_confidence" in props
+
+
+# ── /lens/1 ───────────────────────────────────────────────────────────────────
+
+def test_lens1_reversed_date_raises_422():
+    with pytest.raises(HTTPException) as exc:
+        get_lens1(start=date(2025, 4, 1), end=date(2025, 3, 1), category=None)
+    assert exc.value.status_code == 422
+
+
+def test_lens1_returns_list():
+    result = get_lens1(start=date(2025, 1, 1), end=date(2025, 6, 1), category=None)
+    assert isinstance(result, list)
+
+
+def test_lens1_schema():
+    result = get_lens1(start=date(2025, 1, 1), end=date(2025, 6, 1), category=None)
+    for row in result:
+        assert "neighborhood_id" in row
+        assert "neighborhood_name" in row
+        assert "raw_count" in row
+        assert "per_capita" in row
+        assert "reference_raw" in row
+        assert "reference_per_capita" in row
+        assert "low_confidence" in row
+        assert "per_capita_applicable" in row
+
+
+def test_lens1_per_capita_null_for_parks():
+    result = get_lens1(start=date(2025, 1, 1), end=date(2025, 6, 1), category=None)
+    for row in result:
+        if not row["per_capita_applicable"]:
+            assert row["per_capita"] is None
+
+
+# ── /lens/2 ───────────────────────────────────────────────────────────────────
+
+def test_lens2_reversed_date_raises_422():
+    with pytest.raises(HTTPException) as exc:
+        get_lens2(start=date(2025, 4, 1), end=date(2025, 3, 1))
+    assert exc.value.status_code == 422
+
+
+def test_lens2_returns_list():
+    result = get_lens2(start=date(2025, 1, 1), end=date(2025, 6, 1))
+    assert isinstance(result, list)
+
+
+def test_lens2_schema():
+    result = get_lens2(start=date(2025, 1, 1), end=date(2025, 6, 1))
+    for row in result:
+        assert "neighborhood_id" in row
+        assert "neighborhood_name" in row
+        assert "value" in row
+        assert "reference_value" in row
+        assert "low_confidence" in row
+        assert "per_capita_applicable" in row
+
+
+def test_lens2_value_null_for_parks():
+    result = get_lens2(start=date(2025, 1, 1), end=date(2025, 6, 1))
+    for row in result:
+        if not row["per_capita_applicable"]:
+            assert row["value"] is None
+
+
+# ── /lens/3 ───────────────────────────────────────────────────────────────────
+
+def test_lens3_returns_503():
+    response = get_lens3(start=date(2025, 1, 1), end=date(2025, 6, 1), category="Burglary")
+    assert response.status_code == 503
 
 
