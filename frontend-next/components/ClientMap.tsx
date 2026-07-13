@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { mockLensData } from "@/lib/mockApi";
 import type { LensData } from "@/types/lens";
+import GlassZoom from "./GlassZoom";
 
 const SF_CENTER: [number, number] = [37.7749, -122.4194];
 
@@ -80,6 +81,7 @@ export default function ClientMap({
     <MapContainer
       center={SF_CENTER}
       zoom={12}
+      zoomControl={false}
       style={{
         height: "100%",
         width: "100%",
@@ -89,7 +91,7 @@ export default function ClientMap({
         attribution="&copy; OpenStreetMap contributors"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-
+      <GlassZoom />
       {neighborhoods && (
         <GeoJSON
           data={neighborhoods}

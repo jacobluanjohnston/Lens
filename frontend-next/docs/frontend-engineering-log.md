@@ -341,3 +341,75 @@ The implementation follows the documented Sprint 2 API contract and can be switc
 - ✅ #43 Choropleth Layer
 - ✅ #44 Lens Toggle
 - ✅ #45 Neighborhood Sidebar
+-------------------------
+
+# July 12, 2026 
+
+Frontend Integration Progress
+
+### Completed
+
+- Implemented interactive choropleth map using React Leaflet.
+- Added Lens selector supporting:
+  - Lens 1 (Incidence)
+  - Lens 2 (Officer-Initiated Enforcement)
+  - Lens 3 (Resolution)
+- Added dynamic choropleth coloring based on the active lens.
+- Implemented neighborhood selection by clicking map polygons.
+- Added Neighborhood Panel displaying metrics for the selected neighborhood.
+- Refactored map components to support future backend integration while maintaining separation between map rendering and lens data.
+- Converted neighborhood geometry loading from a local GeoJSON file to a backend endpoint (`GET /neighborhoods`).
+
+### Backend Integration
+
+Attempted integration with the new backend neighborhood endpoint.
+
+Completed:
+- Added Next.js rewrite for `/neighborhoods`.
+- Replaced local GeoJSON fetch with backend API request.
+- Successfully verified frontend communication with the FastAPI backend.
+
+During testing:
+- Initial requests failed because the `neighborhoods` database table did not exist locally.
+- Applied the latest Alembic migrations successfully.
+- Confirmed the `/neighborhoods` endpoint now responds correctly.
+
+Current blocker:
+- Endpoint currently returns an empty GeoJSON `FeatureCollection` because the local `neighborhoods` table has not yet been populated.
+- Backend team is currently implementing `GET /lens/1`, `GET /lens/2`, and `GET /lens/3`, which will replace the temporary frontend mock lens data.
+
+### Current Frontend State
+
+The application currently uses:
+
+- Backend:
+  - `/neighborhoods` (geometry endpoint)
+- Mock data:
+  - Lens metrics (`mockApi.ts`)
+
+This allows frontend development to continue independently while backend analytical endpoints are completed.
+
+### Next Steps
+
+Once the backend endpoints are available:
+
+- Replace `mockApi.ts` with:
+  - `GET /lens/1`
+  - `GET /lens/2`
+  - `GET /lens/3`
+- Join returned lens metrics with neighborhood polygons using `neighborhood_id`.
+- Remove remaining frontend mock data.
+- Add loading/error handling for asynchronous lens requests.
+
+### UI Polish (Current Focus)
+
+Backend integration is temporarily paused while waiting for the new Lens API endpoints.
+
+Current frontend polish tasks:
+
+- Redesign Lens Panel with modern button-style controls.
+- Improve Neighborhood Panel layout using metric cards.
+- Add choropleth legend.
+- Improve floating sidebar styling.
+- Add hover effects and smoother transitions.
+

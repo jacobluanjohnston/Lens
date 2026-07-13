@@ -6,6 +6,89 @@ interface NeighborhoodPanelProps {
   neighborhood: LensData | null;
 }
 
+function Metric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div
+      style={{
+        background: "rgba(255,255,255,0.12)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+
+        border: "1px solid rgba(255,255,255,.18)",
+
+        borderRadius: 16,
+
+        padding: 14,
+
+        boxShadow:
+          "0 4px 12px rgba(0,0,0,.08), inset 0 1px 1px rgba(255,255,255,.18)",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 12,
+          color: "#64748b",
+          textTransform: "uppercase",
+          letterSpacing: ".08em",
+          marginBottom: 8,
+          fontWeight: 700,
+        }}
+      >
+        {label}
+      </div>
+
+      <div
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: "#111827",
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function Badge({
+  label,
+  active,
+}: {
+  label: string;
+  active: boolean;
+}) {
+  return (
+    <div
+      style={{
+        padding: "8px 12px",
+        borderRadius: 999,
+
+        background: active
+          ? "rgba(34,197,94,.14)"
+          : "rgba(148,163,184,.14)",
+
+        border: active
+          ? "1px solid rgba(34,197,94,.22)"
+          : "1px solid rgba(148,163,184,.18)",
+
+        color: active ? "#15803d" : "#475569",
+
+        fontSize: 13,
+        fontWeight: 600,
+      }}
+    >
+      {active ? "✓ " : "• "}
+      {label}
+    </div>
+  );
+}
+
 export default function NeighborhoodPanel({
   neighborhood,
 }: NeighborhoodPanelProps) {
@@ -13,24 +96,38 @@ export default function NeighborhoodPanel({
     return (
       <div
         style={{
-          background: "#fff",
-          borderRadius: 8,
-          padding: 20,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-          color: "#222",
+          background: "rgba(255,255,255,.14)",
+          backdropFilter: "blur(28px)",
+          WebkitBackdropFilter: "blur(28px)",
+
+          borderRadius: 22,
+          padding: 24,
+
+          border: "1px solid rgba(255,255,255,.22)",
+
+          boxShadow:
+            "0 12px 40px rgba(15,23,42,.18), inset 0 1px 1px rgba(255,255,255,.25)",
         }}
       >
         <h2
           style={{
             marginTop: 0,
-            color: "#111",
+            marginBottom: 8,
+            color: "#111827",
           }}
         >
           Neighborhood
         </h2>
 
-        <p style={{ color: "#666" }}>
-          Click a neighborhood to view its lens metrics.
+        <p
+          style={{
+            color: "#4b5563",
+            lineHeight: 1.6,
+            margin: 0,
+          }}
+        >
+          Click a neighborhood on the map to view detailed metrics and
+          comparison data.
         </p>
       </div>
     );
@@ -39,77 +136,145 @@ export default function NeighborhoodPanel({
   return (
     <div
       style={{
-        background: "#fff",
-        borderRadius: 8,
-        padding: 20,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        color: "#222",
+        background: "rgba(255,255,255,.14)",
+        backdropFilter: "blur(28px)",
+        WebkitBackdropFilter: "blur(28px)",
+
+        borderRadius: 22,
+        padding: 24,
+
+        border: "1px solid rgba(255,255,255,.22)",
+
+        boxShadow:
+          "0 12px 40px rgba(15,23,42,.18), inset 0 1px 1px rgba(255,255,255,.25)",
       }}
     >
-      <h2
+      <div style={{ marginBottom: 22 }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: "#64748b",
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+            marginBottom: 6,
+          }}
+        >
+          Selected Neighborhood
+        </div>
+
+        <h2
+          style={{
+            margin: 0,
+            color: "#111827",
+          }}
+        >
+          {neighborhood.neighborhood_name}
+        </h2>
+      </div>
+
+      <div
         style={{
-          marginTop: 0,
-          color: "#111",
+          display: "grid",
+          gap: 12,
+          marginBottom: 24,
         }}
       >
-        {neighborhood.neighborhood_name}
-      </h2>
+        <Metric
+          label="Incidence"
+          value={neighborhood.raw_count}
+        />
 
-      <hr />
+        <Metric
+          label="Officer Enforcement"
+          value={neighborhood.value ?? "N/A"}
+        />
 
-      <h3 style={{ color: "#111" }}>Lens Metrics</h3>
+        <Metric
+          label="Resolution Gap"
+          value={neighborhood.gap ?? "N/A"}
+        />
+      </div>
 
-      <p>
-        <strong>Incidence:</strong> {neighborhood.raw_count}
-      </p>
+      <div
+        style={{
+          marginBottom: 20,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#475569",
+            marginBottom: 10,
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+          }}
+        >
+          Citywide Reference
+        </div>
 
-      <p>
-        <strong>Officer Enforcement:</strong>{" "}
-        {neighborhood.value ?? "N/A"}
-      </p>
+        <div
+          style={{
+            display: "grid",
+            gap: 10,
+            fontSize: 14,
+            color: "#334155",
+          }}
+        >
+          <div>
+            <strong>Reference Count:</strong>{" "}
+            {neighborhood.reference_raw}
+          </div>
 
-      <p>
-        <strong>Resolution Gap:</strong>{" "}
-        {neighborhood.gap ?? "N/A"}
-      </p>
+          <div>
+            <strong>Reference Value:</strong>{" "}
+            {neighborhood.reference_value}
+          </div>
 
-      <hr />
+          <div>
+            <strong>Reference Rate:</strong>{" "}
+            {neighborhood.reference_rate}
+          </div>
+        </div>
+      </div>
 
-      <h3 style={{ color: "#111" }}>Citywide Reference</h3>
+      <div>
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#475569",
+            marginBottom: 12,
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+          }}
+        >
+          Flags
+        </div>
 
-      <p>
-        <strong>Reference Count:</strong>{" "}
-        {neighborhood.reference_raw}
-      </p>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 10,
+          }}
+        >
+          <Badge
+            label="Low Confidence"
+            active={neighborhood.low_confidence}
+          />
 
-      <p>
-        <strong>Reference Value:</strong>{" "}
-        {neighborhood.reference_value}
-      </p>
+          <Badge
+            label="Per Capita"
+            active={neighborhood.per_capita_applicable}
+          />
 
-      <p>
-        <strong>Reference Rate:</strong>{" "}
-        {neighborhood.reference_rate}
-      </p>
-
-      <hr />
-
-      <h3 style={{ color: "#111" }}>Flags</h3>
-
-      <p>
-        <strong>Low Confidence:</strong>{" "}
-        {neighborhood.low_confidence ? "Yes" : "No"}
-      </p>
-
-      <p>
-        <strong>Per Capita Applicable:</strong>{" "}
-        {neighborhood.per_capita_applicable ? "Yes" : "No"}
-      </p>
-
-      <p>
-        <strong>Provisional:</strong>{" "}
-        {neighborhood.provisional ? "Yes" : "No"}
-      </p>
+          <Badge
+            label="Provisional"
+            active={neighborhood.provisional}
+          />
+        </div>
+      </div>
     </div>
   );
 }

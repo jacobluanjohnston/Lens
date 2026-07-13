@@ -1,42 +1,157 @@
 "use client";
 
 export default function FlagsPanel() {
+  const futureFlags = [
+    "Enforcement Concentration",
+    "Resolution Gap",
+    "Data Quality",
+  ];
+
   return (
     <div
       style={{
-        background: "#ffffff",
-        borderRadius: 8,
-        padding: 20,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        color: "#222",
+        background: "rgba(255,255,255,.14)",
+        backdropFilter: "blur(28px)",
+        WebkitBackdropFilter: "blur(28px)",
+
+        borderRadius: 22,
+        padding: 24,
+
+        border: "1px solid rgba(255,255,255,.22)",
+
+        boxShadow:
+          "0 12px 40px rgba(15,23,42,.18), inset 0 1px 1px rgba(255,255,255,.25)",
+
+        color: "#111827",
       }}
     >
-      <h2 style={{ marginTop: 0 }}>Flags</h2>
-
-      <p style={{ color: "#666" }}>
-        No analysis has been generated yet.
-      </p>
-
-      <hr style={{ margin: "16px 0" }} />
-
-      <strong>Future flag types</strong>
-
-      <ul style={{ color: "#555", paddingLeft: 18 }}>
-        <li>Enforcement concentration</li>
-        <li>Resolution gap</li>
-        <li>Data quality</li>
-      </ul>
+      <h2
+        style={{
+          marginTop: 0,
+          marginBottom: 8,
+        }}
+      >
+        Analysis Flags
+      </h2>
 
       <p
         style={{
-          marginTop: 16,
-          fontSize: 13,
-          color: "#888",
+          marginTop: 0,
+          marginBottom: 22,
+          color: "#4b5563",
+          lineHeight: 1.6,
         }}
       >
-        Flags identify neighborhoods that may warrant additional
-        investigation. They are not conclusions.
+        Automated neighborhood insights will appear here after an analysis is
+        generated.
       </p>
+
+      {/* Status */}
+
+      <div
+        style={{
+          padding: 16,
+
+          borderRadius: 16,
+
+          background: "rgba(255,255,255,.10)",
+
+          border: "1px solid rgba(255,255,255,.16)",
+
+          marginBottom: 22,
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 700,
+            color: "#0f766e",
+            marginBottom: 6,
+          }}
+        >
+          ✓ No Active Flags
+        </div>
+
+        <div
+          style={{
+            color: "#475569",
+            fontSize: 14,
+            lineHeight: 1.5,
+          }}
+        >
+          Run an analysis and select a neighborhood to surface potential
+          anomalies and quality indicators.
+        </div>
+      </div>
+
+      {/* Future */}
+
+      <div
+        style={{
+          marginBottom: 20,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: "#64748b",
+
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+
+            marginBottom: 12,
+          }}
+        >
+          Future Flag Types
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 10,
+          }}
+        >
+          {futureFlags.map((flag) => (
+            <div
+              key={flag}
+              style={{
+                padding: "8px 12px",
+
+                borderRadius: 999,
+
+                background: "rgba(255,255,255,.12)",
+
+                border:
+                  "1px solid rgba(255,255,255,.18)",
+
+                fontSize: 13,
+
+                color: "#334155",
+
+                fontWeight: 600,
+              }}
+            >
+              {flag}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div
+        style={{
+          fontSize: 13,
+          color: "#64748b",
+          lineHeight: 1.6,
+
+          borderTop: "1px solid rgba(255,255,255,.18)",
+
+          paddingTop: 18,
+        }}
+      >
+        Flags highlight neighborhoods that may warrant additional review.
+        They are indicators for further investigation—not conclusions.
+      </div>
     </div>
   );
 }

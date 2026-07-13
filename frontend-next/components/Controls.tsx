@@ -29,103 +29,220 @@ export default function Controls({
     <div
       style={{
         position: "absolute",
-        top: 16,
-        left: 50,
+        top: 18,
+        left: 18,
         zIndex: 1000,
-
-        background: "#ffffff",
-        border: "1px solid #d1d5db",
-        borderRadius: 8,
-        padding: "8px 10px",
-
-        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
 
         display: "flex",
         alignItems: "center",
-        gap: 6,
+        gap: 14,
+
+        background: "rgba(255,255,255,.14)",
+        backdropFilter: "blur(28px)",
+        WebkitBackdropFilter: "blur(28px)",
+
+        border: "1px solid rgba(255,255,255,.22)",
+        borderRadius: 18,
+
+        padding: "12px 16px",
+
+        boxShadow:
+          "0 12px 40px rgba(15,23,42,.20), inset 0 1px 1px rgba(255,255,255,.25)",
       }}
     >
-      <label
+      {/* Logo */}
+
+      <div
         style={{
-          color: "#111",
-          fontSize: 13,
-          fontWeight: 500,
+          marginRight: 6,
+          minWidth: 70,
         }}
       >
-        From{" "}
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 800,
+            color: "#111827",
+            lineHeight: 1,
+            letterSpacing: "-0.04em",
+          }}
+        >
+          LENS
+        </div>
+
+        <div
+          style={{
+            fontSize: 10,
+            color: "#64748b",
+            marginTop: 2,
+          }}
+        >
+          Police Analytics
+        </div>
+      </div>
+
+      {/* From */}
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
+        }}
+      >
+        <label
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: "#475569",
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+          }}
+        >
+          From
+        </label>
+
         <input
           type="date"
           value={start}
           onChange={(e) => onStartChange(e.target.value)}
           style={{
-            width: 140,
-            padding: "5px 6px",
-            color: "#111",
-            background: "#fff",
-            border: "1px solid #ccc",
-            borderRadius: 4,
+            width: 118,
+            padding: "6px 8px",
+
+            fontSize: 12,
+
+            borderRadius: 8,
+
+            border: "1px solid rgba(255,255,255,.18)",
+
+            background: "rgba(255,255,255,.18)",
+
+            color: "#111827",
           }}
         />
-      </label>
+      </div>
 
-      <label
+      {/* To */}
+
+      <div
         style={{
-          color: "#111",
-          fontSize: 13,
-          fontWeight: 500,
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
         }}
       >
-        To{" "}
+        <label
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: "#475569",
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+          }}
+        >
+          To
+        </label>
+
         <input
           type="date"
           value={end}
           onChange={(e) => onEndChange(e.target.value)}
           style={{
-            width: 140,
-            padding: "5px 6px",
-            color: "#111",
-            background: "#fff",
-            border: "1px solid #ccc",
-            borderRadius: 4,
+            width: 118,
+            padding: "6px 8px",
+
+            fontSize: 12,
+
+            borderRadius: 8,
+
+            border: "1px solid rgba(255,255,255,.18)",
+
+            background: "rgba(255,255,255,.18)",
+
+            color: "#111827",
           }}
         />
-      </label>
+      </div>
 
-      <select
-        value={category}
-        onChange={(e) => onCategoryChange(e.target.value)}
+      {/* Crime */}
+
+      <div
         style={{
-          width: 155,
-          padding: "5px 6px",
-          color: "#111",
-          background: "#fff",
-          border: "1px solid #ccc",
-          borderRadius: 4,
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
         }}
       >
-        <option value="">All crime types</option>
+        <label
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: "#475569",
+            textTransform: "uppercase",
+            letterSpacing: ".08em",
+          }}
+        >
+          Crime
+        </label>
 
-        {categories.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
-        ))}
-      </select>
+        <select
+          value={category}
+          onChange={(e) => onCategoryChange(e.target.value)}
+          style={{
+            width: 145,
+            padding: "6px 8px",
+
+            fontSize: 12,
+
+            borderRadius: 8,
+
+            border: "1px solid rgba(255,255,255,.18)",
+
+            background: "rgba(255,255,255,.18)",
+
+            color: "#111827",
+          }}
+        >
+          <option value="">All Crimes</option>
+
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Analyze */}
 
       <button
         onClick={onShow}
         disabled={loading}
         style={{
-          padding: "6px 12px",
-          background: "#2563eb",
-          color: "#fff",
+          marginTop: 15,
+
+          padding: "7px 14px",
+
+          borderRadius: 8,
+
           border: "none",
-          borderRadius: 4,
-          fontWeight: 500,
+
+          background: "linear-gradient(135deg,#2563eb,#1d4ed8)",
+
+          color: "#fff",
+
+          fontWeight: 700,
+
+          fontSize: 12,
+
           cursor: loading ? "default" : "pointer",
+
+          boxShadow:
+            "0 5px 14px rgba(37,99,235,.28)",
         }}
       >
-        {loading ? "Loading..." : "Show"}
+        {loading ? "Loading..." : "Analyze"}
       </button>
     </div>
   );
