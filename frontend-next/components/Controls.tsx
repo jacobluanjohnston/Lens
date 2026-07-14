@@ -6,6 +6,7 @@ interface ControlsProps {
   category: string;
   categories: string[];
   loading: boolean;
+  activeLens: 1 | 2 | 3;
 
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
@@ -18,6 +19,7 @@ export default function Controls({
   category,
   categories,
   loading,
+  activeLens,
   onStartChange,
   onEndChange,
   onCategoryChange,
@@ -154,50 +156,51 @@ export default function Controls({
         />
       </div>
 
-      {/* Crime */}
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 3,
-        }}
-      >
-        <label
+      {/* Crime — hidden on Lens 2 (hardcodes its own category buckets) */}
+      {activeLens !== 2 && (
+        <div
           style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: "#475569",
-            textTransform: "uppercase",
-            letterSpacing: ".08em",
+            display: "flex",
+            flexDirection: "column",
+            gap: 3,
           }}
         >
-          Crime
-        </label>
+          <label
+            style={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: "#475569",
+              textTransform: "uppercase",
+              letterSpacing: ".08em",
+            }}
+          >
+            Crime
+          </label>
 
-        <select
-          value={category}
-          onChange={(e) => onCategoryChange(e.target.value)}
-          disabled={loading}
-          style={{
-            width: 145,
-            padding: "6px 8px",
-            fontSize: 12,
-            borderRadius: 8,
-            border: "1px solid rgba(255,255,255,.18)",
-            background: "rgba(255,255,255,.18)",
-            color: "#111827",
-          }}
-        >
-          <option value="">All Crimes</option>
+          <select
+            value={category}
+            onChange={(e) => onCategoryChange(e.target.value)}
+            disabled={loading}
+            style={{
+              width: 145,
+              padding: "6px 8px",
+              fontSize: 12,
+              borderRadius: 8,
+              border: "1px solid rgba(255,255,255,.18)",
+              background: "rgba(255,255,255,.18)",
+              color: "#111827",
+            }}
+          >
+            <option value="">All Crimes</option>
 
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </div>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
     </div>
   );
 }

@@ -144,6 +144,7 @@ export default function Home() {
           category={category}
           categories={categories}
           loading={loading}
+          activeLens={activeLens}
           onStartChange={setStart}
           onEndChange={setEnd}
           onCategoryChange={setCategory}
