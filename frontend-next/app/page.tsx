@@ -25,8 +25,9 @@ export default function Home() {
 
   const [activeLens, setActiveLens] = useState<1 | 2 | 3>(1);
 
-  const [selectedNeighborhood, setSelectedNeighborhood] =
-    useState<LensData | null>(null);
+  // Store only the ID so the selection survives lens switches.
+  // The displayed data is derived from lensData after each fetch.
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [lensData, setLensData] = useState<LensData[]>([]);
   const [fetchId, setFetchId] = useState(0);
@@ -37,10 +38,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Derive the panel data from current lensData whenever either changes.
+  const selectedNeighborhood = selectedId
+    ? (lensData.find((d) => d.neighborhood_id === selectedId) ?? null)
+    : null;
+
   async function fetchLensData() {
     setLoading(true);
     setError(null);
-    setSelectedNeighborhood(null);
 
     try {
       let url = `/lens/${activeLens}?start=${start}&end=${end}`;
@@ -62,7 +67,6 @@ export default function Home() {
 
       if (!response.ok) {
         setLensData([]);
-        // selectedNeighborhood already cleared at start of fetchLensData
 
         if (typeof data?.detail === "string") {
           setError(data.detail);
@@ -77,7 +81,6 @@ export default function Home() {
 
       if (!Array.isArray(data)) {
         setLensData([]);
-        // selectedNeighborhood already cleared at start of fetchLensData
         setError("Unexpected response from server.");
         return;
       }
@@ -88,12 +91,10 @@ export default function Home() {
 
       setLensData(data.map((item: LensData) => ({ ...item, provisional })));
       setFetchId((n) => n + 1);
-      setSelectedNeighborhood(null);
       setError(null);
 
     } catch (err) {
       setLensData([]);
-      setSelectedNeighborhood(null);
 
       setError(
         err instanceof Error
@@ -154,7 +155,7 @@ export default function Home() {
           activeLens={activeLens}
           lensData={lensData}
           fetchId={fetchId}
-          onSelectNeighborhood={setSelectedNeighborhood}
+          onSelectNeighborhood={(lens) => setSelectedId(lens?.neighborhood_id ?? null)}
         />
       </div>
 
