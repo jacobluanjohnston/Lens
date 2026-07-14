@@ -29,6 +29,7 @@ export default function Home() {
     useState<LensData | null>(null);
 
   const [lensData, setLensData] = useState<LensData[]>([]);
+  const [fetchId, setFetchId] = useState(0);
 
   const [categories, setCategories] = useState<string[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -86,6 +87,7 @@ export default function Home() {
       const provisional = (Date.now() - endMs) / 86_400_000 < 90;
 
       setLensData(data.map((item: LensData) => ({ ...item, provisional })));
+      setFetchId((n) => n + 1);
       setSelectedNeighborhood(null);
       setError(null);
 
@@ -150,6 +152,7 @@ export default function Home() {
         <Map
           activeLens={activeLens}
           lensData={lensData}
+          fetchId={fetchId}
           onSelectNeighborhood={setSelectedNeighborhood}
         />
       </div>
@@ -182,6 +185,7 @@ export default function Home() {
           <NeighborhoodPanel
             neighborhood={selectedNeighborhood}
             activeLens={activeLens}
+            dateRange={{ start, end }}
           />
         </div>
 

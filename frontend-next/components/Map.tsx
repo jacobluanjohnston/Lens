@@ -9,22 +9,22 @@ const ClientMap = dynamic(() => import("./ClientMap"), {
 
 interface MapProps {
   activeLens: 1 | 2 | 3;
-    lensData: LensData[];
-  // selectedNeighborhood: LensData | null;
+  lensData: LensData[];
+  fetchId: number;
   onSelectNeighborhood: (lens: LensData | null) => void;
 }
 
 export default function Map({
   activeLens,
   lensData,
-  // selectedNeighborhood,
+  fetchId,
   onSelectNeighborhood,
 }: MapProps) {
   return (
     <ClientMap
       activeLens={activeLens}
-        lensData={lensData}
-      // selectedNeighborhood={selectedNeighborhood}
+      lensData={lensData}
+      fetchId={fetchId}
       onSelectNeighborhood={onSelectNeighborhood}
     />
   );

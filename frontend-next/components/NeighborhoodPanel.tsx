@@ -5,6 +5,7 @@ import type { LensData } from "@/types/lens";
 interface NeighborhoodPanelProps {
   neighborhood: LensData | null;
   activeLens: 1 | 2 | 3;
+  dateRange: { start: string; end: string };
 }
 
 const GLASS = {
@@ -21,19 +22,42 @@ const LENS_META: Record<1 | 2 | 3, { label: string; description: string }> = {
   1: {
     label: "Lens 1 — Incidence",
     description:
-      "How many incidents were reported here? High counts may reflect patrol intensity, not actual crime — officers in the area generate more reports.",
+      "How many incidents were reported here? High counts may reflect patrol intensity, not actual crime — more officers in an area generate more reports.",
   },
   2: {
     label: "Lens 2 — Officer Enforcement",
     description:
-      "How much officer-initiated activity relative to victim-reported crime? Compares proactive incidents (drug stops, warrants, loitering) to serious victim-reported crimes (burglary, robbery, assault, motor vehicle theft).",
+      "How much officer-initiated activity relative to victim-reported crime? Compares proactive incidents (drug stops, warrants) to serious victim-reported crimes (burglary, robbery, assault, vehicle theft).",
   },
   3: {
     label: "Lens 3 — Resolution Gap",
     description:
-      "Do crimes here get resolved at the same rate as the same crime citywide? A negative gap means cases here close at a lower rate than comparable areas.",
+      "Do crimes here get resolved at the same rate as elsewhere? A negative gap means cases close at a lower rate than comparable areas citywide.",
   },
 };
+
+const FLAG_INFO: Record<string, { what: string; why: string }> = {
+  low_confidence: {
+    what: "High geocoding failure rate",
+    why: "Many incidents here couldn't be placed on the map, so counts likely understate actual activity. The failure rate isn't random — it correlates with data-quality disparities across neighborhoods.",
+  },
+  per_capita_na: {
+    what: "No resident population",
+    why: "This area (e.g. a park, industrial zone, or the Farallones) has no residents to divide by. Per-capita figures are suppressed to avoid meaningless numbers.",
+  },
+  provisional: {
+    what: "Recent data — may be incomplete",
+    why: "The date range ends within the last 90 days. Reports for recent months are still being filed and updated, so counts are likely lower than their final values.",
+  },
+};
+
+function fmtMonth(iso: string) {
+  const [y, m] = iso.split("-");
+  return new Date(Number(y), Number(m) - 1).toLocaleString("default", {
+    month: "short",
+    year: "numeric",
+  });
+}
 
 function Info({ tip }: { tip: string }) {
   return (
@@ -43,12 +67,12 @@ function Info({ tip }: { tip: string }) {
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        width: 15,
-        height: 15,
+        width: 14,
+        height: 14,
         borderRadius: "50%",
         border: "1px solid #94a3b8",
         color: "#94a3b8",
-        fontSize: 9,
+        fontSize: 8,
         fontWeight: 700,
         cursor: "help",
         marginLeft: 5,
@@ -85,11 +109,11 @@ function Metric({
     >
       <div
         style={{
-          fontSize: 12,
+          fontSize: 11,
           color: "#64748b",
           textTransform: "uppercase",
           letterSpacing: ".08em",
-          marginBottom: 8,
+          marginBottom: 6,
           fontWeight: 700,
           display: "flex",
           alignItems: "center",
@@ -98,47 +122,51 @@ function Metric({
         {label}
         <Info tip={tip} />
       </div>
-
-      <div
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: "#111827",
-        }}
-      >
+      <div style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}>
         {value}
       </div>
     </div>
   );
 }
 
-function Badge({
-  label,
+function Flag({
+  flagKey,
   active,
-  tip,
 }: {
-  label: string;
+  flagKey: keyof typeof FLAG_INFO;
   active: boolean;
-  tip: string;
 }) {
+  const info = FLAG_INFO[flagKey];
   return (
     <div
-      title={tip}
       style={{
-        padding: "8px 12px",
-        borderRadius: 999,
-        background: active ? "rgba(251,191,36,.18)" : "rgba(148,163,184,.14)",
-        border: active ? "1px solid rgba(251,191,36,.35)" : "1px solid rgba(148,163,184,.18)",
-        color: active ? "#92400e" : "#475569",
-        fontSize: 13,
-        fontWeight: 600,
-        cursor: "help",
-        display: "flex",
-        alignItems: "center",
-        gap: 5,
+        borderRadius: 12,
+        padding: "10px 12px",
+        background: active ? "rgba(251,191,36,.12)" : "rgba(148,163,184,.08)",
+        border: active
+          ? "1px solid rgba(251,191,36,.30)"
+          : "1px solid rgba(148,163,184,.15)",
       }}
     >
-      {active ? "⚠" : "•"} {label}
+      <div
+        style={{
+          fontSize: 12,
+          fontWeight: 700,
+          color: active ? "#92400e" : "#94a3b8",
+          marginBottom: active ? 4 : 0,
+          display: "flex",
+          alignItems: "center",
+          gap: 5,
+        }}
+      >
+        <span>{active ? "⚠" : "✓"}</span>
+        <span>{info.what}</span>
+      </div>
+      {active && (
+        <div style={{ fontSize: 11, color: "#78350f", lineHeight: 1.45 }}>
+          {info.why}
+        </div>
+      )}
     </div>
   );
 }
@@ -146,6 +174,7 @@ function Badge({
 export default function NeighborhoodPanel({
   neighborhood,
   activeLens,
+  dateRange,
 }: NeighborhoodPanelProps) {
   const meta = LENS_META[activeLens];
 
@@ -163,46 +192,41 @@ export default function NeighborhoodPanel({
     );
   }
 
+  const periodLabel = `${fmtMonth(dateRange.start)} – ${fmtMonth(dateRange.end)}`;
+
   return (
     <div style={GLASS}>
       {/* Header */}
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 14 }}>
         <div
           style={{
-            fontSize: 11,
+            fontSize: 10,
             color: "#64748b",
             textTransform: "uppercase",
             letterSpacing: ".08em",
-            marginBottom: 4,
+            marginBottom: 3,
           }}
         >
-          {meta.label}
+          {meta.label} · {periodLabel}
         </div>
 
-        <h2 style={{ margin: 0, marginBottom: 8, color: "#111827" }}>
+        <h2 style={{ margin: 0, marginBottom: 6, color: "#111827", fontSize: 18 }}>
           {neighborhood.neighborhood_name}
         </h2>
 
-        <p
-          style={{
-            margin: 0,
-            fontSize: 12,
-            color: "#64748b",
-            lineHeight: 1.5,
-          }}
-        >
+        <p style={{ margin: 0, fontSize: 12, color: "#64748b", lineHeight: 1.45 }}>
           {meta.description}
         </p>
       </div>
 
       {/* Lens-specific metrics */}
-      <div style={{ display: "grid", gap: 10, marginBottom: 20 }}>
+      <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
         {activeLens === 1 && (
           <>
             <Metric
               label="Total Incidents"
               value={neighborhood.raw_count ?? "—"}
-              tip="All reported incidents in the selected date range. Includes every category. This number is contaminated by patrol intensity — more officers in an area generate more reports."
+              tip="All reported incidents in the selected date range, all categories combined. Contaminated by patrol intensity — more officers in an area generate more reports."
             />
             <Metric
               label="Per 1,000 Residents"
@@ -211,12 +235,12 @@ export default function NeighborhoodPanel({
                   ? neighborhood.per_capita
                   : "Not applicable"
               }
-              tip="Incidents per 1,000 residents. Strips out the trivial fact that bigger neighborhoods have more of everything. Not shown for non-residential areas like parks or the Farallones."
+              tip="Incidents per 1,000 residents. Adjusts for neighborhood size. Suppressed for non-residential areas (parks, Farallones)."
             />
-            <div style={{ fontSize: 13, color: "#475569" }}>
-              <span style={{ fontWeight: 600 }}>City median:</span>{" "}
+            <div style={{ fontSize: 12, color: "#475569" }}>
+              <span style={{ fontWeight: 600 }}>City median this period:</span>{" "}
               {neighborhood.reference_raw ?? "—"} incidents
-              <Info tip="The citywide median raw count across all 41 neighborhoods for this date range. The median (not mean) is used to avoid outlier neighborhoods skewing the reference." />
+              <Info tip="Median raw count across all 41 SF neighborhoods for this date range. Neighborhoods above this line are above average; below it, below average. Median (not mean) avoids outlier distortion." />
             </div>
           </>
         )}
@@ -230,12 +254,12 @@ export default function NeighborhoodPanel({
                   ? `${neighborhood.value} per 100`
                   : "Not applicable"
               }
-              tip="Officer-initiated incidents per 100 victim-reported serious crimes (burglary, robbery, assault, motor vehicle theft). A ratio of 84 means 84 drug stops / warrants / loitering arrests for every 100 burglary or assault reports. High values may signal patrol-driven enforcement rather than response to victim need."
+              tip="Officer-initiated incidents (drug stops, warrants, loitering arrests) per 100 victim-reported serious crimes (burglary, robbery, assault, vehicle theft). A ratio of 84 means 84 proactive stops for every 100 victim reports. High values may reflect patrol presence more than actual crime."
             />
-            <div style={{ fontSize: 13, color: "#475569" }}>
+            <div style={{ fontSize: 12, color: "#475569" }}>
               <span style={{ fontWeight: 600 }}>City median:</span>{" "}
               {neighborhood.reference_value ?? "—"} per 100
-              <Info tip="The citywide median enforcement ratio. Neighborhoods significantly above this value are flagged as potential enforcement proxies — places where officer activity is high relative to victim-reported crime." />
+              <Info tip="Median enforcement ratio across all applicable neighborhoods. Neighborhoods well above this are potential 'enforcement proxies' — places where officer-initiated activity outpaces victim-reported need." />
             </div>
           </>
         )}
@@ -247,14 +271,14 @@ export default function NeighborhoodPanel({
         )}
       </div>
 
-      {/* Flags */}
+      {/* Data flags — always show all three; expand description when active */}
       <div>
         <div
           style={{
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 700,
             color: "#475569",
-            marginBottom: 10,
+            marginBottom: 8,
             textTransform: "uppercase",
             letterSpacing: ".08em",
           }}
@@ -262,24 +286,10 @@ export default function NeighborhoodPanel({
           Data flags
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          <Badge
-            label="Low confidence"
-            active={neighborhood.low_confidence}
-            tip="A high proportion of incidents in this neighborhood could not be geocoded or matched to a neighborhood boundary. Statistics here may undercount actual activity. The gap itself may not be random — geocoding failure rates vary by neighborhood and correlate with data-quality disparities."
-          />
-
-          <Badge
-            label="Per capita N/A"
-            active={!neighborhood.per_capita_applicable}
-            tip="This area has no resident population (e.g., a park, industrial zone, or the Farallones). Dividing incident counts by population is not meaningful here — per-capita figures are suppressed."
-          />
-
-          <Badge
-            label="Provisional"
-            active={neighborhood.provisional ?? false}
-            tip="The selected date range ends within the last 90 days. Incident reports for recent months are still being filed and updated, so counts are likely lower than their final values. Before-after comparisons that cross into this window are especially unreliable."
-          />
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <Flag flagKey="low_confidence" active={neighborhood.low_confidence} />
+          <Flag flagKey="per_capita_na" active={!neighborhood.per_capita_applicable} />
+          <Flag flagKey="provisional" active={neighborhood.provisional ?? false} />
         </div>
       </div>
     </div>
