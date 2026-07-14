@@ -3,8 +3,11 @@
 .env.*
 
 # Public datasets
-data/sf/*.csv
-data/chicago/*.csv
+data/sf/
+data/chicago/
+
+# DB dumps (before DB is wired up in sprint 4)
+*.sql
 
 # Project docs (local only)
 CLAUDE.md
