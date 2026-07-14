@@ -15,15 +15,14 @@ function isoDate(d: Date) {
 }
 
 const today = new Date();
-const thirtyDaysAgo = new Date(today);
-thirtyDaysAgo.setDate(today.getDate() - 30);
 
 export default function Home() {
-  const [start, setStart] = useState(isoDate(thirtyDaysAgo));
+  const [start, setStart] = useState("2018-01-01");
   const [end, setEnd] = useState(isoDate(today));
   const [category, setCategory] = useState("");
 
   const [activeLens, setActiveLens] = useState<1 | 2 | 3>(1);
+  const [lens1Mode, setLens1Mode] = useState<"raw" | "per_capita">("per_capita");
 
   // Store only the ID so the selection survives lens switches.
   // The displayed data is derived from lensData after each fetch.
@@ -161,6 +160,7 @@ export default function Home() {
 
         <Map
           activeLens={activeLens}
+          lens1Mode={lens1Mode}
           lensData={lensData}
           fetchId={fetchId}
           onSelectNeighborhood={(lens) => setSelectedId(lens?.neighborhood_id ?? null)}
@@ -188,6 +188,8 @@ export default function Home() {
           <LensPanel
             activeLens={activeLens}
             onLensChange={setActiveLens}
+            lens1Mode={lens1Mode}
+            onLens1ModeChange={setLens1Mode}
           />
         </div>
 

@@ -11,7 +11,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.api.incidents import get_categories, get_incidents
-from app.api.lens import get_lens1, get_lens2, get_lens3
+from app.api.lens import get_lens1, get_lens2, get_lens3, _lens2_ratio
 from app.api.neighborhoods import get_neighborhoods
 
 
@@ -133,6 +133,29 @@ def test_lens2_value_null_for_parks():
     for row in result:
         if not row["per_capita_applicable"]:
             assert row["value"] is None
+
+
+# ── _lens2_ratio (pure unit tests, no DB) ────────────────────────────────────
+
+def test_lens2_ratio_zero_victim_returns_none():
+    assert _lens2_ratio(officer_count=50, victim_count=0, per_capita_applicable=True) is None
+
+
+def test_lens2_ratio_not_applicable_returns_none():
+    assert _lens2_ratio(officer_count=50, victim_count=100, per_capita_applicable=False) is None
+
+
+def test_lens2_ratio_calculation():
+    assert _lens2_ratio(officer_count=50, victim_count=100, per_capita_applicable=True) == 50.0
+
+
+def test_lens2_ratio_above_100():
+    # Tenderloin-style over-enforcement: more proactive stops than victim crimes
+    assert _lens2_ratio(officer_count=155, victim_count=100, per_capita_applicable=True) == 155.0
+
+
+def test_lens2_ratio_rounds_to_one_decimal():
+    assert _lens2_ratio(officer_count=1, victim_count=3, per_capita_applicable=True) == 33.3
 
 
 # ── /lens/3 ───────────────────────────────────────────────────────────────────

@@ -84,10 +84,12 @@ function Metric({
   label,
   value,
   tip,
+  comparison,
 }: {
   label: string;
   value: string | number;
   tip: string;
+  comparison?: string;
 }) {
   return (
     <div
@@ -119,6 +121,11 @@ function Metric({
       <div style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}>
         {value}
       </div>
+      {comparison && (
+        <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 5 }}>
+          {comparison}
+        </div>
+      )}
     </div>
   );
 }
@@ -164,7 +171,7 @@ function Flag({
     >
       <div
         style={{
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: 700,
           color: active ? "#92400e" : "#94a3b8",
           marginBottom: active ? 4 : 0,
@@ -240,7 +247,7 @@ export default function NeighborhoodPanel({
       <div style={{ marginBottom: 14 }}>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 11,
             color: "#64748b",
             textTransform: "uppercase",
             letterSpacing: ".08em",
@@ -254,7 +261,7 @@ export default function NeighborhoodPanel({
           {neighborhood.neighborhood_name}
         </h2>
 
-        <p style={{ margin: 0, fontSize: 12, color: "#64748b", lineHeight: 1.45 }}>
+        <p style={{ margin: 0, fontSize: 13, color: "#64748b", lineHeight: 1.45 }}>
           {meta.description}
         </p>
       </div>
@@ -265,8 +272,13 @@ export default function NeighborhoodPanel({
           <>
             <Metric
               label="Total Incidents"
-              value={neighborhood.raw_count ?? "—"}
+              value={neighborhood.raw_count?.toLocaleString() ?? "—"}
               tip="All reported incidents in the selected date range, all categories combined. Contaminated by patrol intensity — more officers in an area generate more reports."
+              comparison={
+                neighborhood.reference_raw != null
+                  ? `city median  ${Math.round(neighborhood.reference_raw).toLocaleString()}`
+                  : undefined
+              }
             />
             <Metric
               label="Per 1,000 Residents"
@@ -276,32 +288,30 @@ export default function NeighborhoodPanel({
                   : "Not applicable"
               }
               tip="Incidents per 1,000 residents. Adjusts for neighborhood size. Suppressed for non-residential areas (parks, Farallones)."
+              comparison={
+                neighborhood.per_capita != null && neighborhood.reference_per_capita != null
+                  ? `city median  ${neighborhood.reference_per_capita}`
+                  : undefined
+              }
             />
-            <div style={{ fontSize: 12, color: "#475569" }}>
-              <span style={{ fontWeight: 600 }}>City median this period:</span>{" "}
-              {neighborhood.reference_raw ?? "—"} incidents
-              <Info tip="Median raw count across all 41 SF neighborhoods for this date range. Neighborhoods above this line are above average; below it, below average. Median (not mean) avoids outlier distortion." />
-            </div>
           </>
         )}
 
         {activeLens === 2 && (
-          <>
-            <Metric
-              label="Enforcement Ratio"
-              value={
-                neighborhood.value != null
-                  ? `${neighborhood.value} per 100`
-                  : "Not applicable"
-              }
-              tip="Officer-initiated incidents (drug stops, warrants, loitering arrests) per 100 victim-reported serious crimes (burglary, robbery, assault, vehicle theft). High values may reflect patrol presence more than actual crime."
-            />
-            <div style={{ fontSize: 12, color: "#475569" }}>
-              <span style={{ fontWeight: 600 }}>City median:</span>{" "}
-              {neighborhood.reference_value ?? "—"} per 100
-              <Info tip="Median enforcement ratio across all applicable neighborhoods. Neighborhoods well above this are potential 'enforcement proxies' — places where officer-initiated activity outpaces victim-reported need." />
-            </div>
-          </>
+          <Metric
+            label="Enforcement Ratio"
+            value={
+              neighborhood.value != null
+                ? `${neighborhood.value} per 100`
+                : "Not applicable"
+            }
+            tip="Officer-initiated incidents (drug stops, warrants, loitering arrests) per 100 victim-reported serious crimes (burglary, robbery, assault, vehicle theft). High values may reflect patrol presence more than actual crime."
+            comparison={
+              neighborhood.value != null && neighborhood.reference_value != null
+                ? `city median  ${neighborhood.reference_value} per 100`
+                : undefined
+            }
+          />
         )}
 
         {activeLens === 3 && (

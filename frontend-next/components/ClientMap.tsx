@@ -10,12 +10,13 @@ const SF_CENTER: [number, number] = [37.7749, -122.4194];
 
 // Colors are ratio-based (value / citywide median) so the scale is always
 // relative, never an absolute verdict about a neighborhood.
-function getColor(lens: LensData | undefined, activeLens: 1 | 2 | 3): string {
+function getColor(lens: LensData | undefined, activeLens: 1 | 2 | 3, lens1Mode: "raw" | "per_capita"): string {
   if (!lens) return "#9ca3af";
 
   if (activeLens === 1) {
-    const v = lens.raw_count;
-    const ref = lens.reference_raw;
+    const usePerCapita = lens1Mode === "per_capita" && lens.per_capita != null;
+    const v   = usePerCapita ? lens.per_capita   : lens.raw_count;
+    const ref = usePerCapita ? lens.reference_per_capita : lens.reference_raw;
     if (v == null || !ref) return "#9ca3af";
     const r = v / ref;
     if (r >= 3)   return "#800026";
@@ -45,6 +46,7 @@ function getColor(lens: LensData | undefined, activeLens: 1 | 2 | 3): string {
 
 interface ClientMapProps {
   activeLens: 1 | 2 | 3;
+  lens1Mode: "raw" | "per_capita";
   lensData: LensData[];
   fetchId: number;
   onSelectNeighborhood: (lens: LensData | null) => void;
@@ -52,6 +54,7 @@ interface ClientMapProps {
 
 export default function ClientMap({
   activeLens,
+  lens1Mode,
   lensData,
   fetchId,
   onSelectNeighborhood,
@@ -78,6 +81,9 @@ export default function ClientMap({
       center={SF_CENTER}
       zoom={12}
       zoomControl={false}
+      wheelPxPerZoomLevel={120}
+      zoomSnap={0.25}
+      zoomDelta={0.5}
       style={{ height: "100%", width: "100%" }}
     >
       <TileLayer
@@ -98,7 +104,7 @@ export default function ClientMap({
             return {
               color: "#444",
               weight: 1,
-              fillColor: getColor(lens, activeLens),
+              fillColor: getColor(lens, activeLens, lens1Mode),
               fillOpacity: 0.85,
             };
           }}
