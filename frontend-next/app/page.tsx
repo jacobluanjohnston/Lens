@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Incident } from "@/types/incident";
 import type { LensData } from "@/types/lens";
 
@@ -28,25 +28,54 @@ export default function Home() {
   const [selectedNeighborhood, setSelectedNeighborhood] =
     useState<LensData | null>(null);
 
+  const [lensData, setLensData] = useState<LensData[]>([]);
+
   const [categories, setCategories] = useState<string[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // We'll reconnect these once the backend/database is ready.
-  // useEffect(() => {
-  //   fetch("/categories")
-  //     .then((r) => r.json())
-  //     .then(setCategories)
-  //     .catch(() => {});
-  //
-  //   fetchIncidents(start, end, category)
-  //     .then(setIncidents)
-  //     .catch((err) =>
-  //       setError(err instanceof Error ? err.message : "Failed to load")
-  //     );
-  // }, []);
+  async function fetchLensData() {
+    setLoading(true);
+    setError(null);
+
+    try {
+      let url = `/lens/${activeLens}?start=${start}&end=${end}`;
+      // Lens 1 supports category filtering
+      if (activeLens === 1 && category) {
+        url += `&category=${encodeURIComponent(category)}`;
+      }
+
+      const response = await fetch(url);
+
+      console.log("fetch url:", url);
+      console.log("status:", response.status);
+
+      const text = await response.text();
+      console.log("response:", text);
+
+      const data = JSON.parse(text);
+
+      console.log("parsed:", data);
+
+      setLensData(data);
+
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err instanceof Error ? err.message : "Failed to load lens data"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchLensData();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLens]);
 
   return (
     <main
@@ -74,13 +103,12 @@ export default function Home() {
           onStartChange={setStart}
           onEndChange={setEnd}
           onCategoryChange={setCategory}
-          onShow={() => {
-            // Reconnect fetchIncidents() here once backend is ready.
-          }}
+          onShow={fetchLensData}
         />
 
         <Map
           activeLens={activeLens}
+          lensData={lensData}
           onSelectNeighborhood={setSelectedNeighborhood}
         />
       </div>
@@ -92,18 +120,13 @@ export default function Home() {
           top: 20,
           right: 20,
           width: 360,
-
           maxHeight: "calc(100vh - 40px)",
-
           display: "flex",
           flexDirection: "column",
           gap: 16,
-
           overflowY: "auto",
-
           zIndex: 1000,
           pointerEvents: "none",
-
           paddingRight: 4,
         }}
       >

@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
-const apiTarget = process.env.NEXT_PUBLIC_API_TARGET ?? "http://localhost:8000";
+const apiTarget =
+  process.env.NEXT_PUBLIC_API_TARGET ??
+  "http://localhost:8000";
 
 const nextConfig: NextConfig = {
   async rewrites() {
@@ -16,6 +18,16 @@ const nextConfig: NextConfig = {
       {
         source: "/health",
         destination: `${apiTarget}/health`,
+      },
+
+      // NEW
+      {
+        source: "/neighborhoods",
+        destination: `${apiTarget}/neighborhoods`,
+      },
+      {
+        source: "/lens/:path*",
+        destination: `${apiTarget}/lens/:path*`,
       },
     ];
   },

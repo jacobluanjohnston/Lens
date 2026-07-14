@@ -3,22 +3,10 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { mockLensData } from "@/lib/mockApi";
 import type { LensData } from "@/types/lens";
 import GlassZoom from "./GlassZoom";
 
 const SF_CENTER: [number, number] = [37.7749, -122.4194];
-
-function getNeighborhoodId(feature: any): string {
-  return (
-    feature.properties.neighborhood_id ??
-    feature.properties.name
-      .toLowerCase()
-      .replace(/[.'"]/g, "")
-      .replace(/\//g, "-")
-      .replace(/\s+/g, "-")
-  );
-}
 
 function getColor(value: number | null): string {
   if (value === null) return "#9ca3af";
@@ -32,7 +20,7 @@ function getColor(value: number | null): string {
 
 interface ClientMapProps {
   activeLens: 1 | 2 | 3;
-  // selectedNeighborhood: LensData | null;
+  lensData: LensData[];
   onSelectNeighborhood: (lens: LensData | null) => void;
 }
 
@@ -59,20 +47,23 @@ function getDisplayValue(
 
 export default function ClientMap({
   activeLens,
-  // selectedNeighborhood,
+  lensData,
   onSelectNeighborhood,
 }: ClientMapProps) {
   const [neighborhoods, setNeighborhoods] = useState<any>(null);
-
-  const lensData = mockLensData;
 
   const lensLookup = new Map(
     lensData.map((item) => [item.neighborhood_id, item])
   );
 
   useEffect(() => {
-    fetch("/data/sf-neighborhoods.geojson")
-      .then((res) => res.json())
+    fetch("/neighborhoods")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to load neighborhoods");
+        }
+        return res.json();
+      })
       .then(setNeighborhoods)
       .catch(console.error);
   }, []);
@@ -91,13 +82,16 @@ export default function ClientMap({
         attribution="&copy; OpenStreetMap contributors"
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+
       <GlassZoom />
+
       {neighborhoods && (
         <GeoJSON
           data={neighborhoods}
           style={(feature) => {
-            const neighborhoodId = getNeighborhoodId(feature!);
+            const neighborhoodId = feature!.properties.neighborhood_id;
             const lens = lensLookup.get(neighborhoodId);
+
             const displayValue = getDisplayValue(lens, activeLens);
 
             return {
@@ -110,12 +104,10 @@ export default function ClientMap({
           onEachFeature={(feature, layer) => {
             layer.on({
               click: () => {
-                const neighborhoodId = getNeighborhoodId(feature);
+                const neighborhoodId = feature.properties.neighborhood_id;
                 const lens = lensLookup.get(neighborhoodId);
 
-                if (lens) {
-                  onSelectNeighborhood(lens);
-                }
+                onSelectNeighborhood(lens ?? null);
               },
             });
           }}
