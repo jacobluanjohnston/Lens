@@ -8,18 +8,6 @@ A retrospective analysis tool for auditing police enforcement patterns using ope
 
 ---
 
-## What's been built
-
-Three analytical lenses over real SF incident data (2018–present, ~746k incidents):
-
-- **Lens 1 — Incidence:** choropleth colored by per-capita incident rate vs. city median. Click any neighborhood to see total incidents, per-capita rate, and data quality flags.
-- **Lens 2 — Officer Enforcement:** officer-initiated incidents (drug stops, warrants, prostitution) per 100 victim-reported serious crimes (burglary, robbery, assault, vehicle theft) per neighborhood. Surfaces where proactive enforcement concentrates relative to reported need.
-- **Lens 3 — Resolution Gap:** coming in a future sprint (blocked on assault category surgery).
-
-Category filtering, a full 2018–present date range with a custom month picker, provisional data warnings with one-click fix, and geocoding confidence flags are all live.
-
----
-
 ## Stack
 
 | Layer | Technology |
