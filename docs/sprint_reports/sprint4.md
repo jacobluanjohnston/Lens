@@ -45,3 +45,4 @@ Wire the full analysis pipeline end-to-end: real flags surfaced in the UI, neigh
 - Resolution trend banner (crosses Aug 2024 marker)
 - Incident point cap extension — pagination or server-side dot-density aggregation for multi-year queries
 - Neighborhood panel: only render data flags that are active — suppress grayed-out inactive flags entirely so the panel surface only flags that require analyst attention
+- Multi-lens neighborhood panel — fetch Lens 1 and Lens 2 in parallel on load; show both sets of metrics when a neighborhood is clicked so the analyst can see the "same data, three stories" comparison without toggling. Map toggle still controls which lens is visualized spatially.
