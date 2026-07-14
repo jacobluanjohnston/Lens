@@ -5,37 +5,34 @@ interface LensPanelProps {
   onLensChange: (lens: 1 | 2 | 3) => void;
 }
 
-export default function LensPanel({
-  activeLens,
-  onLensChange,
-}: LensPanelProps) {
-  const lenses = [
-    {
-      id: 1 as const,
-      color: "#22c55e",
-      title: "Incidence",
-      description:
-        "View reported incidents by neighborhood, category, and date.",
-      status: "Available",
-    },
-    {
-      id: 2 as const,
-      color: "#f59e0b",
-      title: "Officer Enforcement",
-      description:
-        "Compare officer-initiated activity against reported serious crime.",
-      status: "Sprint 2",
-    },
-    {
-      id: 3 as const,
-      color: "#3b82f6",
-      title: "Resolution",
-      description:
-        "Compare neighborhood resolution performance across the city.",
-      status: "Sprint 2",
-    },
-  ];
+const LENSES = [
+  {
+    id: 1 as const,
+    color: "#f59e0b",
+    icon: "◉",
+    title: "Incidence",
+    sub: "Reported incidents by neighborhood and category",
+    disabled: false,
+  },
+  {
+    id: 2 as const,
+    color: "#6366f1",
+    icon: "◉",
+    title: "Officer Enforcement",
+    sub: "Proactive stops per 100 victim-reported crimes",
+    disabled: false,
+  },
+  {
+    id: 3 as const,
+    color: "#94a3b8",
+    icon: "◎",
+    title: "Resolution Gap",
+    sub: "Clearance rate vs. citywide median — coming soon",
+    disabled: true,
+  },
+] as const;
 
+export default function LensPanel({ activeLens, onLensChange }: LensPanelProps) {
   return (
     <div
       style={{
@@ -43,164 +40,95 @@ export default function LensPanel({
         backdropFilter: "blur(28px)",
         WebkitBackdropFilter: "blur(28px)",
         border: "1px solid rgba(255,255,255,.22)",
-        borderRadius: 20,
-        padding: 20,
-        color: "#111827",
+        borderRadius: 16,
+        padding: "10px 8px",
         boxShadow:
           "0 12px 40px rgba(15,23,42,.20), inset 0 1px 1px rgba(255,255,255,.25)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
       }}
     >
-      <h2
-        style={{
-          margin: 0,
-          fontSize: 22,
-          fontWeight: 700,
-          letterSpacing: "-0.03em",
-        }}
-      >
-        Lenses
-      </h2>
-
-      <p
-        style={{
-          marginTop: 6,
-          marginBottom: 18,
-          color: "#4b5563",
-          lineHeight: 1.5,
-          fontSize: 14,
-        }}
-      >
-        Choose an analytical perspective to explore police activity throughout
-        San Francisco.
-      </p>
-
-      {lenses.map((lens) => {
+      {LENSES.map((lens) => {
         const active = activeLens === lens.id;
 
         return (
           <button
             key={lens.id}
-            onClick={() => onLensChange(lens.id)}
+            onClick={() => !lens.disabled && onLensChange(lens.id)}
+            disabled={lens.disabled}
             style={{
-              width: "100%",
               display: "flex",
-              alignItems: "stretch",
-              gap: 12,
-
-              textAlign: "left",
-              cursor: "pointer",
-
-              padding: "14px 16px",
-              marginBottom: 10,
-
-              borderRadius: 14,
-
-              background: active
-                ? "rgba(255,255,255,.28)"
-                : "rgba(255,255,255,.08)",
-
-              backdropFilter: "blur(18px)",
-              WebkitBackdropFilter: "blur(18px)",
-
+              alignItems: "flex-start",
+              gap: 10,
+              padding: "9px 12px",
+              borderRadius: 10,
               border: active
-                ? "1px solid rgba(59,130,246,.45)"
-                : "1px solid rgba(255,255,255,.16)",
-
-              boxShadow: active
-                ? "0 8px 22px rgba(37,99,235,.15)"
-                : "0 4px 12px rgba(0,0,0,.05)",
-
-              transform: active ? "translateY(-2px)" : "translateY(0)",
-
-              transition:
-                "all .25s cubic-bezier(.22,.61,.36,1)",
-
-              overflow: "hidden",
+                ? "1px solid rgba(255,255,255,.30)"
+                : "1px solid transparent",
+              background: active
+                ? "rgba(255,255,255,.22)"
+                : "transparent",
+              cursor: lens.disabled ? "default" : "pointer",
+              textAlign: "left",
+              opacity: lens.disabled ? 0.45 : 1,
+              transition: "background .18s, border .18s",
+              width: "100%",
             }}
           >
-            {/* Accent Bar */}
-            <div
+            {/* Colored icon */}
+            <span
               style={{
-                width: 4,
-                borderRadius: 999,
-                background: lens.color,
-                opacity: active ? 1 : 0.8,
+                fontSize: 18,
+                lineHeight: 1,
+                color: lens.color,
+                marginTop: 1,
+                flexShrink: 0,
+                filter: active
+                  ? "drop-shadow(0 0 4px " + lens.color + "88)"
+                  : "none",
+                transition: "filter .18s",
               }}
-            />
+            >
+              {lens.icon}
+            </span>
 
-            <div style={{ flex: 1 }}>
+            {/* Text */}
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 6,
+                  fontSize: 13,
+                  fontWeight: active ? 700 : 600,
+                  color: active ? "#111827" : "#374151",
+                  lineHeight: 1.2,
+                  marginBottom: 2,
                 }}
               >
-                <span
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 16,
-                    color: "#111827",
-                  }}
-                >
-                  {lens.title}
-                </span>
-
+                {lens.title}
                 {active && (
                   <span
                     style={{
-                      padding: "3px 8px",
-                      borderRadius: 999,
-
-                      background: "rgba(37,99,235,.14)",
-
-                      border:
-                        "1px solid rgba(37,99,235,.25)",
-
-                      color: "#1d4ed8",
-
-                      fontSize: 11,
+                      marginLeft: 7,
+                      fontSize: 9,
                       fontWeight: 700,
+                      letterSpacing: ".06em",
+                      textTransform: "uppercase",
+                      color: "#6366f1",
+                      verticalAlign: "middle",
                     }}
                   >
-                    Active
+                    active
                   </span>
                 )}
               </div>
-
               <div
                 style={{
-                  color: "#4b5563",
-                  fontSize: 13,
-                  lineHeight: 1.4,
-                  marginBottom: 8,
-                }}
-              >
-                {lens.description}
-              </div>
-
-              <div
-                style={{
-                  display: "inline-block",
-                  padding: "4px 9px",
-                  borderRadius: 999,
-
                   fontSize: 11,
-                  fontWeight: 600,
-
-                  background:
-                    lens.status === "Available"
-                      ? "rgba(34,197,94,.14)"
-                      : "rgba(148,163,184,.16)",
-
-                  color:
-                    lens.status === "Available"
-                      ? "#15803d"
-                      : "#475569",
+                  color: "#6b7280",
+                  lineHeight: 1.3,
                 }}
               >
-                {lens.status}
+                {lens.sub}
               </div>
             </div>
           </button>
