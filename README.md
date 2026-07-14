@@ -4,15 +4,19 @@ A retrospective analysis tool for auditing police enforcement patterns using ope
 
 **The thesis:** at first glance, police incident records appear to capture crime. They capture police contact. Lens makes that visible by cross-referencing enforcement data with auxiliary sources (311 service requests, business density, building violations, census population, and public health indicators) to separate genuine need from patrol intensity. The same incident data, normalized three different ways and set against that broader context, tells three different stories; Lens shows all of them, and surfaces bias and data-quality issues explicitly rather than hiding them.
 
-**Who cares?** An analyst walks away with a specific, citable finding like: "District X has 2.1x the citywide discretionary enforcement rate* but 0.7x the victim-reported serious crime rate*, and burglaries there end in a recorded arrest within 12 months* about half as often as the citywide rate for the same period."
+**Who cares?** An analyst walks away with a specific, citable finding like: "District X has 2.1x the citywide discretionary enforcement rate but 0.7x the victim-reported serious crime rate, and burglaries there end in a recorded arrest within 12 months about half as often as the citywide rate for the same period."
 
 ---
 
-## What's been built (Sprint 1)
+## What's been built
 
-An interactive map of SF police incidents. Open the app, pick a date range, and see where incidents occurred. Filter by crime type to narrow the view.
+Three analytical lenses over real SF incident data (2018–present, ~746k incidents):
 
-![demo_sprint_1.png](demo/demo_sprint_1.png)
+- **Lens 1 — Incidence:** choropleth colored by per-capita incident rate vs. city median. Click any neighborhood to see total incidents, per-capita rate, and data quality flags.
+- **Lens 2 — Officer Enforcement:** officer-initiated incidents (drug stops, warrants, prostitution) per 100 victim-reported serious crimes (burglary, robbery, assault, vehicle theft) per neighborhood. Surfaces where proactive enforcement concentrates relative to reported need.
+- **Lens 3 — Resolution Gap:** coming in a future sprint (blocked on assault category surgery).
+
+Category filtering, a full 2018–present date range with a custom month picker, provisional data warnings with one-click fix, and geocoding confidence flags are all live.
 
 ---
 
@@ -23,7 +27,7 @@ An interactive map of SF police incidents. Open the app, pick a date range, and 
 | Backend | Python / FastAPI |
 | Database | PostgreSQL + PostGIS |
 | Migrations | Alembic |
-| Frontend | React + Vite + TypeScript |
+| Frontend | Next.js + TypeScript |
 | Map | Leaflet / react-leaflet |
 | Charts | Recharts |
 | Data pipeline | Python / Pandas / GeoPandas |
@@ -35,50 +39,65 @@ An interactive map of SF police incidents. Open the app, pick a date range, and 
 
 **Prerequisites:** Docker and Docker Compose.
 
-```bash
-docker compose up
-```
-
-Optionally, if instead you want to run Python scripts locally outside of Docker, set up a virtual environment first:
+### Database + API only
 
 ```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r backend/requirements.txt
+docker compose up db backend
 ```
 
-Either way, this starts the database (PostgreSQL + PostGIS) and the backend API. The backend will be available at `http://localhost:8000`. Auto-reloads on code changes.
+The backend API will be available at `http://localhost:8000`. Auto-reloads on code changes.
 
-To include the frontend:
+### Full stack (DB + API + frontend)
 
 ```bash
 docker compose --profile frontend up
 ```
 
-The frontend will be available at `http://localhost:5173`. Auto-reloads on code changes.
+The frontend will be available at `http://localhost:3000`.
 
-**Verify everything is working:**
+### Run migrations
+
+Migrations must be run once after the database starts (or after any schema change):
 
 ```bash
-# PostGIS
-docker compose exec db psql -U lens -d lens -c "SELECT PostGIS_Version();"
-
-# FastAPI
-curl http://localhost:8000/health
-
-# Alembic
 docker compose exec backend alembic upgrade head
 ```
 
-- **Leaflet** — open `http://localhost:5173`, you should see a map of SF
-
-Optionally, to run the frontend locally without Docker:
+### Verify everything is working
 
 ```bash
-cd frontend
+# PostGIS extension
+docker compose exec db psql -U lens -d lens -c "SELECT PostGIS_Version();"
+
+# API health
+curl http://localhost:8000/health
+
+# Lens 1 data (should return 41 neighborhoods)
+curl "http://localhost:8000/lens/1?start=2024-01-01&end=2025-01-01"
+```
+
+### Run locally without Docker
+
+```bash
+# Backend
+pip install -r backend/requirements.txt
+DATABASE_URL=postgresql://lens:lens@localhost:5432/lens uvicorn app.main:app --reload
+
+# Frontend
+cd frontend-next
 npm install
 npm run dev
 ```
+
+---
+
+## Running tests
+
+```bash
+pytest
+```
+
+Tests cover API endpoint behavior, lens calculation logic (including the Lens 2 enforcement ratio), and pipeline transform correctness. No database required for the pure unit tests.
 
 ---
 
@@ -88,11 +107,11 @@ npm run dev
 lens/
 ├── backend/
 │   ├── app/
-│   │   ├── api/              # route handlers (incidents, categories)
+│   │   ├── api/              # route handlers: incidents, lens, neighborhoods
 │   │   └── main.py           # FastAPI app entry point
 │   ├── alembic/              # migrations — never hand-edit schema
 │   │   └── versions/
-│   ├── tests/                # API endpoint tests
+│   ├── tests/                # API endpoint + lens calculation tests
 │   └── requirements.txt
 ├── pipeline/
 │   ├── adapters/
@@ -100,9 +119,11 @@ lens/
 │   ├── analysis/             # exploratory scripts used to generate spike findings
 │   ├── sources/              # Socrata API client
 │   └── tests/                # transform unit tests
-├── frontend/
+├── frontend-next/            # Next.js frontend (current)
 │   └── src/
-│       └── App.tsx           # map, date pickers, category filter
+│       ├── app/              # page.tsx — main layout and data fetching
+│       ├── components/       # Map, Controls, LensPanel, NeighborhoodPanel
+│       └── types/            # TypeScript types
 ├── docs/
 │   ├── adr/                  # architecture decision records
 │   ├── spikes/               # spike findings: what we learned, therefore what we did
@@ -116,10 +137,10 @@ lens/
 
 ## Team
 
-| Member            | Role                 | Contribution |
-|-------------------|----------------------|---|
-| Jacob L. Johnston | Product owner        | — |
-| Louisa Taufaasau  | Initial scrum master | — |
-| Preetam Donepudi  | —                    | — |
-| Ishita Jakka      | —                    | — |
-| Heli Kadakia      | —                    | — |
+| Member            | Role                 |
+|-------------------|----------------------|
+| Jacob L. Johnston | Product owner        |
+| Louisa Taufaasau  | Initial scrum master |
+| Preetam Donepudi  | —                    |
+| Ishita Jakka      | —                    |
+| Heli Kadakia      | —                    |
