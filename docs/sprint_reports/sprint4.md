@@ -44,3 +44,4 @@ Wire the full analysis pipeline end-to-end: real flags surfaced in the UI, neigh
 - Repeat location flag
 - Resolution trend banner (crosses Aug 2024 marker)
 - Incident point cap extension — pagination or server-side dot-density aggregation for multi-year queries
+- Neighborhood panel: only render data flags that are active — suppress grayed-out inactive flags entirely so the panel surface only flags that require analyst attention
