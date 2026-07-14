@@ -181,7 +181,7 @@ export default function NeighborhoodPanel({
       >
         <Metric
           label="Incidence"
-          value={neighborhood.raw_count}
+          value={neighborhood.raw_count ?? "N/A"}
         />
 
         <Metric
@@ -223,17 +223,17 @@ export default function NeighborhoodPanel({
         >
           <div>
             <strong>Reference Count:</strong>{" "}
-            {neighborhood.reference_raw}
+            {neighborhood.reference_raw ?? "N/A"}
           </div>
 
           <div>
             <strong>Reference Value:</strong>{" "}
-            {neighborhood.reference_value}
+            {neighborhood.reference_value ?? "N/A"}
           </div>
 
           <div>
             <strong>Reference Rate:</strong>{" "}
-            {neighborhood.reference_rate}
+            {neighborhood.reference_rate ?? "N/A"}
           </div>
         </div>
       </div>
@@ -265,13 +265,13 @@ export default function NeighborhoodPanel({
           />
 
           <Badge
-            label="Per Capita"
-            active={neighborhood.per_capita_applicable}
+            label="Per Capita N/A"
+            active={!neighborhood.per_capita_applicable}
           />
 
           <Badge
             label="Provisional"
-            active={neighborhood.provisional}
+            active={neighborhood.provisional ?? false}
           />
         </div>
       </div>
