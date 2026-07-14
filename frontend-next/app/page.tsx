@@ -43,6 +43,14 @@ export default function Home() {
     ? (lensData.find((d) => d.neighborhood_id === selectedId) ?? null)
     : null;
 
+  // Shift end date to 3 months ago — outside the 90-day provisional window.
+  function fixProvisional() {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 3);
+    d.setDate(1);
+    setEnd(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`);
+  }
+
   async function fetchLensData() {
     setLoading(true);
     setError(null);
@@ -188,6 +196,7 @@ export default function Home() {
             neighborhood={selectedNeighborhood}
             activeLens={activeLens}
             dateRange={{ start, end }}
+            onFixProvisional={fixProvisional}
           />
         </div>
 

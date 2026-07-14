@@ -6,6 +6,7 @@ interface NeighborhoodPanelProps {
   neighborhood: LensData | null;
   activeLens: 1 | 2 | 3;
   dateRange: { start: string; end: string };
+  onFixProvisional: () => void;
 }
 
 const GLASS = {
@@ -36,27 +37,20 @@ const LENS_META: Record<1 | 2 | 3, { label: string; description: string }> = {
   },
 };
 
-const FLAG_INFO: Record<string, { what: string; why: string }> = {
-  low_confidence: {
-    what: "High geocoding failure rate",
-    why: "Many incidents here couldn't be placed on the map, so counts likely understate actual activity. The failure rate isn't random — it correlates with data-quality disparities across neighborhoods.",
-  },
-  per_capita_na: {
-    what: "No resident population",
-    why: "This area (e.g. a park, industrial zone, or the Farallones) has no residents to divide by. Per-capita figures are suppressed to avoid meaningless numbers.",
-  },
-  provisional: {
-    what: "Recent data — may be incomplete",
-    why: "The date range ends within the last 90 days. Reports for recent months are still being filed and updated, so counts are likely lower than their final values.",
-  },
-};
-
 function fmtMonth(iso: string) {
   const [y, m] = iso.split("-");
   return new Date(Number(y), Number(m) - 1).toLocaleString("default", {
     month: "short",
     year: "numeric",
   });
+}
+
+// Returns the first of the month 3 months before today — outside the 90-day provisional window.
+function stableEndDate(): string {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 3);
+  d.setDate(1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
 }
 
 function Info({ tip }: { tip: string }) {
@@ -132,11 +126,31 @@ function Metric({
 function Flag({
   flagKey,
   active,
+  onFix,
 }: {
-  flagKey: keyof typeof FLAG_INFO;
+  flagKey: string;
   active: boolean;
+  onFix?: () => void;
 }) {
-  const info = FLAG_INFO[flagKey];
+  const FLAGS: Record<string, { what: string; why: string; fix?: string }> = {
+    low_confidence: {
+      what: "High geocoding failure rate",
+      why: "Many incidents here couldn't be placed on the map, so counts likely understate actual activity. The failure rate isn't random — it correlates with data-quality disparities across neighborhoods.",
+    },
+    per_capita_na: {
+      what: "No resident population",
+      why: "This area (e.g. a park, industrial zone, or the Farallones) has no residents to divide by. Per-capita figures are suppressed to avoid meaningless numbers.",
+    },
+    provisional: {
+      what: "Recent data — may be incomplete",
+      why: "The date range ends within the last 90 days. Reports for recent months are still being filed and updated, so counts are likely lower than their final values.",
+      fix: `Move end date to ${fmtMonth(stableEndDate())}`,
+    },
+  };
+
+  const info = FLAGS[flagKey];
+  if (!info) return null;
+
   return (
     <div
       style={{
@@ -162,10 +176,35 @@ function Flag({
         <span>{active ? "⚠" : "✓"}</span>
         <span>{info.what}</span>
       </div>
+
       {active && (
-        <div style={{ fontSize: 11, color: "#78350f", lineHeight: 1.45 }}>
-          {info.why}
-        </div>
+        <>
+          <div style={{ fontSize: 11, color: "#78350f", lineHeight: 1.45, marginBottom: info.fix ? 8 : 0 }}>
+            {info.why}
+          </div>
+
+          {info.fix && onFix && (
+            <button
+              onClick={onFix}
+              style={{
+                marginTop: 2,
+                padding: "5px 10px",
+                borderRadius: 8,
+                border: "1px solid rgba(251,191,36,.45)",
+                background: "rgba(251,191,36,.18)",
+                color: "#92400e",
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              {info.fix} →
+            </button>
+          )}
+        </>
       )}
     </div>
   );
@@ -175,6 +214,7 @@ export default function NeighborhoodPanel({
   neighborhood,
   activeLens,
   dateRange,
+  onFixProvisional,
 }: NeighborhoodPanelProps) {
   const meta = LENS_META[activeLens];
 
@@ -254,7 +294,7 @@ export default function NeighborhoodPanel({
                   ? `${neighborhood.value} per 100`
                   : "Not applicable"
               }
-              tip="Officer-initiated incidents (drug stops, warrants, loitering arrests) per 100 victim-reported serious crimes (burglary, robbery, assault, vehicle theft). A ratio of 84 means 84 proactive stops for every 100 victim reports. High values may reflect patrol presence more than actual crime."
+              tip="Officer-initiated incidents (drug stops, warrants, loitering arrests) per 100 victim-reported serious crimes (burglary, robbery, assault, vehicle theft). High values may reflect patrol presence more than actual crime."
             />
             <div style={{ fontSize: 12, color: "#475569" }}>
               <span style={{ fontWeight: 600 }}>City median:</span>{" "}
@@ -271,7 +311,7 @@ export default function NeighborhoodPanel({
         )}
       </div>
 
-      {/* Data flags — always show all three; expand description when active */}
+      {/* Data flags */}
       <div>
         <div
           style={{
@@ -289,7 +329,11 @@ export default function NeighborhoodPanel({
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <Flag flagKey="low_confidence" active={neighborhood.low_confidence} />
           <Flag flagKey="per_capita_na" active={!neighborhood.per_capita_applicable} />
-          <Flag flagKey="provisional" active={neighborhood.provisional ?? false} />
+          <Flag
+            flagKey="provisional"
+            active={neighborhood.provisional ?? false}
+            onFix={onFixProvisional}
+          />
         </div>
       </div>
     </div>
