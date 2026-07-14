@@ -42,6 +42,7 @@ export default function Home() {
 
     try {
       let url = `/lens/${activeLens}?start=${start}&end=${end}`;
+
       // Lens 1 supports category filtering
       if (activeLens === 1 && category) {
         url += `&category=${encodeURIComponent(category)}`;
@@ -49,23 +50,52 @@ export default function Home() {
 
       const response = await fetch(url);
 
-      console.log("fetch url:", url);
-      console.log("status:", response.status);
+      let data: any = null;
 
-      const text = await response.text();
-      console.log("response:", text);
+      try {
+        data = await response.json();
+      } catch {
+        // Ignore invalid or empty JSON responses.
+      }
 
-      const data = JSON.parse(text);
+      if (!response.ok) {
+        setLensData([]);
+        setSelectedNeighborhood(null);
 
-      console.log("parsed:", data);
+      if (typeof data?.detail === "string") {
+        setError(data.detail);
+      } else if (data?.detail?.msg) {
+        setError(data.detail.msg);
+      } else {
+        setError(`Unable to load Lens ${activeLens}.`);
+      }
+
+        return;
+      }
+
+      if (!Array.isArray(data)) {
+        setLensData([]);
+        setSelectedNeighborhood(null);
+
+        setError("Unexpected response from server.");
+
+        return;
+      }
 
       setLensData(data);
+      setSelectedNeighborhood(null);
+      setError(null);
 
     } catch (err) {
       console.error(err);
 
+      setLensData([]);
+      setSelectedNeighborhood(null);
+
       setError(
-        err instanceof Error ? err.message : "Failed to load lens data"
+        err instanceof Error
+          ? err.message
+          : "Unable to contact the backend."
       );
     } finally {
       setLoading(false);
@@ -74,7 +104,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchLensData();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLens]);
 
   return (
@@ -146,6 +176,22 @@ export default function Home() {
         <div style={{ pointerEvents: "auto" }}>
           <FlagsPanel />
         </div>
+
+        {error && (
+          <div
+            style={{
+              pointerEvents: "auto",
+              background: "#fee2e2",
+              color: "#991b1b",
+              border: "1px solid #fecaca",
+              borderRadius: 12,
+              padding: 16,
+              fontSize: 14,
+            }}
+          >
+            {error}
+          </div>
+        )}
       </div>
     </main>
   );

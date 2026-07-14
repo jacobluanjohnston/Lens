@@ -9,7 +9,6 @@ interface ControlsProps {
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
-  onShow: () => void;
 
   loading: boolean;
 }
@@ -22,7 +21,6 @@ export default function Controls({
   onStartChange,
   onEndChange,
   onCategoryChange,
-  onShow,
   loading,
 }: ControlsProps) {
   return (
@@ -81,7 +79,7 @@ export default function Controls({
         </div>
       </div>
 
-      {/* From */}
+      {/* From Month */}
 
       <div
         style={{
@@ -103,27 +101,22 @@ export default function Controls({
         </label>
 
         <input
-          type="date"
-          value={start}
-          onChange={(e) => onStartChange(e.target.value)}
+          type="month"
+          value={start.slice(0, 7)}
+          onChange={(e) => onStartChange(`${e.target.value}-01`)}
           style={{
             width: 118,
             padding: "6px 8px",
-
             fontSize: 12,
-
             borderRadius: 8,
-
             border: "1px solid rgba(255,255,255,.18)",
-
             background: "rgba(255,255,255,.18)",
-
             color: "#111827",
           }}
         />
       </div>
 
-      {/* To */}
+      {/* To Month */}
 
       <div
         style={{
@@ -145,21 +138,16 @@ export default function Controls({
         </label>
 
         <input
-          type="date"
-          value={end}
-          onChange={(e) => onEndChange(e.target.value)}
+          type="month"
+          value={end.slice(0, 7)}
+          onChange={(e) => onEndChange(`${e.target.value}-01`)}
           style={{
             width: 118,
             padding: "6px 8px",
-
             fontSize: 12,
-
             borderRadius: 8,
-
             border: "1px solid rgba(255,255,255,.18)",
-
             background: "rgba(255,255,255,.18)",
-
             color: "#111827",
           }}
         />
@@ -189,18 +177,14 @@ export default function Controls({
         <select
           value={category}
           onChange={(e) => onCategoryChange(e.target.value)}
+          disabled={loading}
           style={{
             width: 145,
             padding: "6px 8px",
-
             fontSize: 12,
-
             borderRadius: 8,
-
             border: "1px solid rgba(255,255,255,.18)",
-
             background: "rgba(255,255,255,.18)",
-
             color: "#111827",
           }}
         >
@@ -213,37 +197,6 @@ export default function Controls({
           ))}
         </select>
       </div>
-
-      {/* Analyze */}
-
-      <button
-        onClick={onShow}
-        disabled={loading}
-        style={{
-          marginTop: 15,
-
-          padding: "7px 14px",
-
-          borderRadius: 8,
-
-          border: "none",
-
-          background: "linear-gradient(135deg,#2563eb,#1d4ed8)",
-
-          color: "#fff",
-
-          fontWeight: 700,
-
-          fontSize: 12,
-
-          cursor: loading ? "default" : "pointer",
-
-          boxShadow:
-            "0 5px 14px rgba(37,99,235,.28)",
-        }}
-      >
-        {loading ? "Loading..." : "Analyze"}
-      </button>
     </div>
   );
 }
