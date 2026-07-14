@@ -39,6 +39,7 @@ export default function Home() {
   async function fetchLensData() {
     setLoading(true);
     setError(null);
+    setSelectedNeighborhood(null);
 
     try {
       let url = `/lens/${activeLens}?start=${start}&end=${end}`;
@@ -60,7 +61,7 @@ export default function Home() {
 
       if (!response.ok) {
         setLensData([]);
-        setSelectedNeighborhood(null);
+        // selectedNeighborhood already cleared at start of fetchLensData
 
         if (typeof data?.detail === "string") {
           setError(data.detail);
@@ -75,7 +76,7 @@ export default function Home() {
 
       if (!Array.isArray(data)) {
         setLensData([]);
-        setSelectedNeighborhood(null);
+        // selectedNeighborhood already cleared at start of fetchLensData
         setError("Unexpected response from server.");
         return;
       }
@@ -180,6 +181,7 @@ export default function Home() {
         <div style={{ pointerEvents: "auto" }}>
           <NeighborhoodPanel
             neighborhood={selectedNeighborhood}
+            activeLens={activeLens}
           />
         </div>
 
