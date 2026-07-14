@@ -28,7 +28,7 @@ export default function FlagsPanel() {
       <h2
         style={{
           margin: 0,
-          fontSize: 22,
+          fontSize: 18,
           fontWeight: 700,
           letterSpacing: "-0.03em",
           color: "#111827",
@@ -42,7 +42,7 @@ export default function FlagsPanel() {
           marginTop: 6,
           marginBottom: 20,
           color: "#4b5563",
-          fontSize: 14,
+          fontSize: 13,
           lineHeight: 1.5,
         }}
       >
@@ -78,7 +78,7 @@ export default function FlagsPanel() {
         <div
           style={{
             color: "#475569",
-            fontSize: 14,
+            fontSize: 13,
             lineHeight: 1.5,
           }}
         >
@@ -96,7 +96,7 @@ export default function FlagsPanel() {
       >
         <div
           style={{
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 700,
             color: "#64748b",
 
