@@ -5,12 +5,11 @@ interface ControlsProps {
   end: string;
   category: string;
   categories: string[];
+  loading: boolean;
 
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
-
-  loading: boolean;
 }
 
 export default function Controls({
@@ -18,10 +17,10 @@ export default function Controls({
   end,
   category,
   categories,
+  loading,
   onStartChange,
   onEndChange,
   onCategoryChange,
-  loading,
 }: ControlsProps) {
   return (
     <div
@@ -103,6 +102,7 @@ export default function Controls({
         <input
           type="month"
           value={start.slice(0, 7)}
+          disabled={loading}
           onChange={(e) => onStartChange(`${e.target.value}-01`)}
           style={{
             width: 118,
@@ -140,6 +140,7 @@ export default function Controls({
         <input
           type="month"
           value={end.slice(0, 7)}
+          disabled={loading}
           onChange={(e) => onEndChange(`${e.target.value}-01`)}
           style={{
             width: 118,

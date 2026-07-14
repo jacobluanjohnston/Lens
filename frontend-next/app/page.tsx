@@ -62,13 +62,13 @@ export default function Home() {
         setLensData([]);
         setSelectedNeighborhood(null);
 
-      if (typeof data?.detail === "string") {
-        setError(data.detail);
-      } else if (data?.detail?.msg) {
-        setError(data.detail.msg);
-      } else {
-        setError(`Unable to load Lens ${activeLens}.`);
-      }
+        if (typeof data?.detail === "string") {
+          setError(data.detail);
+        } else if (data?.detail?.msg) {
+          setError(data.detail.msg);
+        } else {
+          setError(`Unable to load Lens ${activeLens}.`);
+        }
 
         return;
       }
@@ -76,19 +76,19 @@ export default function Home() {
       if (!Array.isArray(data)) {
         setLensData([]);
         setSelectedNeighborhood(null);
-
         setError("Unexpected response from server.");
-
         return;
       }
 
-      setLensData(data);
+      // Provisional: end date within 90 days of today — data may still be filing
+      const endMs = new Date(end).getTime();
+      const provisional = (Date.now() - endMs) / 86_400_000 < 90;
+
+      setLensData(data.map((item: LensData) => ({ ...item, provisional })));
       setSelectedNeighborhood(null);
       setError(null);
 
     } catch (err) {
-      console.error(err);
-
       setLensData([]);
       setSelectedNeighborhood(null);
 
@@ -102,10 +102,21 @@ export default function Home() {
     }
   }
 
+  // Populate crime type dropdown once on mount
+  useEffect(() => {
+    fetch("/categories")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setCategories(data as string[]);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Re-fetch whenever the active lens, date range, or category changes
   useEffect(() => {
     fetchLensData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLens]);
+  }, [activeLens, start, end, category]);
 
   return (
     <main
@@ -133,7 +144,6 @@ export default function Home() {
           onStartChange={setStart}
           onEndChange={setEnd}
           onCategoryChange={setCategory}
-          onShow={fetchLensData}
         />
 
         <Map
