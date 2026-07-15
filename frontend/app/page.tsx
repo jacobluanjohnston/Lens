@@ -197,6 +197,7 @@ export default function Home() {
           <NeighborhoodPanel
             neighborhood={selectedNeighborhood}
             activeLens={activeLens}
+            lens1Mode={lens1Mode}
             dateRange={{ start, end }}
             onFixProvisional={fixProvisional}
           />
