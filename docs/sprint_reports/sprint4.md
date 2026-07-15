@@ -41,6 +41,8 @@ New API endpoint that accepts two date windows and returns the per-neighborhood 
 - [ ] Neighborhoods with zero victim-reported crimes in either window return `delta: null` — never divide by zero
 - [ ] Reads from `neighborhood_month_rollup`, not raw incidents
 - [ ] `backend/tests/test_compare_api.py` with at least 3 tests: valid request returns 41 rows; missing param returns 422; zero-victim neighborhood returns null delta without crashing
+- [ ] Tests use a real test database with seeded `neighborhood_month_rollup` rows — no mocking the DB connection or patching psycopg2. A test that patches the DB will be rejected in review.
+- [ ] No test hardcodes an expected delta value — deltas must be computed from seeded data
 
 #### Acceptance Criteria
 - `curl "http://localhost:8000/lens/compare?baseline_start=2024-04&baseline_end=2024-12&compare_start=2025-01&compare_end=2025-09"` returns 41 objects
@@ -64,7 +66,8 @@ A "Compare" toggle in the controls bar. When active: two date range pickers (Bef
 - [ ] Neighborhoods with `delta: null` render grey and are visually distinct from delta = 0
 - [ ] Neighborhood panel in compare mode shows: before ratio, after ratio, delta, and % change
 - [ ] Toggling compare off restores normal lens view without re-fetching lens data
-- [ ] `CompareData` type defined in `frontend-next/types/` — no `any` in the compare fetch path
+- [ ] `CompareData` type defined in `frontend/types/` — no `any` in the compare fetch path
+- [ ] No type assertions (`as any`, `as CompareData`) anywhere in the compare fetch handler. Reviewer will grep for `as any` and `as Compare`.
 - [ ] Client-side validation: After end ≤ After start does not send a request
 
 #### Acceptance Criteria
@@ -112,6 +115,7 @@ A ranked list of all 41 neighborhoods below the neighborhood detail panel. In no
 #### Definition of Done
 - [ ] Ranked list renders below the neighborhood detail panel in the right sidebar
 - [ ] In normal Lens 1 mode: sorted by per-capita rate, highest first
+- [ ] List re-sorts live when the active lens changes — no page refresh required
 - [ ] In normal Lens 2 mode: sorted by enforcement ratio, highest first
 - [ ] In compare mode: sorted by `delta`, largest positive change first
 - [ ] Each row: rank number, neighborhood name, metric value
@@ -146,6 +150,7 @@ Copy-only pass. No logic changes. Every string in the table below must change ex
 | `NeighborhoodPanel.tsx` | Lens 2 description appears above metric cards | Move it to below the metric value, above the city median line |
 
 #### Acceptance Criteria
+- `grep -r "officer-initiated\|victim-reported\|proactive" frontend/` returns zero results
 - The phrases "officer-initiated", "victim-reported", and "proactive" do not appear anywhere visible in the UI
 - A non-technical person shown the neighborhood panel can explain "Police Stops per Crime Report" without being told what it means
 - The lens 2 explanation text appears after the number, not before it
