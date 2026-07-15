@@ -60,15 +60,18 @@ A "Compare" toggle in the controls bar. When active: two date range pickers (Bef
 
 #### Definition of Done
 - [ ] "Compare" toggle appears in the controls bar; clicking it shows Before and After month pickers (start + end each), clicking again returns to normal mode
+- [ ] Use the existing `MonthPicker` component for all four date inputs — do not build a new date picker
 - [ ] In compare mode, fetches `GET /lens/compare` with the four date params on any date change
-- [ ] In compare mode, choropleth uses a diverging red/blue scale keyed to `delta`: red = increased enforcement, blue = decreased, grey = null delta
+- [ ] In compare mode, choropleth uses a diverging red/blue scale keyed to `delta`: red = increased enforcement, blue = decreased, grey = null delta — exact hex values in `docs/style-guide.html` (Compare mode section)
 - [ ] Scale is symmetric around zero — +50 and −50 are equally saturated
-- [ ] Neighborhoods with `delta: null` render grey and are visually distinct from delta = 0
+- [ ] Neighborhoods with `delta: null` render grey (`#94a3b8`) and are visually distinct from delta = 0
 - [ ] Neighborhood panel in compare mode shows: before ratio, after ratio, delta, and % change
 - [ ] Toggling compare off restores normal lens view without re-fetching lens data
 - [ ] `CompareData` type defined in `frontend/types/` — no `any` in the compare fetch path
 - [ ] No type assertions (`as any`, `as CompareData`) anywhere in the compare fetch handler. Reviewer will grep for `as any` and `as Compare`.
 - [ ] Client-side validation: After end ≤ After start does not send a request
+- [ ] All new UI elements follow `docs/style-guide.html`: glass panel recipe for any new floating surface, 8px spacing grid, no new font sizes or weights outside the four defined sizes (11/13/18/24px)
+- [ ] Delta values displayed in the neighborhood panel use the colors from the style guide: `#b45309` (amber) for increase, `#2563eb` (blue) for decrease
 
 #### Acceptance Criteria
 - Analyst clicks Compare, sets Before = Apr 2024–Dec 2024, After = Jan 2025–Sep 2025, map updates showing Tenderloin/Mission/SOMA in red
@@ -79,7 +82,7 @@ A "Compare" toggle in the controls bar. When active: two date range pickers (Bef
 ---
 
 ### CARD 3 — Policy event presets
-**Points: 2**
+**Points: 3**
 **Blocked by:** Card 2
 
 #### What it is
@@ -97,11 +100,13 @@ A dropdown of preset events that auto-fills the Before/After date ranges. Two pr
 - [ ] World Cup preset triggers the existing provisional data warning (end date within 90 days of today)
 - [ ] APEC / Xi Jinping is NOT in the dropdown — no exceptions
 - [ ] Preset labels use plain language — no internal variable names or date strings visible in the label
+- [ ] One frontend unit test: render the preset dropdown, select "Mayor Lurie takes office", assert all four date picker values match the exact dates in the table above. No network call needed — this tests state wiring only.
 
 #### Acceptance Criteria
 - Analyst selects "Mayor Lurie takes office" → all four pickers fill → map updates with no further interaction
 - Analyst selects World Cup → provisional warning appears in the neighborhood panel
 - Analyst edits one date after selecting a preset → other three dates are unchanged
+- Analyst manually types the same four dates as the Lurie preset (Apr 2024–Dec 2024 / Jan 2025–Sep 2025) without touching the dropdown → map produces the identical choropleth as selecting the preset. The preset is a shortcut, not a special code path.
 
 ---
 
