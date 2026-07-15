@@ -72,7 +72,7 @@ pip install -r backend/requirements.txt
 DATABASE_URL=postgresql://lens:lens@localhost:5432/lens uvicorn app.main:app --reload
 
 # Frontend
-cd frontend-next
+cd frontend
 npm install
 npm run dev
 ```
@@ -107,7 +107,7 @@ lens/
 │   ├── analysis/             # exploratory scripts used to generate spike findings
 │   ├── sources/              # Socrata API client
 │   └── tests/                # transform unit tests
-├── frontend-next/            # Next.js frontend (current)
+├── frontend/            # Next.js frontend (current)
 │   └── src/
 │       ├── app/              # page.tsx — main layout and data fetching
 │       ├── components/       # Map, Controls, LensPanel, NeighborhoodPanel

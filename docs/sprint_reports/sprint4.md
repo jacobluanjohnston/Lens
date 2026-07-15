@@ -35,7 +35,7 @@ New API endpoint that accepts two date windows and returns the per-neighborhood 
 
 #### Definition of Done
 - [ ] `GET /lens/compare` exists in `backend/app/api/`
-- [ ] Accepts: `baseline_start`, `baseline_end`, `compare_start`, `compare_end` (all `YYYY-MM-DD`)
+- [ ] Accepts: `baseline_start`, `baseline_end`, `compare_start`, `compare_end` (all `YYYY-MM` — month granularity, same as `/lens/1` and `/lens/2`)
 - [ ] Returns JSON array, one object per neighborhood: `neighborhood_id`, `neighborhood_name`, `baseline_ratio`, `compare_ratio`, `delta` (rounded to 1 decimal), `baseline_count`, `compare_count`
 - [ ] Returns 422 with readable `detail` if any date param is missing, or either window end ≤ start, or either window < 30 days
 - [ ] Neighborhoods with zero victim-reported crimes in either window return `delta: null` — never divide by zero
@@ -43,7 +43,7 @@ New API endpoint that accepts two date windows and returns the per-neighborhood 
 - [ ] `backend/tests/test_compare_api.py` with at least 3 tests: valid request returns 41 rows; missing param returns 422; zero-victim neighborhood returns null delta without crashing
 
 #### Acceptance Criteria
-- `curl "http://localhost:8000/lens/compare?baseline_start=2024-04-01&baseline_end=2024-12-31&compare_start=2025-01-01&compare_end=2025-09-30"` returns 41 objects
+- `curl "http://localhost:8000/lens/compare?baseline_start=2024-04&baseline_end=2024-12&compare_start=2025-01&compare_end=2025-09"` returns 41 objects
 - Tenderloin's `delta` in that call is positive and greater than 50 — the Lurie signal must be visible
 - A neighborhood with no victim crime in either window does not return a 500
 
