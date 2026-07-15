@@ -37,6 +37,20 @@ def _connect():
     return psycopg2.connect(_DB_URL)
 
 
+def _lens2_ratio(officer_count: int, victim_count: int, per_capita_applicable: bool):
+    """Enforcement ratio: officer-initiated per 100 victim-reported crimes.
+
+    Returns None for non-residential areas and any neighborhood with zero
+    victim-reported crimes in the period (avoids division by zero and
+    meaningless infinity values).
+    """
+    if not per_capita_applicable:
+        return None
+    if victim_count == 0:
+        return None
+    return round(officer_count / victim_count * 100, 1)
+
+
 # ── Lens 1 ────────────────────────────────────────────────────────────────────
 
 _LENS1_QUERY = """
@@ -154,14 +168,7 @@ def get_lens2(
     finally:
         conn.close()
 
-    def _ratio(r):
-        if not r["per_capita_applicable"]:
-            return None
-        if r["victim_count"] == 0:
-            return None
-        return round(r["officer_count"] / r["victim_count"] * 100, 1)
-
-    values = [_ratio(r) for r in rows]
+    values = [_lens2_ratio(r["officer_count"], r["victim_count"], r["per_capita_applicable"]) for r in rows]
     valid_values = [v for v in values if v is not None]
     reference_value = round(statistics.median(valid_values), 1) if valid_values else None
 

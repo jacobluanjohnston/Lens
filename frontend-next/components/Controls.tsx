@@ -7,7 +7,7 @@ const MIN_YEAR = 2018;
 const MAX_YEAR = new Date().getFullYear();
 
 const LABEL_STYLE: React.CSSProperties = {
-  fontSize: 10,
+  fontSize: 11,
   fontWeight: 700,
   color: "#475569",
   textTransform: "uppercase",
@@ -17,7 +17,7 @@ const LABEL_STYLE: React.CSSProperties = {
 const TRIGGER_STYLE: React.CSSProperties = {
   width: 112,
   padding: "6px 10px",
-  fontSize: 12,
+  fontSize: 13,
   fontWeight: 600,
   borderRadius: 8,
   border: "1px solid rgba(255,255,255,.28)",
@@ -173,7 +173,7 @@ function MonthPicker({ label, value, disabled, onChange }: MonthPickerProps) {
                       ? "rgba(99,102,241,.14)"
                       : "transparent",
                     color: isSelected ? "#4338ca" : "#374151",
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: isSelected ? 700 : 500,
                     cursor: "pointer",
                     transition: "background .12s",
@@ -245,20 +245,34 @@ export default function Controls({
       }}
     >
       {/* Logo */}
-      <div style={{ marginRight: 6, minWidth: 70 }}>
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 800,
-            color: "#111827",
-            lineHeight: 1,
-            letterSpacing: "-0.04em",
-          }}
-        >
-          LENS
-        </div>
-        <div style={{ fontSize: 10, color: "#64748b", marginTop: 2 }}>
-          Police Analytics
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 8 }}>
+        {/* 2×2 grid mark — colors track the active lens's choropleth scale */}
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {activeLens === 1 && <>
+            <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#FFEDA0"/>
+            <rect x="19" y="0"  width="15" height="15" rx="2" fill="#FEB24C"/>
+            <rect x="0"  y="19" width="15" height="15" rx="2" fill="#FC4E2A"/>
+            <rect x="19" y="19" width="15" height="15" rx="2" fill="#800026"/>
+          </>}
+          {activeLens === 2 && <>
+            <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#1d4ed8"/>
+            <rect x="19" y="0"  width="15" height="15" rx="2" fill="#93c5fd"/>
+            <rect x="0"  y="19" width="15" height="15" rx="2" fill="#f97316"/>
+            <rect x="19" y="19" width="15" height="15" rx="2" fill="#c2410c"/>
+          </>}
+          {activeLens === 3 && <>
+            <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#e2e8f0"/>
+            <rect x="19" y="0"  width="15" height="15" rx="2" fill="#cbd5e1"/>
+            <rect x="0"  y="19" width="15" height="15" rx="2" fill="#94a3b8"/>
+            <rect x="19" y="19" width="15" height="15" rx="2" fill="#64748b"/>
+          </>}
+        </svg>
+
+        {/* Wordmark — hidden below sm (640px), logo icon stays visible */}
+        <div className="hidden sm:block">
+          <div style={{ fontSize: 18, fontWeight: 800, color: "#111827", lineHeight: 1, letterSpacing: "-0.04em" }}>
+            Lens
+          </div>
         </div>
       </div>
 
@@ -287,7 +301,7 @@ export default function Controls({
             style={{
               width: 145,
               padding: "6px 8px",
-              fontSize: 12,
+              fontSize: 13,
               borderRadius: 8,
               border: "1px solid rgba(255,255,255,.28)",
               background: "rgba(255,255,255,.22)",
