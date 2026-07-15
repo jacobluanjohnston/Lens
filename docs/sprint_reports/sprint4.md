@@ -27,7 +27,7 @@ An analyst can select a policy event (Mayor Lurie's inauguration, World Cup ramp
 ---
 
 ### CARD 1 — Compare endpoint (backend)
-**Points: 3**
+**Points: 5**
 **Blocked by:** nothing
 
 #### What it is
