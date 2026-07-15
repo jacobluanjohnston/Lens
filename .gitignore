@@ -29,3 +29,15 @@ __pycache__/
 
 # macOS
 .DS_Store
+
+# Frontend build artifacts (Next.js)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/next-env.d.ts
+frontend/*.tsbuildinfo
+frontend-next/node_modules/
+frontend-next/.next/
+frontend-next/out/
+frontend-next/next-env.d.ts
+frontend-next/*.tsbuildinfo
