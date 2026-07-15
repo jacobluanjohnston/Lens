@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lens — Design System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sidebar: 200px;
+      --gap: 56px;
+      --ink:  #111827;
+      --ink2: #374151;
+      --muted: #64748b;
+      --faint: #94a3b8;
+      --rule:  #e2e8f0;
+      --bg:    #f8f8f8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      margin: 0;
+    }
+
+    /* ── Two-column page grid ── */
+    .page {
+      display: grid;
+      grid-template-columns: var(--sidebar) 1fr;
+      gap: 0 var(--gap);
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 48px;
+      min-height: 100vh;
+    }
+
+    /* ── Sticky sidebar nav ── */
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 48px 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--ink);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .sidebar-sub {
+      font-size: 11px;
+      color: var(--faint);
+      margin-bottom: 40px;
+    }
+
+    .nav-group {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--faint);
+      margin: 24px 0 6px;
+    }
+
+    .nav-group:first-of-type { margin-top: 0; }
+
+    nav a {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 4px 0 4px 12px;
+      margin-left: -14px;
+      border-left: 2px solid transparent;
+      transition: color .12s, border-color .12s;
+    }
+
+    nav a:hover { color: var(--ink); border-left-color: var(--ink); }
+
+    /* ── Main content ── */
+    .content { padding: 48px 0 96px; }
+
+    /* ── Sections ── */
+    .section { padding-top: 64px; }
+    .section:first-child { padding-top: 48px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--faint);
+      margin-bottom: 8px;
+    }
+
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--rule);
+      margin-top: 64px;
+    }
+
+    /* ── Type ── */
+    h2 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--ink);
+      margin-bottom: 24px;
+      line-height: 1.1;
+    }
+
+    h3 {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin: 32px 0 12px;
+    }
+
+    p {
+      font-size: 13px;
+      color: var(--ink2);
+      line-height: 1.65;
+      margin-bottom: 12px;
+      max-width: 540px;
+    }
+
+    code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      background: rgba(0,0,0,.06);
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: var(--ink2);
+    }
+
+    .note { font-size: 11px; color: var(--faint); margin-top: 4px; }
+
+    /* ── Rule / Don't — left-border only, no background fill ── */
+    .rule {
+      border-left: 3px solid var(--ink);
+      padding: 8px 0 8px 14px;
+      font-size: 13px;
+      color: var(--ink2);
+      margin: 8px 0;
+      max-width: 540px;
+    }
+
+    .dont {
+      border-left: 3px solid #dc2626;
+      padding: 8px 0 8px 14px;
+      font-size: 13px;
+      color: var(--ink2);
+      margin: 8px 0;
+      max-width: 540px;
+    }
+
+    .dont::before { content: "✕  "; font-weight: 700; color: #dc2626; }
+
+    /* ── Layout helpers ── */
+    .row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .col { display: flex; flex-direction: column; gap: 12px; }
+
+    /* ── Swatch grid ── */
+    .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, 96px); gap: 8px; margin-bottom: 8px; }
+    .swatch { border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .swatch-color { height: 48px; }
+    .swatch-label { background: #fff; padding: 6px 8px; }
+    .swatch-name  { font-size: 11px; font-weight: 700; color: var(--ink); }
+    .swatch-hex   { font-size: 10px; color: var(--faint); font-family: monospace; }
+
+    /* ── Type scale demo ── */
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      gap: 24px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .type-row:first-child { border-top: 1px solid var(--rule); }
+    .type-size { font-size: 11px; color: var(--faint); width: 96px; flex-shrink: 0; }
+    .type-uses  { font-size: 11px; color: var(--faint); margin-left: auto; text-align: right; }
+
+    /* ── Logo demo ── */
+    .logo-demo { display: inline-flex; align-items: center; gap: 10px; padding: 16px; background: #fff; border-radius: 8px; }
+    .wordmark  { font-size: 18px; font-weight: 800; letter-spacing: -0.04em; color: var(--ink); line-height: 1; }
+
+    /* ── Glass demos need a dark bg to be visible ── */
+    .glass-stage { background: linear-gradient(135deg, #1e3a5f, #374151); border-radius: 16px; padding: 24px; }
+
+    .glass {
+      background: rgba(255,255,255,.14);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 18px;
+      padding: 20px 24px;
+      box-shadow: 0 12px 40px rgba(15,23,42,.20), inset 0 1px 1px rgba(255,255,255,.25);
+    }
+
+    .glass-sm {
+      background: rgba(255,255,255,.12);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08), inset 0 1px 1px rgba(255,255,255,.18);
+    }
+
+    /* ── Flag rows ── */
+    .flag-active {
+      border-radius: 12px; padding: 10px 12px;
+      background: rgba(251,191,36,.12);
+      border: 1px solid rgba(251,191,36,.30);
+      font-size: 13px; font-weight: 700; color: #92400e;
+    }
+
+    .flag-clear {
+      border-radius: 12px; padding: 10px 12px;
+      background: rgba(148,163,184,.08);
+      border: 1px solid rgba(148,163,184,.15);
+      font-size: 13px; color: #94a3b8;
+    }
+
+    /* ── Lens pill ── */
+    .lens-pill {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700;
+      background: rgba(99,102,241,.10); color: #4338ca;
+      border: 1px solid rgba(99,102,241,.25);
+    }
+
+    /* ── Segmented control ── */
+    .seg-track { display: inline-flex; gap: 3px; padding: 3px; border-radius: 10px; background: rgba(0,0,0,.07); }
+    .seg-on  { padding: 4px 14px; font-size: 11px; font-weight: 600; color: #111827; background: rgba(255,255,255,.88); border-radius: 7px; box-shadow: 0 1px 3px rgba(0,0,0,.10); }
+    .seg-off { padding: 4px 14px; font-size: 11px; color: #9ca3af; }
+
+    /* ── Delta scale ── */
+    .delta-scale {
+      height: 20px; border-radius: 4px;
+      background: linear-gradient(to right, #2563eb, #93c5fd, #f1f5f9, #fca5a5, #dc2626);
+      margin-bottom: 6px;
+    }
+
+    .delta-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--faint); }
+
+    /* ── Tables ── */
+    table { width: 100%; font-size: 13px; border-collapse: collapse; }
+    th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid var(--rule); }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--rule); color: var(--ink2); }
+    td:first-child { color: var(--ink); font-weight: 500; }
+
+    /* ── Footer ── */
+    .footer { padding-top: 48px; border-top: 1px solid var(--rule); font-size: 11px; color: var(--faint); }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Lens</div>
+    <div class="sidebar-sub">Design system</div>
+    <nav>
+      <div class="nav-group">Identity</div>
+      <a href="#brand">Brand &amp; Logo</a>
+      <a href="#typography">Typography</a>
+      <a href="#colors">Colors</a>
+
+      <div class="nav-group">UI</div>
+      <a href="#glass">Glass Panels</a>
+      <a href="#components">Components</a>
+      <a href="#spacing">Spacing</a>
+      <a href="#radius">Border Radius</a>
+
+      <div class="nav-group">Writing</div>
+      <a href="#voice">Voice &amp; Copy</a>
+    </nav>
+  </aside>
+
+  <!-- ═══ CONTENT ═══ -->
+  <main class="content">
+
+    <!-- BRAND -->
+    <section class="section" id="brand">
+      <div class="section-label">Identity</div>
+      <h2>Brand &amp; Logo</h2>
+
+      <h3>Name</h3>
+      <p>The product is called <strong>Lens</strong>. One word, capital L, no suffix. Not LENS, not Lenses, not Lens SF. The wordmark uses Inter 800 at 18px with <code>letter-spacing: -0.04em</code>.</p>
+
+      <h3>Logo mark</h3>
+      <p>A 2×2 grid of four rounded squares (34×34px total, each square 15×15px, 4px gap, rx 2). The colors are not decorative — they track the active lens.</p>
+
+      <div class="row" style="align-items:flex-start; gap:24px; flex-wrap:wrap; margin-top:16px;">
+        <div>
+          <div class="logo-demo">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+              <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#FFEDA0"/>
+              <rect x="19" y="0"  width="15" height="15" rx="2" fill="#FEB24C"/>
+              <rect x="0"  y="19" width="15" height="15" rx="2" fill="#FC4E2A"/>
+              <rect x="19" y="19" width="15" height="15" rx="2" fill="#800026"/>
+            </svg>
+            <span class="wordmark">Lens</span>
+          </div>
+          <p class="note" style="margin-top:8px;">Incidence (Lens 1)</p>
+        </div>
+        <div>
+          <div class="logo-demo">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+              <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#1d4ed8"/>
+              <rect x="19" y="0"  width="15" height="15" rx="2" fill="#93c5fd"/>
+              <rect x="0"  y="19" width="15" height="15" rx="2" fill="#f97316"/>
+              <rect x="19" y="19" width="15" height="15" rx="2" fill="#c2410c"/>
+            </svg>
+            <span class="wordmark">Lens</span>
+          </div>
+          <p class="note" style="margin-top:8px;">Police Stops (Lens 2)</p>
+        </div>
+        <div>
+          <div class="logo-demo">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+              <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#e2e8f0"/>
+              <rect x="19" y="0"  width="15" height="15" rx="2" fill="#cbd5e1"/>
+              <rect x="0"  y="19" width="15" height="15" rx="2" fill="#94a3b8"/>
+              <rect x="19" y="19" width="15" height="15" rx="2" fill="#64748b"/>
+            </svg>
+            <span class="wordmark">Lens</span>
+          </div>
+          <p class="note" style="margin-top:8px;">Resolution Gap (Lens 3)</p>
+        </div>
+        <div>
+          <div class="logo-demo">
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+              <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#1d4ed8"/>
+              <rect x="19" y="0"  width="15" height="15" rx="2" fill="#93c5fd"/>
+              <rect x="0"  y="19" width="15" height="15" rx="2" fill="#f97316"/>
+              <rect x="19" y="19" width="15" height="15" rx="2" fill="#c2410c"/>
+            </svg>
+          </div>
+          <p class="note" style="margin-top:8px;">Favicon — static, never changes</p>
+        </div>
+      </div>
+
+      <div class="rule" style="margin-top:24px;">On a phone or narrow window: only the icon shows, the word "Lens" disappears. On a wider screen: both appear. Don't break this when editing the controls bar.</div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- TYPOGRAPHY -->
+    <section class="section" id="typography">
+      <div class="section-label">Identity</div>
+      <h2>Typography</h2>
+
+      <p>Font: <strong>Inter</strong> from Google Fonts. Four sizes only. Four weights only.</p>
+
+      <div style="margin: 24px 0;">
+        <div class="type-row">
+          <span class="type-size">24px · 700</span>
+          <span style="font-size:24px; font-weight:700;">Neighborhood name</span>
+          <span class="type-uses">Metric values, page headings</span>
+        </div>
+        <div class="type-row">
+          <span class="type-size">18px · 700–800</span>
+          <span style="font-size:18px; font-weight:700;">Section heading</span>
+          <span class="type-uses">Panel titles, wordmark</span>
+        </div>
+        <div class="type-row">
+          <span class="type-size">13px · 400–700</span>
+          <span style="font-size:13px; font-weight:400;">Body text, descriptions, values</span>
+          <span class="type-uses">Most UI text</span>
+        </div>
+        <div class="type-row" style="border-bottom:none;">
+          <span class="type-size">11px · 600–700</span>
+          <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em;">Labels, caps, metadata</span>
+          <span class="type-uses">Card labels, comparison text</span>
+        </div>
+      </div>
+
+      <div class="dont">Never introduce a new font size — not 12px, not 14px, not 16px.</div>
+      <div class="dont">Never use font-weight 400 on a label. Labels are always 600 or 700.</div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- COLORS -->
+    <section class="section" id="colors">
+      <div class="section-label">Identity</div>
+      <h2>Colors</h2>
+
+      <h3>Lens 1 — Incidence</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#FFEDA0;"></div><div class="swatch-label"><div class="swatch-name">Low</div><div class="swatch-hex">#FFEDA0</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#FEB24C;"></div><div class="swatch-label"><div class="swatch-name">Mid-low</div><div class="swatch-hex">#FEB24C</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#FC4E2A;"></div><div class="swatch-label"><div class="swatch-name">Mid-high</div><div class="swatch-hex">#FC4E2A</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#800026;"></div><div class="swatch-label"><div class="swatch-name">High</div><div class="swatch-hex">#800026</div></div></div>
+      </div>
+
+      <h3>Lens 2 — Police Stops</h3>
+      <p class="note" style="margin-bottom:8px;">Blue = below city median ratio. Orange/red = above. White is the city median.</p>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#1d4ed8;"></div><div class="swatch-label"><div class="swatch-name">Low ratio</div><div class="swatch-hex">#1d4ed8</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#93c5fd;"></div><div class="swatch-label"><div class="swatch-name">Below median</div><div class="swatch-hex">#93c5fd</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#f97316;"></div><div class="swatch-label"><div class="swatch-name">Above median</div><div class="swatch-hex">#f97316</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#c2410c;"></div><div class="swatch-label"><div class="swatch-name">High ratio</div><div class="swatch-hex">#c2410c</div></div></div>
+      </div>
+
+      <h3>Lens 3 — Resolution Gap</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#e2e8f0;"></div><div class="swatch-label"><div class="swatch-name">Lightest</div><div class="swatch-hex">#e2e8f0</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#cbd5e1;"></div><div class="swatch-label"><div class="swatch-name">Light</div><div class="swatch-hex">#cbd5e1</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#94a3b8;"></div><div class="swatch-label"><div class="swatch-name">Mid</div><div class="swatch-hex">#94a3b8</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#64748b;"></div><div class="swatch-label"><div class="swatch-name">Dark</div><div class="swatch-hex">#64748b</div></div></div>
+      </div>
+
+      <h3>Compare mode — delta choropleth</h3>
+      <p class="note" style="margin-bottom:8px;">Red = enforcement increased after the event. Blue = decreased. Grey = no data.</p>
+      <div class="delta-scale"></div>
+      <div class="delta-labels"><span>← Decreased</span><span>No change</span><span>Increased →</span></div>
+      <div class="swatch-grid" style="margin-top:12px;">
+        <div class="swatch"><div class="swatch-color" style="background:#dc2626;"></div><div class="swatch-label"><div class="swatch-name">High increase</div><div class="swatch-hex">#dc2626</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#fca5a5;"></div><div class="swatch-label"><div class="swatch-name">Low increase</div><div class="swatch-hex">#fca5a5</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#f1f5f9; border:1px solid #e2e8f0;"></div><div class="swatch-label"><div class="swatch-name">Near zero</div><div class="swatch-hex">#f1f5f9</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#93c5fd;"></div><div class="swatch-label"><div class="swatch-name">Low decrease</div><div class="swatch-hex">#93c5fd</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#2563eb;"></div><div class="swatch-label"><div class="swatch-name">High decrease</div><div class="swatch-hex">#2563eb</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#94a3b8;"></div><div class="swatch-label"><div class="swatch-name">No data</div><div class="swatch-hex">#94a3b8</div></div></div>
+      </div>
+
+      <h3>UI neutrals</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#111827;"></div><div class="swatch-label"><div class="swatch-name">Near-black</div><div class="swatch-hex">#111827</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#374151;"></div><div class="swatch-label"><div class="swatch-name">Dark text</div><div class="swatch-hex">#374151</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#4b5563;"></div><div class="swatch-label"><div class="swatch-name">Body text</div><div class="swatch-hex">#4b5563</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#64748b;"></div><div class="swatch-label"><div class="swatch-name">Secondary</div><div class="swatch-hex">#64748b</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#94a3b8;"></div><div class="swatch-label"><div class="swatch-name">Muted</div><div class="swatch-hex">#94a3b8</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#cbd5e1;"></div><div class="swatch-label"><div class="swatch-name">Disabled</div><div class="swatch-hex">#cbd5e1</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#f8f8f8; border:1px solid #e2e8f0;"></div><div class="swatch-label"><div class="swatch-name">Page bg</div><div class="swatch-hex">#f8f8f8</div></div></div>
+      </div>
+
+      <h3>Semantic</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#6366f1;"></div><div class="swatch-label"><div class="swatch-name">Active/accent</div><div class="swatch-hex">#6366f1</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#92400e;"></div><div class="swatch-label"><div class="swatch-name">Warning text</div><div class="swatch-hex">#92400e</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#b45309;"></div><div class="swatch-label"><div class="swatch-name">Delta above median</div><div class="swatch-hex">#b45309</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#2563eb;"></div><div class="swatch-label"><div class="swatch-name">Delta below median</div><div class="swatch-hex">#2563eb</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#991b1b;"></div><div class="swatch-label"><div class="swatch-name">Error text</div><div class="swatch-hex">#991b1b</div></div></div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- GLASS -->
+    <section class="section" id="glass">
+      <div class="section-label">UI</div>
+      <h2>Glass Panels</h2>
+
+      <p>Every floating surface in Lens uses frosted glass. Two variants only — large panels (controls bar, lens panel, neighborhood panel) and small cards (metric cards inside panels). Both have a distinct selected/active state.</p>
+
+      <div class="glass-stage" style="margin-top:24px;">
+        <div class="row" style="align-items:flex-start; gap:16px;">
+
+          <!-- Large panel -->
+          <div class="glass" style="flex:1; min-width:200px;">
+            <div style="font-size:13px; font-weight:700; color:#111827; margin-bottom:4px;">Large glass</div>
+            <div style="font-size:11px; color:#64748b; margin-bottom:16px;">Controls bar, lens panel, neighborhood panel</div>
+            <div style="font-size:11px; color:#94a3b8; line-height:2.2; font-family:'SF Mono','Fira Code',monospace;">
+              rgba(255,255,255,.14)<br>
+              blur(28px)<br>
+              1px rgba(255,255,255,.22) border<br>
+              radius 18–22px<br>
+              0 12px 40px rgba(15,23,42,.20)<br>
+              inset 0 1px 1px rgba(255,255,255,.25)
+            </div>
+          </div>
+
+          <!-- Metric cards: default vs active -->
+          <div style="flex:1; min-width:200px;" class="col">
+            <!-- Default -->
+            <div class="glass-sm">
+              <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px;">Total Incidents</div>
+              <div style="font-size:24px; font-weight:700; color:#111827;">1,247</div>
+              <div style="font-size:11px; color:#94a3b8; margin-top:5px;">Compared to the City Median of 800</div>
+              <div style="font-size:11px; font-weight:600; color:#b45309; margin-top:3px;">+56% above median</div>
+            </div>
+            <div style="font-size:11px; color:#94a3b8; margin-bottom:4px; padding: 0 2px;">↑ default card</div>
+
+            <!-- Active / selected -->
+            <div class="glass-sm" style="border-color: rgba(255,255,255,.30); background: rgba(255,255,255,.22);">
+              <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px;">Total Incidents</div>
+              <div style="font-size:24px; font-weight:700; color:#111827;">1,247</div>
+              <div style="font-size:11px; color:#94a3b8; margin-top:5px;">Compared to the City Median of 800</div>
+              <div style="font-size:11px; font-weight:600; color:#b45309; margin-top:3px;">+56% above median</div>
+            </div>
+            <div style="font-size:11px; color:#94a3b8; padding: 0 2px;">↑ active/selected — brighter bg + stronger border</div>
+          </div>
+
+        </div>
+      </div>
+
+      <h3>Active state values</h3>
+      <table style="margin-bottom:16px;">
+        <thead><tr><th>Property</th><th>Default</th><th>Active / selected</th></tr></thead>
+        <tbody>
+          <tr><td>Background</td><td><code>rgba(255,255,255,.12)</code></td><td><code>rgba(255,255,255,.22)</code></td></tr>
+          <tr><td>Border</td><td><code>rgba(255,255,255,.18)</code></td><td><code>rgba(255,255,255,.30)</code></td></tr>
+          <tr><td>Icon</td><td>flat color</td><td><code>drop-shadow(0 0 4px {color}88)</code></td></tr>
+          <tr><td>Label weight</td><td>600</td><td>700</td></tr>
+          <tr><td>Label color</td><td><code>#374151</code></td><td><code>#111827</code></td></tr>
+          <tr><td>Transition</td><td colspan="2"><code>background .18s, border .18s</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="dont">Do not add new surface types. No solid white cards, no flat backgrounds on the map layer.</div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- COMPONENTS -->
+    <section class="section" id="components">
+      <div class="section-label">UI</div>
+      <h2>Components</h2>
+
+      <h3>Data warning flags</h3>
+      <div class="col" style="max-width:420px; margin-bottom:24px;">
+        <div class="flag-active">
+          ⚠ Some incidents couldn't be placed on the map
+          <span style="display:block; font-size:11px; font-weight:400; color:#78350f; margin-top:4px;">Many incidents here couldn't be geocoded, so counts likely understate actual activity.</span>
+        </div>
+        <div class="flag-clear">✓ Recent data — may be incomplete</div>
+      </div>
+
+      <h3>Active lens pill</h3>
+      <div class="lens-pill" style="margin-bottom:24px;">active</div>
+
+      <h3>Segmented control (Total / Per Capita toggle)</h3>
+      <div class="seg-track" style="margin-bottom:8px;">
+        <div class="seg-on">Total</div>
+        <div class="seg-off">Per Capita</div>
+      </div>
+      <p class="note">Track: <code>rgba(0,0,0,.07)</code> · Selected pill: <code>rgba(255,255,255,.88)</code> + <code>0 1px 3px rgba(0,0,0,.10)</code> · radius 10px track / 7px pill</p>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- SPACING -->
+    <section class="section" id="spacing">
+      <div class="section-label">UI</div>
+      <h2>Spacing</h2>
+
+      <p>8px base grid. All padding and gaps should be multiples of 8. New components must follow this. The inconsistencies below are documented — don't add more.</p>
+
+      <table style="margin:24px 0 16px;">
+        <thead><tr>
+          <th>Location</th>
+          <th>Current value</th>
+          <th>On grid?</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Side panel width</td><td><code>360px</code></td><td>✓</td></tr>
+          <tr><td>Gap between panels</td><td><code>16px</code></td><td>✓</td></tr>
+          <tr><td>Large panel padding</td><td><code>24px</code></td><td>✓</td></tr>
+          <tr><td>Metric card padding</td><td><code>14px</code></td><td>✗ — should be 16px</td></tr>
+          <tr><td>Controls bar padding</td><td><code>12px 16px</code></td><td>✓</td></tr>
+          <tr><td>Lens panel padding</td><td><code>10px 8px</code></td><td>✗ — should be 8px</td></tr>
+          <tr><td>Panel offset from edge</td><td><code>18–20px</code></td><td>✗ — should be 16px or 24px</td></tr>
+        </tbody>
+      </table>
+
+      <div class="rule">New components: multiples of 8 only — 8, 16, 24, 32, 48.</div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- BORDER RADIUS -->
+    <section class="section" id="radius">
+      <div class="section-label">UI</div>
+      <h2>Border Radius</h2>
+
+      <table style="margin-top:16px;">
+        <thead><tr><th>Radius</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td><code>22px</code></td><td>Neighborhood panel, flags panel</td></tr>
+          <tr><td><code>18px</code></td><td>Controls bar, lens panel</td></tr>
+          <tr><td><code>16px</code></td><td>Metric cards, inner cards</td></tr>
+          <tr><td><code>14px</code></td><td>Dropdowns, zoom buttons, month picker popup</td></tr>
+          <tr><td><code>12px</code></td><td>Flag rows, small badges</td></tr>
+          <tr><td><code>10px</code></td><td>Lens panel buttons, segmented control track</td></tr>
+          <tr><td><code>8px</code></td><td>Small buttons, inputs, month grid cells</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- VOICE -->
+    <section class="section" id="voice">
+      <div class="section-label">Writing</div>
+      <h2>Voice &amp; Copy</h2>
+
+      <p>Precise and direct. Not bureaucratic, not casual. An analyst should be able to quote any label in a public hearing without it sounding off.</p>
+
+      <h3>Banned phrases</h3>
+      <div class="dont">Don't use "officer-initiated" in UI copy. Use "police-initiated" or "police stops."</div>
+      <div class="dont">Don't use "victim-reported" in UI copy. Use "crimes reported by residents."</div>
+      <div class="dont">Don't use "proactive" in UI copy.</div>
+      <div class="dont">Don't use "enforcement ratio" in UI copy. Use "Police Stops per Crime Report."</div>
+      <div class="dont">Don't use "Lens 1", "Lens 2", "Lens 3" in UI copy. These are internal names only.</div>
+
+      <h3>Flag copy rule</h3>
+      <p>Flags say what is anomalous and name the reference frame. Never a verdict on the neighborhood.</p>
+      <div class="rule">Good: "Some incidents couldn't be placed on the map — counts here may understate actual activity."</div>
+      <div class="dont">"This neighborhood has poor data quality." — that's a judgment, not a description.</div>
+
+      <div class="footer" style="margin-top:48px;">
+        Lens Design System · UCSC CSE 115A · July 2026 · Open <code>docs/style-guide.html</code> directly in any browser.
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
