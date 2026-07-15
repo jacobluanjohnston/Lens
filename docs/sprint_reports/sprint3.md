@@ -28,23 +28,23 @@
 
 ## Work Completed
 
-| Card | Owner | Pts | Acceptance Criteria | Definition of Done |
-|---|---|---|---|---|
-| Spike: Aggregation unit | Jacob | 1 | Decision documented with rationale | `docs/spikes/aggregation_unit.md` + ADR committed ✅ |
-| Spike: Per-capita denominator | Jacob | 3 | Know what population number to use and how defensible it is | `docs/spikes/per_capita_denominator.md`; ACS B01003 + crosswalk confirmed ✅ |
-| Spike: G2 — per-category resolution window | Jacob | 1 | Per-category N value determined | MVT 30d, Assault 150d, Burglary 180d, Robbery 190d ✅ |
-| Spike: G3 — resolution trend decomposition | Jacob | 1 | Understand resolution rate rise since Aug 2024 | +9.1pp: 62% composition shift, 38% within-category ✅ |
-| Data engineering methodology docs | Jacob | 3 | Methodology defensible in writing | `docs/methodology.md`, `docs/adr/001` committed ✅ |
-| API contract design | Jacob | 1 | Frontend and backend agree on request/response shape | Contract documented, shared with Louisa ✅ |
-| Geography dimension table | Ishita | 3 | 41 neighborhoods loaded with correct polygons and population | `SELECT COUNT(*) FROM neighborhoods` = 41 ✅ |
-| Precomputed aggregate tables | Ishita | 3 | `neighborhood_month_rollup` table created with correct schema | Migration runs clean; table exists with correct columns ✅ |
-| Batch aggregation job | Ishita | 5 | Rollup matches direct COUNT on incidents | 78,470 rollup rows; spot-checks match ✅ |
-| GET /neighborhoods | Jacob | 2 | Returns 41 neighborhoods as GeoJSON FeatureCollection with all properties | 3 tests pass; all 5 properties present on every feature ✅ |
-| GET /lens/1, /lens/2, /lens/3 | Jacob | 3 | Lens endpoints return correct schema; Lens 3 returns 503 | Tests pass: date validation, schema check, null suppression for parks ✅ |
-| Migrate frontend to Next.js | Louisa | 2 | App runs under Next.js; Leaflet works client-side | `frontend-next/` boots; Leaflet renders via `dynamic()` with `ssr: false` ✅ |
-| Choropleth layer | Louisa | 5 | Map colors neighborhoods by lens value from real API | Choropleth renders from `/neighborhoods` + `/lens/1`; ID join works ✅ |
-| Lens toggle | Louisa | 2 | Switching lens re-fetches data and recolors the map | Toggle changes `activeLens`, triggers refetch ✅ |
-| Neighborhood sidebar | Louisa | 3 | Clicking a neighborhood opens a panel with metrics | Panel opens on click, shows lens values and flags ✅ |
+| Card | Owner         | Pts | Acceptance Criteria | Definition of Done |
+|---|---------------|---|---|---|
+| Spike: Aggregation unit | Jacob         | 1 | Decision documented with rationale | `docs/spikes/aggregation_unit.md` + ADR committed ✅ |
+| Spike: Per-capita denominator | Jacob         | 3 | Know what population number to use and how defensible it is | `docs/spikes/per_capita_denominator.md`; ACS B01003 + crosswalk confirmed ✅ |
+| Spike: G2 — per-category resolution window | Jacob         | 1 | Per-category N value determined | MVT 30d, Assault 150d, Burglary 180d, Robbery 190d ✅ |
+| Spike: G3 — resolution trend decomposition | Jacob         | 1 | Understand resolution rate rise since Aug 2024 | +9.1pp: 62% composition shift, 38% within-category ✅ |
+| Data engineering methodology docs | Jacob         | 3 | Methodology defensible in writing | `docs/methodology.md`, `docs/adr/001` committed ✅ |
+| API contract design | Jacob         | 1 | Frontend and backend agree on request/response shape | Contract documented, shared with Louisa ✅ |
+| Geography dimension table | Ishita        | 3 | 41 neighborhoods loaded with correct polygons and population | `SELECT COUNT(*) FROM neighborhoods` = 41 ✅ |
+| Precomputed aggregate tables | Ishita        | 3 | `neighborhood_month_rollup` table created with correct schema | Migration runs clean; table exists with correct columns ✅ |
+| Batch aggregation job | Ishita        | 5 | Rollup matches direct COUNT on incidents | 78,470 rollup rows; spot-checks match ✅ |
+| GET /neighborhoods | Jacob         | 2 | Returns 41 neighborhoods as GeoJSON FeatureCollection with all properties | 3 tests pass; all 5 properties present on every feature ✅ |
+| GET /lens/1, /lens/2, /lens/3 | Jacob         | 3 | Lens endpoints return correct schema; Lens 3 returns 503 | Tests pass: date validation, schema check, null suppression for parks ✅ |
+| Migrate frontend to Next.js | Louisa        | 2 | App runs under Next.js; Leaflet works client-side | `frontend-next/` boots; Leaflet renders via `dynamic()` with `ssr: false` ✅ |
+| Choropleth layer | Louisa, Jacob | 5 | Map colors neighborhoods by lens value from real API | Choropleth renders from `/neighborhoods` + `/lens/1`; ID join works ✅ |
+| Lens toggle | Louisa, Jacob | 2 | Switching lens re-fetches data and recolors the map | Toggle changes `activeLens`, triggers refetch ✅ |
+| Neighborhood sidebar | Louisa, Jacob | 3 | Clicking a neighborhood opens a panel with metrics | Panel opens on click, shows lens values and flags ✅ |
 
 ---
 

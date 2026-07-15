@@ -5,6 +5,7 @@ import type { LensData } from "@/types/lens";
 interface NeighborhoodPanelProps {
   neighborhood: LensData | null;
   activeLens: 1 | 2 | 3;
+  lens1Mode: "raw" | "per_capita";
   dateRange: { start: string; end: string };
   onFixProvisional: () => void;
 }
@@ -28,7 +29,7 @@ const LENS_META: Record<1 | 2 | 3, { label: string; description: string }> = {
   2: {
     label: "Lens 2 — Officer Enforcement",
     description:
-      "How much officer-initiated activity relative to victim-reported crime? Compares proactive incidents (drug stops, warrants) to serious victim-reported crimes (burglary, robbery, assault, vehicle theft).",
+      "How much officer-initiated activity relative to victim-reported crime? Compares proactive incidents (drug stops, warrants, prostitution) to serious victim-reported crimes (burglary, robbery, assault, vehicle theft).",
   },
   3: {
     label: "Lens 3 — Resolution Gap",
@@ -85,12 +86,19 @@ function Metric({
   value,
   tip,
   comparison,
+  delta,
 }: {
   label: string;
   value: string | number;
-  tip: string;
+  tip?: string;
   comparison?: string;
+  delta?: number;
 }) {
+  const deltaLabel = delta != null
+    ? `${delta >= 0 ? "+" : ""}${delta.toFixed(0)}% ${delta >= 0 ? "above" : "below"} median`
+    : null;
+  const deltaColor = delta == null ? undefined : delta >= 0 ? "#b45309" : "#2563eb";
+
   return (
     <div
       style={{
@@ -116,7 +124,7 @@ function Metric({
         }}
       >
         {label}
-        <Info tip={tip} />
+        {tip && <Info tip={tip} />}
       </div>
       <div style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}>
         {value}
@@ -124,6 +132,11 @@ function Metric({
       {comparison && (
         <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 5 }}>
           {comparison}
+        </div>
+      )}
+      {deltaLabel && (
+        <div style={{ fontSize: 11, fontWeight: 600, color: deltaColor, marginTop: 3 }}>
+          {deltaLabel}
         </div>
       )}
     </div>
@@ -220,6 +233,7 @@ function Flag({
 export default function NeighborhoodPanel({
   neighborhood,
   activeLens,
+  lens1Mode,
   dateRange,
   onFixProvisional,
 }: NeighborhoodPanelProps) {
@@ -270,30 +284,42 @@ export default function NeighborhoodPanel({
       <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
         {activeLens === 1 && (
           <>
-            <Metric
-              label="Total Incidents"
-              value={neighborhood.raw_count?.toLocaleString() ?? "—"}
-              tip="All reported incidents in the selected date range, all categories combined. Contaminated by patrol intensity — more officers in an area generate more reports."
-              comparison={
-                neighborhood.reference_raw != null
-                  ? `city median  ${Math.round(neighborhood.reference_raw).toLocaleString()}`
-                  : undefined
-              }
-            />
-            <Metric
-              label="Per 1,000 Residents"
-              value={
-                neighborhood.per_capita != null
-                  ? neighborhood.per_capita
-                  : "Not applicable"
-              }
-              tip="Incidents per 1,000 residents. Adjusts for neighborhood size. Suppressed for non-residential areas (parks, Farallones)."
-              comparison={
-                neighborhood.per_capita != null && neighborhood.reference_per_capita != null
-                  ? `city median  ${neighborhood.reference_per_capita}`
-                  : undefined
-              }
-            />
+            <div style={{ opacity: lens1Mode === "raw" ? 1 : 0.4, transition: "opacity .2s" }}>
+              <Metric
+                label="Total Incidents"
+                value={neighborhood.raw_count?.toLocaleString() ?? "—"}
+                comparison={
+                  neighborhood.reference_raw != null
+                    ? `Compared to the City Median of ${Math.round(neighborhood.reference_raw).toLocaleString()}`
+                    : undefined
+                }
+                delta={
+                  neighborhood.raw_count != null && neighborhood.reference_raw != null
+                    ? ((neighborhood.raw_count - neighborhood.reference_raw) / neighborhood.reference_raw) * 100
+                    : undefined
+                }
+              />
+            </div>
+            <div style={{ opacity: lens1Mode === "per_capita" ? 1 : 0.4, transition: "opacity .2s" }}>
+              <Metric
+                label="Per 1,000 Residents"
+                value={
+                  neighborhood.per_capita != null
+                    ? neighborhood.per_capita
+                    : "Not applicable"
+                }
+                comparison={
+                  neighborhood.per_capita != null && neighborhood.reference_per_capita != null
+                    ? `Compared to the City Median of ${Number(neighborhood.reference_per_capita).toFixed(2)}`
+                    : undefined
+                }
+                delta={
+                  neighborhood.per_capita != null && neighborhood.reference_per_capita != null
+                    ? ((Number(neighborhood.per_capita) - Number(neighborhood.reference_per_capita)) / Number(neighborhood.reference_per_capita)) * 100
+                    : undefined
+                }
+              />
+            </div>
           </>
         )}
 
@@ -305,10 +331,14 @@ export default function NeighborhoodPanel({
                 ? `${neighborhood.value} per 100`
                 : "Not applicable"
             }
-            tip="Officer-initiated incidents (drug stops, warrants, loitering arrests) per 100 victim-reported serious crimes (burglary, robbery, assault, vehicle theft). High values may reflect patrol presence more than actual crime."
             comparison={
               neighborhood.value != null && neighborhood.reference_value != null
-                ? `city median  ${neighborhood.reference_value} per 100`
+                ? `Compared to the City Median of ${neighborhood.reference_value} per 100`
+                : undefined
+            }
+            delta={
+              neighborhood.value != null && neighborhood.reference_value != null
+                ? ((Number(neighborhood.value) - Number(neighborhood.reference_value)) / Number(neighborhood.reference_value)) * 100
                 : undefined
             }
           />
