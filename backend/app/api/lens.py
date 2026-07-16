@@ -26,7 +26,7 @@ _DB_URL = os.environ.get("DATABASE_URL", "postgresql://lens:lens@localhost:5432/
 # Civil Sidewalks and Stolen Property are sensitivity-only — excluded here.
 _OFFICER_CATEGORIES = (
     "Drug Offense", "Drug Violation", "Warrant",
-    "Prostitution", "Traffic Violation Arrest", "Weapons Carrying",
+    "Prostitution", "Traffic Violation Arrest", "Weapons Carrying Etc",
 )
 
 # Bucket A — victim-reported serious crime.
@@ -199,25 +199,26 @@ def get_lens3(
         content={"detail": "Lens 3 not yet available — assault surgery pending"},
     )
 
+
 # ── Compare ───────────────────────────────────────────────────────────────────
 # Card 1, Sprint 4. Per-neighborhood change in the Lens 2 enforcement ratio
 # between a baseline window and a compare window (e.g. before/after a policy
 # event). Dates are YYYY-MM (month granularity) — the underlying dataset has
 # no day-level precision, so YYYY-MM-DD would be false precision.
- 
+
 def _parse_year_month(value: str, field_name: str) -> date:
     """Parse a 'YYYY-MM' string into the first day of that month."""
     try:
         return datetime.strptime(value, "%Y-%m").date()
     except ValueError:
         raise HTTPException(status_code=422, detail=f"{field_name} must be in YYYY-MM format")
- 
- 
+
+
 def _month_end(d: date) -> date:
     """Last calendar day of the month containing d."""
     return date(d.year, d.month, monthrange(d.year, d.month)[1])
- 
- 
+
+
 _COMPARE_QUERY = """
     SELECT
         n.neighborhood_id,
@@ -256,8 +257,8 @@ _COMPARE_QUERY = """
         n.per_capita_applicable, n.low_confidence
     ORDER BY n.neighborhood_name
 """
- 
- 
+
+
 @router.get("/lens/compare")
 def get_lens_compare(
     baseline_start: Optional[str] = Query(None, description="Baseline window start, YYYY-MM"),
@@ -277,22 +278,22 @@ def get_lens_compare(
             status_code=422,
             detail=f"Missing required date param(s): {', '.join(missing)}",
         )
- 
+
     b_start = _parse_year_month(baseline_start, "baseline_start")
     b_end   = _parse_year_month(baseline_end, "baseline_end")
     c_start = _parse_year_month(compare_start, "compare_start")
     c_end   = _parse_year_month(compare_end, "compare_end")
- 
+
     if b_end <= b_start:
         raise HTTPException(status_code=422, detail="baseline_end must be after baseline_start")
     if c_end <= c_start:
         raise HTTPException(status_code=422, detail="compare_end must be after compare_start")
- 
+
     if (_month_end(b_end) - b_start).days < 30:
         raise HTTPException(status_code=422, detail="baseline window must span at least 30 days")
     if (_month_end(c_end) - c_start).days < 30:
         raise HTTPException(status_code=422, detail="compare window must span at least 30 days")
- 
+
     conn = _connect()
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -307,7 +308,7 @@ def get_lens_compare(
             rows = cur.fetchall()
     finally:
         conn.close()
- 
+
     results = []
     for r in rows:
         baseline_ratio = _lens2_ratio(
@@ -330,5 +331,5 @@ def get_lens_compare(
             "baseline_count":    r["baseline_officer_count"],
             "compare_count":     r["compare_officer_count"],
         })
- 
+
     return results
