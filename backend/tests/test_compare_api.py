@@ -23,20 +23,41 @@ _COMPARE_MONTHS = [date(2099, 4, 1), date(2099, 5, 1), date(2099, 6, 1)]
 _ALL_MONTHS = _BASELINE_MONTHS + _COMPARE_MONTHS
 
 
-def _pick_test_neighborhood() -> str:
-    """Grab a real, per-capita-applicable neighborhood_id to seed rows against."""
+def _seed_neighborhood(neighborhood_id: str, name: str) -> str:
+    """Insert a synthetic neighborhood so tests don't depend on pre-loaded data.
+
+    CI runs against a migrated-but-empty DB, so tests must seed everything
+    they need — including the neighborhoods they attach rollup rows to.
+    """
     conn = _connect()
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT neighborhood_id FROM neighborhoods "
-                "WHERE per_capita_applicable = true ORDER BY neighborhood_id LIMIT 1"
+                """
+                INSERT INTO neighborhoods
+                    (neighborhood_id, neighborhood_name, population,
+                     per_capita_applicable, low_confidence)
+                VALUES (%s, %s, 10000, true, false)
+                ON CONFLICT (neighborhood_id) DO NOTHING
+                """,
+                (neighborhood_id, name),
             )
-            row = cur.fetchone()
+        conn.commit()
     finally:
         conn.close()
-    assert row is not None, "no per-capita-applicable neighborhood found — is the DB seeded?"
-    return row[0]
+    return neighborhood_id
+
+
+def _delete_neighborhood(neighborhood_id: str):
+    conn = _connect()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM neighborhoods WHERE neighborhood_id = %s", (neighborhood_id,)
+            )
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def _seed_rollup_rows(neighborhood_id, rows):
@@ -76,9 +97,9 @@ def _cleanup_rollup_rows(neighborhood_id, months):
 
 @pytest.fixture
 def seeded_neighborhood():
-    """Seed known officer/victim counts across the synthetic baseline and
-    compare windows for one real neighborhood, and clean up afterward."""
-    neighborhood_id = _pick_test_neighborhood()
+    """Seed a synthetic neighborhood with known officer/victim counts across
+    the baseline and compare windows, and clean up afterward."""
+    neighborhood_id = _seed_neighborhood("zz-test-ratio", "ZZ Test Ratio")
     rows = [
         (_BASELINE_MONTHS[0], "Warrant", 10),
         (_BASELINE_MONTHS[1], "Warrant", 5),
@@ -90,13 +111,14 @@ def seeded_neighborhood():
     _seed_rollup_rows(neighborhood_id, rows)
     yield neighborhood_id, rows
     _cleanup_rollup_rows(neighborhood_id, _ALL_MONTHS)
+    _delete_neighborhood(neighborhood_id)
 
 
 @pytest.fixture
 def zero_victim_neighborhood():
-    """Seed a neighborhood with officer activity but zero victim-reported
-    crime in both windows, and clean up afterward."""
-    neighborhood_id = _pick_test_neighborhood()
+    """Seed a synthetic neighborhood with officer activity but zero
+    victim-reported crime in both windows, and clean up afterward."""
+    neighborhood_id = _seed_neighborhood("zz-test-zerovictim", "ZZ Test Zero Victim")
     rows = [
         (_BASELINE_MONTHS[0], "Warrant", 15),
         (_COMPARE_MONTHS[0], "Warrant", 25),
@@ -104,6 +126,7 @@ def zero_victim_neighborhood():
     _seed_rollup_rows(neighborhood_id, rows)
     yield neighborhood_id
     _cleanup_rollup_rows(neighborhood_id, _ALL_MONTHS)
+    _delete_neighborhood(neighborhood_id)
 
 
 # ── /lens/compare ─────────────────────────────────────────────────────────────
