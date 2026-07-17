@@ -235,6 +235,11 @@ function Flag({
               {info.fix} →
             </button>
           )}
+          {info.fix && !onFix && (
+            <div style={{ marginTop: 4, fontSize: 11, color: "#92400e", fontWeight: 600 }}>
+              We suggest moving end dates to {fmtMonth(stableEndDate())}
+            </div>
+          )}
         </>
       )}
     </div>
@@ -287,19 +292,19 @@ export default function NeighborhoodPanel({
 
     return (
       <div style={GLASS}>
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 14 }}>
           <div
             style={{
               fontSize: 11,
               color: "#64748b",
               textTransform: "uppercase",
               letterSpacing: ".08em",
-              marginBottom: 8,
+              marginBottom: 3,
             }}
           >
             Lens 2 — Officer Enforcement — Custom date
           </div>
-          <h2 style={{ margin: 0, marginBottom: 8, color: "#111827", fontSize: 18 }}>
+          <h2 style={{ margin: 0, marginBottom: 6, color: "#111827", fontSize: 18 }}>
             {compareNeighborhood.neighborhood_name}
           </h2>
           <p style={{ margin: 0, fontSize: 13, color: "#64748b", lineHeight: 1.45 }}>
@@ -344,7 +349,7 @@ export default function NeighborhoodPanel({
         {neighborhood && (
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 8, textTransform: "uppercase", letterSpacing: ".08em" }}>
-              Data warnings
+              Data flags
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <Flag flagKey="low_confidence" active={neighborhood.low_confidence} />
