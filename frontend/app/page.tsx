@@ -78,7 +78,6 @@ export default function Home() {
   // Store only the ID so the selection survives lens switches.
   // The displayed data is derived from lensData after each fetch.
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedCompareId, setSelectedCompareId] = useState<string | null>(null);
 
   const [lensData, setLensData] = useState<LensData[]>([]);
   const [fetchId, setFetchId] = useState(0);
@@ -93,12 +92,13 @@ export default function Home() {
       ? "Each comparison end month must be after its start month."
       : null;
 
-  // Derive the panel data from current lensData whenever either changes.
+  // Single selection ID shared across all modes — switching lenses or toggling
+  // compare never clears or replaces the selected neighborhood.
   const selectedNeighborhood = selectedId
     ? (lensData.find((d) => d.neighborhood_id === selectedId) ?? null)
     : null;
-  const selectedCompareNeighborhood = selectedCompareId
-    ? (compareData.find((item) => item.neighborhood_id === selectedCompareId) ?? null)
+  const selectedCompareNeighborhood = selectedId
+    ? (compareData.find((item) => item.neighborhood_id === selectedId) ?? null)
     : null;
   const maxDeltaMagnitude = compareData.reduce(
     (maximum, item) => item.delta === null
@@ -273,7 +273,7 @@ export default function Home() {
           fetchId={compareMode ? compareFetchId : fetchId}
           onSelectNeighborhood={(lens) => setSelectedId(lens?.neighborhood_id ?? null)}
           onSelectCompareNeighborhood={(comparison) =>
-            setSelectedCompareId(comparison?.neighborhood_id ?? null)
+            setSelectedId(comparison?.neighborhood_id ?? null)
           }
         />
 
