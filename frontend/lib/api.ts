@@ -51,6 +51,8 @@ function isCompareData(value: unknown): value is CompareData {
     isNullableNumber(value.compare_ratio) &&
     "delta" in value &&
     isNullableNumber(value.delta) &&
+    "baseline_count" in value &&
+    typeof value.baseline_count === "number" &&
     "compare_count" in value &&
     typeof value.compare_count === "number"
   );

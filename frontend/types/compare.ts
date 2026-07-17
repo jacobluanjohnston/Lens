@@ -4,5 +4,6 @@ export interface CompareData {
   baseline_ratio: number | null;
   compare_ratio: number | null;
   delta: number | null;
+  baseline_count: number;
   compare_count: number;
 }
