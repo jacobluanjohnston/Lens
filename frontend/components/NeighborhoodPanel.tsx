@@ -354,7 +354,10 @@ export default function NeighborhoodPanel({
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <Flag flagKey="low_confidence" active={neighborhood.low_confidence} />
               <Flag flagKey="per_capita_na" active={!neighborhood.per_capita_applicable} />
-              <Flag flagKey="provisional" active={neighborhood.provisional ?? false} />
+              <Flag
+                flagKey="provisional"
+                active={(Date.now() - new Date(compareRanges.compareEnd).getTime()) / 86_400_000 < 90}
+              />
             </div>
           </div>
         )}
