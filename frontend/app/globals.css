@@ -23,3 +23,20 @@ body {
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, sans-serif;
 }
+
+.controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100vw - 36px);
+}
+
+@media (max-width: 640px) {
+  .controls-bar {
+    align-items: flex-end;
+    flex-wrap: wrap;
+    width: calc(100vw - 36px);
+    max-height: calc(100vh - 36px);
+    overflow-y: auto;
+  }
+}

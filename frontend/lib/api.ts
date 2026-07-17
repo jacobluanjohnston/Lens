@@ -1,4 +1,5 @@
 import type { Incident } from "@/types/incident";
+import type { CompareData } from "@/types/compare";
 
 function isoDate(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -30,4 +31,60 @@ export async function fetchIncidents(
   }
 
   return res.json();
+}
+
+function isNullableNumber(value: unknown): value is number | null {
+  return value === null || typeof value === "number";
+}
+
+function isCompareData(value: unknown): value is CompareData {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "neighborhood_id" in value &&
+    typeof value.neighborhood_id === "string" &&
+    "neighborhood_name" in value &&
+    typeof value.neighborhood_name === "string" &&
+    "baseline_ratio" in value &&
+    isNullableNumber(value.baseline_ratio) &&
+    "compare_ratio" in value &&
+    isNullableNumber(value.compare_ratio) &&
+    "delta" in value &&
+    isNullableNumber(value.delta) &&
+    "compare_count" in value &&
+    typeof value.compare_count === "number"
+  );
+}
+
+export async function fetchCompareData(
+  baselineStart: string,
+  baselineEnd: string,
+  compareStart: string,
+  compareEnd: string
+): Promise<CompareData[]> {
+  const params = new URLSearchParams({
+    baseline_start: baselineStart.slice(0, 7),
+    baseline_end: baselineEnd.slice(0, 7),
+    compare_start: compareStart.slice(0, 7),
+    compare_end: compareEnd.slice(0, 7),
+  });
+  const response = await fetch(`/lens/compare?${params}`);
+  const body: unknown = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const detail =
+      typeof body === "object" &&
+      body !== null &&
+      "detail" in body &&
+      typeof body.detail === "string"
+        ? body.detail
+        : `Unable to load comparison (HTTP ${response.status}).`;
+    throw new Error(detail);
+  }
+
+  if (!Array.isArray(body) || !body.every(isCompareData)) {
+    throw new Error("Unexpected comparison response from server.");
+  }
+
+  return body;
 }

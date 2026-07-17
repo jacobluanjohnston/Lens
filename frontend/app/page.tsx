@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import type { Incident } from "@/types/incident";
 import type { LensData } from "@/types/lens";
+import type { CompareData } from "@/types/compare";
+import { fetchCompareData } from "@/lib/api";
 
 import Map from "@/components/Map";
 import Controls from "@/components/Controls";
@@ -16,10 +18,59 @@ function isoDate(d: Date) {
 
 const today = new Date();
 
+function DeltaLegend({ maxMagnitude }: { maxMagnitude: number }) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 18,
+        bottom: 32,
+        zIndex: 1000,
+        width: 240,
+        background: "rgba(255,255,255,.12)",
+        backdropFilter: "blur(14px)",
+        WebkitBackdropFilter: "blur(14px)",
+        border: "1px solid rgba(255,255,255,.18)",
+        borderRadius: 16,
+        padding: 14,
+        boxShadow: "0 4px 12px rgba(0,0,0,.08), inset 0 1px 1px rgba(255,255,255,.18)",
+      }}
+    >
+      <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 8 }}>
+        Change in enforcement ratio
+      </div>
+      <div
+        style={{
+          height: 20,
+          borderRadius: 4,
+          background: "linear-gradient(to right, #2563eb, #93c5fd, #f1f5f9, #fca5a5, #dc2626)",
+          marginBottom: 8,
+        }}
+      />
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b" }}>
+        <span>−{maxMagnitude.toFixed(1)}</span>
+        <span>0</span>
+        <span>+{maxMagnitude.toFixed(1)}</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, fontSize: 11, color: "#64748b" }}>
+        <span style={{ width: 12, height: 12, borderRadius: 3, background: "#9ca3af" }} />
+        <span>No comparable ratio</span>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [start, setStart] = useState("2018-01-01");
   const [end, setEnd] = useState(isoDate(today));
   const [category, setCategory] = useState("");
+  const [compareMode, setCompareMode] = useState(false);
+  const [baselineStart, setBaselineStart] = useState("2024-04-01");
+  const [baselineEnd, setBaselineEnd] = useState("2024-12-01");
+  const [compareStart, setCompareStart] = useState("2025-01-01");
+  const [compareEnd, setCompareEnd] = useState("2025-09-01");
+  const [compareData, setCompareData] = useState<CompareData[]>([]);
+  const [compareFetchId, setCompareFetchId] = useState(0);
 
   const [activeLens, setActiveLens] = useState<1 | 2 | 3>(1);
   const [lens1Mode, setLens1Mode] = useState<"raw" | "per_capita">("per_capita");
@@ -27,6 +78,7 @@ export default function Home() {
   // Store only the ID so the selection survives lens switches.
   // The displayed data is derived from lensData after each fetch.
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedCompareId, setSelectedCompareId] = useState<string | null>(null);
 
   const [lensData, setLensData] = useState<LensData[]>([]);
   const [fetchId, setFetchId] = useState(0);
@@ -36,11 +88,24 @@ export default function Home() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const compareValidationError =
+    compareMode && (baselineEnd <= baselineStart || compareEnd <= compareStart)
+      ? "Each comparison end month must be after its start month."
+      : null;
 
   // Derive the panel data from current lensData whenever either changes.
   const selectedNeighborhood = selectedId
     ? (lensData.find((d) => d.neighborhood_id === selectedId) ?? null)
     : null;
+  const selectedCompareNeighborhood = selectedCompareId
+    ? (compareData.find((item) => item.neighborhood_id === selectedCompareId) ?? null)
+    : null;
+  const maxDeltaMagnitude = compareData.reduce(
+    (maximum, item) => item.delta === null
+      ? maximum
+      : Math.max(maximum, Math.abs(item.delta)),
+    0
+  );
 
   // Shift end date to 3 months ago — outside the 90-day provisional window.
   function fixProvisional() {
@@ -129,6 +194,32 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLens, start, end, category]);
 
+  useEffect(() => {
+    if (!compareMode) return;
+
+    if (baselineEnd <= baselineStart || compareEnd <= compareStart) {
+      return;
+    }
+
+    let active = true;
+
+    fetchCompareData(baselineStart, baselineEnd, compareStart, compareEnd)
+      .then((data) => {
+        if (!active) return;
+        setCompareData(data);
+        setCompareFetchId((current) => current + 1);
+        setError(null);
+      })
+      .catch((reason: unknown) => {
+        if (!active) return;
+        setCompareData([]);
+        setError(reason instanceof Error ? reason.message : "Unable to load comparison.");
+      });
+    return () => {
+      active = false;
+    };
+  }, [compareMode, baselineStart, baselineEnd, compareStart, compareEnd]);
+
   return (
     <main
       style={{
@@ -153,18 +244,37 @@ export default function Home() {
           categories={categories}
           loading={loading}
           activeLens={activeLens}
+          compareMode={compareMode}
+          baselineStart={baselineStart}
+          baselineEnd={baselineEnd}
+          compareStart={compareStart}
+          compareEnd={compareEnd}
           onStartChange={setStart}
           onEndChange={setEnd}
           onCategoryChange={setCategory}
+          onCompareModeChange={setCompareMode}
+          onBaselineStartChange={setBaselineStart}
+          onBaselineEndChange={setBaselineEnd}
+          onCompareStartChange={setCompareStart}
+          onCompareEndChange={setCompareEnd}
         />
 
         <Map
           activeLens={activeLens}
           lens1Mode={lens1Mode}
           lensData={lensData}
-          fetchId={fetchId}
+          compareMode={compareMode}
+          compareData={compareValidationError ? [] : compareData}
+          fetchId={compareMode ? compareFetchId : fetchId}
           onSelectNeighborhood={(lens) => setSelectedId(lens?.neighborhood_id ?? null)}
+          onSelectCompareNeighborhood={(comparison) =>
+            setSelectedCompareId(comparison?.neighborhood_id ?? null)
+          }
         />
+
+        {compareMode && !compareValidationError && (
+          <DeltaLegend maxMagnitude={maxDeltaMagnitude} />
+        )}
       </div>
 
       {/* Floating Right Panels */}
@@ -196,6 +306,14 @@ export default function Home() {
         <div style={{ pointerEvents: "auto" }}>
           <NeighborhoodPanel
             neighborhood={selectedNeighborhood}
+            compareMode={compareMode}
+            compareNeighborhood={selectedCompareNeighborhood}
+            compareRanges={{
+              baselineStart,
+              baselineEnd,
+              compareStart,
+              compareEnd,
+            }}
             activeLens={activeLens}
             lens1Mode={lens1Mode}
             dateRange={{ start, end }}
@@ -207,7 +325,7 @@ export default function Home() {
           <FlagsPanel />
         </div>
 
-        {error && (
+        {(compareValidationError ?? error) && (
           <div
             style={{
               pointerEvents: "auto",
@@ -219,7 +337,7 @@ export default function Home() {
               fontSize: 14,
             }}
           >
-            {error}
+            {compareValidationError ?? error}
           </div>
         )}
       </div>

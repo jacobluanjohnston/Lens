@@ -47,11 +47,6 @@ function MonthPicker({ label, value, disabled, onChange }: MonthPickerProps) {
 
   const [viewYear, setViewYear] = useState(year || MAX_YEAR);
 
-  // Sync viewYear when value changes externally
-  useEffect(() => {
-    if (year) setViewYear(year);
-  }, [year]);
-
   // Close on outside click
   useEffect(() => {
     if (!open) return;
@@ -207,10 +202,20 @@ interface ControlsProps {
   categories: string[];
   loading: boolean;
   activeLens: 1 | 2 | 3;
+  compareMode: boolean;
+  baselineStart: string;
+  baselineEnd: string;
+  compareStart: string;
+  compareEnd: string;
 
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
   onCategoryChange: (value: string) => void;
+  onCompareModeChange: (value: boolean) => void;
+  onBaselineStartChange: (value: string) => void;
+  onBaselineEndChange: (value: string) => void;
+  onCompareStartChange: (value: string) => void;
+  onCompareEndChange: (value: string) => void;
 }
 
 export default function Controls({
@@ -220,20 +225,28 @@ export default function Controls({
   categories,
   loading,
   activeLens,
+  compareMode,
+  baselineStart,
+  baselineEnd,
+  compareStart,
+  compareEnd,
   onStartChange,
   onEndChange,
   onCategoryChange,
+  onCompareModeChange,
+  onBaselineStartChange,
+  onBaselineEndChange,
+  onCompareStartChange,
+  onCompareEndChange,
 }: ControlsProps) {
   return (
     <div
+      className="controls-bar"
       style={{
         position: "absolute",
         top: 18,
         left: 18,
         zIndex: 1000,
-        display: "flex",
-        alignItems: "center",
-        gap: 14,
         background: "rgba(255,255,255,.14)",
         backdropFilter: "blur(28px)",
         WebkitBackdropFilter: "blur(28px)",
@@ -248,19 +261,25 @@ export default function Controls({
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 8 }}>
         {/* 2×2 grid mark — colors track the active lens's choropleth scale */}
         <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {activeLens === 1 && <>
+          {compareMode && <>
+            <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#2563eb"/>
+            <rect x="19" y="0"  width="15" height="15" rx="2" fill="#93c5fd"/>
+            <rect x="0"  y="19" width="15" height="15" rx="2" fill="#fca5a5"/>
+            <rect x="19" y="19" width="15" height="15" rx="2" fill="#dc2626"/>
+          </>}
+          {!compareMode && activeLens === 1 && <>
             <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#FFEDA0"/>
             <rect x="19" y="0"  width="15" height="15" rx="2" fill="#FEB24C"/>
             <rect x="0"  y="19" width="15" height="15" rx="2" fill="#FC4E2A"/>
             <rect x="19" y="19" width="15" height="15" rx="2" fill="#800026"/>
           </>}
-          {activeLens === 2 && <>
+          {!compareMode && activeLens === 2 && <>
             <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#1d4ed8"/>
             <rect x="19" y="0"  width="15" height="15" rx="2" fill="#93c5fd"/>
             <rect x="0"  y="19" width="15" height="15" rx="2" fill="#f97316"/>
             <rect x="19" y="19" width="15" height="15" rx="2" fill="#c2410c"/>
           </>}
-          {activeLens === 3 && <>
+          {!compareMode && activeLens === 3 && <>
             <rect x="0"  y="0"  width="15" height="15" rx="2" fill="#e2e8f0"/>
             <rect x="19" y="0"  width="15" height="15" rx="2" fill="#cbd5e1"/>
             <rect x="0"  y="19" width="15" height="15" rx="2" fill="#94a3b8"/>
@@ -276,22 +295,22 @@ export default function Controls({
         </div>
       </div>
 
-      <MonthPicker
-        label="From"
-        value={start}
-        disabled={loading}
-        onChange={onStartChange}
-      />
-
-      <MonthPicker
-        label="To"
-        value={end}
-        disabled={loading}
-        onChange={onEndChange}
-      />
+      {compareMode ? (
+        <>
+          <MonthPicker key={`before-start-${baselineStart}`} label="Before start" value={baselineStart} disabled={loading} onChange={onBaselineStartChange} />
+          <MonthPicker key={`before-end-${baselineEnd}`} label="Before end" value={baselineEnd} disabled={loading} onChange={onBaselineEndChange} />
+          <MonthPicker key={`after-start-${compareStart}`} label="After start" value={compareStart} disabled={loading} onChange={onCompareStartChange} />
+          <MonthPicker key={`after-end-${compareEnd}`} label="After end" value={compareEnd} disabled={loading} onChange={onCompareEndChange} />
+        </>
+      ) : (
+        <>
+          <MonthPicker key={`from-${start}`} label="From" value={start} disabled={loading} onChange={onStartChange} />
+          <MonthPicker key={`to-${end}`} label="To" value={end} disabled={loading} onChange={onEndChange} />
+        </>
+      )}
 
       {/* Crime — hidden on Lens 2 (hardcodes its own category buckets) */}
-      {activeLens !== 2 && (
+      {!compareMode && activeLens !== 2 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
           <label style={LABEL_STYLE}>Crime</label>
           <select
@@ -318,6 +337,29 @@ export default function Controls({
           </select>
         </div>
       )}
+
+      <button
+        type="button"
+        aria-pressed={compareMode}
+        onClick={() => onCompareModeChange(!compareMode)}
+        style={{
+          alignSelf: "flex-end",
+          padding: "8px 16px",
+          borderRadius: 8,
+          border: compareMode
+            ? "1px solid rgba(99,102,241,.45)"
+            : "1px solid rgba(255,255,255,.28)",
+          background: compareMode
+            ? "rgba(99,102,241,.14)"
+            : "rgba(255,255,255,.22)",
+          color: compareMode ? "#4338ca" : "#475569",
+          fontSize: 11,
+          fontWeight: 700,
+          cursor: "pointer",
+        }}
+      >
+        Compare {compareMode ? "on" : "off"}
+      </button>
     </div>
   );
 }

@@ -413,3 +413,92 @@ Current frontend polish tasks:
 - Improve floating sidebar styling.
 - Add hover effects and smoother transitions.
 
+---
+
+# July 17, 2026
+
+## Sprint 4 — Card 2: Compare Mode UI and Delta Choropleth (#64)
+
+### Objective
+
+Add a frontend comparison mode for viewing the change in officer-initiated enforcement ratios between two date windows. The implementation is built against the Card 1 `GET /lens/compare` API contract while that endpoint is still under review.
+
+### Work Completed
+
+- Added a Compare toggle to the controls bar.
+- Added Before and After month ranges with a start and end picker for each range.
+- Added typed compare-mode state without replacing or discarding the normal lens data.
+- Added `CompareData` in `frontend/types/compare.ts`.
+- Added a typed `GET /lens/compare` request using:
+  - `baseline_start`
+  - `baseline_end`
+  - `compare_start`
+  - `compare_end`
+- Added runtime response validation using `unknown` and a type guard.
+- Added client-side date validation so an invalid comparison window does not send a request.
+- Added a symmetric diverging delta choropleth:
+  - Red indicates increased enforcement.
+  - Blue indicates decreased enforcement.
+  - Grey indicates a null or unavailable delta.
+  - Zero uses a separate neutral color and is visually distinct from null.
+- Added a delta legend using the style guide's glass-small surface recipe.
+- Added compare-mode neighborhood details for:
+  - Before ratio
+  - After ratio
+  - Delta
+  - Percentage change
+- Applied the required delta text colors:
+  - Increase: `#b45309`
+  - Decrease: `#2563eb`
+- Added responsive control wrapping for screens at or below 640px.
+
+### Definition of Done Checklist
+
+- [x] Compare toggle appears in the controls bar.
+- [x] Compare mode displays Before and After start/end month pickers.
+- [x] Toggling Compare off restores the normal controls and lens view.
+- [x] Date changes request `GET /lens/compare` with all four date parameters.
+- [x] Positive deltas render red and negative deltas render blue.
+- [x] The delta scale is symmetric around zero.
+- [x] Null delta renders grey and differs visually from zero.
+- [x] The neighborhood panel shows before ratio, after ratio, delta, and percentage change.
+- [x] Normal lens data remains cached when Compare is toggled off.
+- [x] Compare data and the compare fetch path contain no `any`.
+- [x] The compare fetch handler contains no `as any` or `as CompareData` assertions.
+- [x] Invalid After windows return before the request is made.
+- [x] New UI follows the existing glass, typography, color, and spacing system.
+- [x] Controls do not overflow at 640px.
+- [ ] Verify Tenderloin, Mission, and SOMA colors against the live Card 1 response.
+- [ ] Verify real before/after neighborhood values after Card 1 is merged locally.
+
+### Verification Completed
+
+- `npx tsc --noEmit` passes.
+- The production Next.js build passes.
+- Focused ESLint checks pass for the compare API, types, controls, map, and neighborhood panel supporting files.
+- `git diff --check` passes.
+- Repository searches return no `as any` or `as Compare` matches.
+- Browser-tested the Compare toggle and all four default date pickers at `http://localhost:3000/`.
+- Browser-tested invalid After dates and confirmed the client validation message appears.
+- Browser-tested toggling back to the normal controls and panel.
+- Measured the responsive layout at exactly 640px:
+  - Viewport width: 640px
+  - Controls width: 604px
+  - Page scroll width: 640px
+  - No internal controls overflow
+
+### Pending Backend Integration
+
+Card 1 is not yet available in the local branch. The current local server returns `404 Not Found` for `/lens/compare`, so the real-data acceptance checks cannot yet be completed.
+
+Once Card 1 lands:
+
+- Confirm the final response fields match `CompareData`.
+- Verify all 41 neighborhoods render.
+- Verify Tenderloin, Mission, and SOMA show positive red deltas for the acceptance date windows.
+- Click a red neighborhood and verify its before ratio, after ratio, delta, and percentage change.
+- Confirm the normal lens does not issue a new request when Compare is switched off.
+
+### Existing Project Lint Notes
+
+The full-project ESLint command still reports pre-existing issues in the normal lens fetch path in `app/page.tsx`. These issues were present before Card 2 and are not part of the compare fetch path. All focused checks for the new compare implementation pass.
