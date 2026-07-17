@@ -451,12 +451,14 @@ Add a frontend comparison mode for viewing the change in officer-initiated enfor
   - Increase: `#b45309`
   - Decrease: `#2563eb`
 - Added responsive control wrapping for screens at or below 640px.
+- Made lens selection exit Compare mode and immediately restore the selected normal lens.
 
 ### Definition of Done Checklist
 
 - [x] Compare toggle appears in the controls bar.
 - [x] Compare mode displays Before and After start/end month pickers.
 - [x] Toggling Compare off restores the normal controls and lens view.
+- [x] Selecting another lens while Compare is active exits Compare mode.
 - [x] Date changes request `GET /lens/compare` with all four date parameters.
 - [x] Positive deltas render red and negative deltas render blue.
 - [x] The delta scale is symmetric around zero.
@@ -468,8 +470,8 @@ Add a frontend comparison mode for viewing the change in officer-initiated enfor
 - [x] Invalid After windows return before the request is made.
 - [x] New UI follows the existing glass, typography, color, and spacing system.
 - [x] Controls do not overflow at 640px.
-- [ ] Verify Tenderloin, Mission, and SOMA colors against the live Card 1 response.
-- [ ] Verify real before/after neighborhood values after Card 1 is merged locally.
+- [x] Verify Tenderloin, Mission, and SOMA colors against the live Card 1 response.
+- [x] Verify real before/after neighborhood values after Card 1 is merged locally.
 
 ### Verification Completed
 
@@ -487,17 +489,27 @@ Add a frontend comparison mode for viewing the change in officer-initiated enfor
   - Page scroll width: 640px
   - No internal controls overflow
 
-### Pending Backend Integration
+### Live Backend Integration
 
-Card 1 is not yet available in the local branch. The current local server returns `404 Not Found` for `/lens/compare`, so the real-data acceptance checks cannot yet be completed.
+Card 1 was pulled into the frontend branch and the compare UI was tested against the live local endpoint using the acceptance windows.
 
-Once Card 1 lands:
+- `GET /lens/compare` returned all 41 neighborhoods.
+- Mission returned `29.4 → 72.0`, delta `+42.6`.
+- South of Market returned `55.9 → 135.2`, delta `+79.3`.
+- Tenderloin returned `102.9 → 132.3`, delta `+29.4`.
+- All three neighborhoods rendered on the red side of the delta scale.
+- Clicking South of Market displayed both ratios, delta `+79.3`, and percentage change `+141.9%`.
+- Neighborhoods with null deltas rendered grey.
+- Neighborhoods with zero deltas rendered with the separate neutral center color.
+- Backend request logs confirmed that switching Compare off sent no new lens request.
+- Backend request logs confirmed that an invalid After window sent no compare request.
+- Browser-tested selecting Officer Enforcement while Compare was active; Compare exited, the normal date controls returned, and Lens 2 became active.
 
-- Confirm the final response fields match `CompareData`.
-- Verify all 41 neighborhoods render.
-- Verify Tenderloin, Mission, and SOMA show positive red deltas for the acceptance date windows.
-- Click a red neighborhood and verify its before ratio, after ratio, delta, and percentage change.
-- Confirm the normal lens does not issue a new request when Compare is switched off.
+The final backend response includes `baseline_count` in addition to `compare_count`. The frontend type and runtime validator were updated to match this final contract.
+
+### Backend Test Environment Note
+
+The live endpoint works, but the Card 1 test file does not collect in the existing Docker container because the repository-level `/app/__init__.py` shadows the `/app/app` API package. Pytest reports `ModuleNotFoundError: No module named 'app.api'` before running any tests. This is a backend test-environment issue and does not affect the live endpoint or Card 2 browser behavior.
 
 ### Existing Project Lint Notes
 

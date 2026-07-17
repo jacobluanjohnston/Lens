@@ -115,6 +115,11 @@ export default function Home() {
     setEnd(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`);
   }
 
+  function selectLens(lens: 1 | 2 | 3) {
+    setCompareMode(false);
+    setActiveLens(lens);
+  }
+
   async function fetchLensData() {
     setLoading(true);
     setError(null);
@@ -297,7 +302,7 @@ export default function Home() {
         <div style={{ pointerEvents: "auto" }}>
           <LensPanel
             activeLens={activeLens}
-            onLensChange={setActiveLens}
+            onLensChange={selectLens}
             lens1Mode={lens1Mode}
             onLens1ModeChange={setLens1Mode}
           />
