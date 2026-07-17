@@ -25,11 +25,13 @@ from .conftest import (
 
 
 def test_compare_valid_request_returns_41_rows():
+    """41 rows come back against a window that has real seeded data."""
     result = get_lens_compare(
-        baseline_start="2024-04", baseline_end="2024-12",
-        compare_start="2025-01", compare_end="2025-09",
+        baseline_start="2099-01", baseline_end="2099-03",
+        compare_start="2099-04", compare_end="2099-06",
     )
-    assert len(result) == 41
+    assert len(result) == NEIGHBORHOOD_COUNT
+    assert any(r["baseline_ratio"] is not None for r in result)
 
 
 def test_compare_returns_every_neighborhood_even_with_no_rollup_rows():
