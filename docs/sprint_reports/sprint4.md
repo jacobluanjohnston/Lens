@@ -235,6 +235,7 @@ Before any Lens 3 clearance rate can be called externally validated, compare it 
 
 ## Backlog (not this sprint)
 
+- Compare mode: "Move after end to [month]" fix button — when the After window's end date is within 90 days of today, the provisional warning should include a button that moves the compare end date back to the last stable month (same logic as normal mode's `onFixProvisional`). The warning alone is sufficient for now; this is a UX convenience.
 - Chicago adapter — fresh pull, no AI-generated analysis
 - Historical ingestion (2003–2018, different schema)
 - 311 unmet-need signal
