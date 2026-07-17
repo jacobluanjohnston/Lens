@@ -294,15 +294,10 @@ export default function NeighborhoodPanel({
               color: "#64748b",
               textTransform: "uppercase",
               letterSpacing: ".08em",
-              marginBottom: 4,
+              marginBottom: 8,
             }}
           >
-            Police Stops vs. Crime Reports
-          </div>
-          <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 8 }}>
-            {fmtMonth(compareRanges.baselineStart)}–{fmtMonth(compareRanges.baselineEnd)}
-            {" vs "}
-            {fmtMonth(compareRanges.compareStart)}–{fmtMonth(compareRanges.compareEnd)}
+            Lens 2 — Officer Enforcement — Custom date
           </div>
           <h2 style={{ margin: 0, marginBottom: 8, color: "#111827", fontSize: 18 }}>
             {compareNeighborhood.neighborhood_name}
