@@ -338,28 +338,30 @@ export default function Controls({
         </div>
       )}
 
-      <button
-        type="button"
-        aria-pressed={compareMode}
-        onClick={() => onCompareModeChange(!compareMode)}
-        style={{
-          alignSelf: "flex-end",
-          padding: "8px 16px",
-          borderRadius: 8,
-          border: compareMode
-            ? "1px solid rgba(99,102,241,.45)"
-            : "1px solid rgba(255,255,255,.28)",
-          background: compareMode
-            ? "rgba(99,102,241,.14)"
-            : "rgba(255,255,255,.22)",
-          color: compareMode ? "#4338ca" : "#475569",
-          fontSize: 11,
-          fontWeight: 700,
-          cursor: "pointer",
-        }}
-      >
-        Compare {compareMode ? "on" : "off"}
-      </button>
+      {activeLens === 2 && (
+        <button
+          type="button"
+          aria-pressed={compareMode}
+          onClick={() => onCompareModeChange(!compareMode)}
+          style={{
+            alignSelf: "flex-end",
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: compareMode
+              ? "1px solid rgba(99,102,241,.45)"
+              : "1px solid rgba(255,255,255,.28)",
+            background: compareMode
+              ? "rgba(99,102,241,.14)"
+              : "rgba(255,255,255,.22)",
+            color: compareMode ? "#4338ca" : "#475569",
+            fontSize: 11,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          {compareMode ? "Exit compare" : "Before / After"}
+        </button>
+      )}
     </div>
   );
 }
