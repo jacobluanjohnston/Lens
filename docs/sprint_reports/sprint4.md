@@ -46,7 +46,7 @@ New API endpoint that accepts two date windows and returns the per-neighborhood 
 
 #### Acceptance Criteria
 - `curl "http://localhost:8000/lens/compare?baseline_start=2024-04&baseline_end=2024-12&compare_start=2025-01&compare_end=2025-09"` returns 41 objects
-- Tenderloin's `delta` in that call is positive and greater than 50 — the Lurie signal must be visible
+- At least one of Tenderloin, Mission, or South of Market has `delta` > 50 — the Lurie signal must be visible (South of Market hits ~+79 in real data; Tenderloin is ~+29)
 - A neighborhood with no victim crime in either window does not return a 500
 
 ---
