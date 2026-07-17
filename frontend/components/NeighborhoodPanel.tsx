@@ -294,10 +294,15 @@ export default function NeighborhoodPanel({
               color: "#64748b",
               textTransform: "uppercase",
               letterSpacing: ".08em",
-              marginBottom: 8,
+              marginBottom: 4,
             }}
           >
-            Enforcement comparison
+            Police Stops vs. Crime Reports
+          </div>
+          <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 8 }}>
+            {fmtMonth(compareRanges.baselineStart)}–{fmtMonth(compareRanges.baselineEnd)}
+            {" vs "}
+            {fmtMonth(compareRanges.compareStart)}–{fmtMonth(compareRanges.compareEnd)}
           </div>
           <h2 style={{ margin: 0, marginBottom: 8, color: "#111827", fontSize: 18 }}>
             {compareNeighborhood.neighborhood_name}
@@ -324,7 +329,7 @@ export default function NeighborhoodPanel({
           />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
           <Metric
             label="Delta"
             value={compareNeighborhood.delta === null
@@ -340,6 +345,19 @@ export default function NeighborhoodPanel({
             valueColor={percentageColor}
           />
         </div>
+
+        {neighborhood && (
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 8, textTransform: "uppercase", letterSpacing: ".08em" }}>
+              Data warnings
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <Flag flagKey="low_confidence" active={neighborhood.low_confidence} />
+              <Flag flagKey="per_capita_na" active={!neighborhood.per_capita_applicable} />
+              <Flag flagKey="provisional" active={neighborhood.provisional ?? false} />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
