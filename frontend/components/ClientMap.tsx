@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { LensData } from "@/types/lens";
+import type { CompareData } from "@/types/compare";
+import type { FeatureCollection, Geometry, GeoJsonProperties } from "geojson";
 import GlassZoom from "./GlassZoom";
 
 const SF_CENTER: [number, number] = [37.7749, -122.4194];
@@ -44,27 +46,61 @@ function getColor(lens: LensData | undefined, activeLens: 1 | 2 | 3, lens1Mode: 
   return "#9ca3af"; // Lens 3 not yet available
 }
 
+function mixChannel(from: number, to: number, amount: number): number {
+  return Math.round(from + (to - from) * amount);
+}
+
+function getDeltaColor(delta: number | null, maxMagnitude: number): string {
+  if (delta === null) return "#9ca3af";
+  if (delta === 0 || maxMagnitude === 0) return "#f1f5f9";
+
+  const amount = Math.min(Math.abs(delta) / maxMagnitude, 1);
+  const neutral = [241, 245, 249];
+  const target = delta > 0 ? [220, 38, 38] : [37, 99, 235];
+
+  return `rgb(${mixChannel(neutral[0], target[0], amount)}, ${mixChannel(neutral[1], target[1], amount)}, ${mixChannel(neutral[2], target[2], amount)})`;
+}
+
 interface ClientMapProps {
   activeLens: 1 | 2 | 3;
   lens1Mode: "raw" | "per_capita";
   lensData: LensData[];
+  compareMode: boolean;
+  compareData: CompareData[];
   fetchId: number;
   onSelectNeighborhood: (lens: LensData | null) => void;
+  onSelectCompareNeighborhood: (comparison: CompareData | null) => void;
 }
 
 export default function ClientMap({
   activeLens,
   lens1Mode,
   lensData,
+  compareMode,
+  compareData,
   fetchId,
   onSelectNeighborhood,
+  onSelectCompareNeighborhood,
 }: ClientMapProps) {
-  const [neighborhoods, setNeighborhoods] = useState<any>(null);
+  const [neighborhoods, setNeighborhoods] = useState<FeatureCollection<Geometry, GeoJsonProperties> | null>(null);
 
-  // Ref so click handlers always read the current lensData without stale closures.
-  // The ref is updated on every render before any event fires.
-  const lensLookupRef = useRef<Map<string, LensData>>(new Map());
-  lensLookupRef.current = new Map(lensData.map((item) => [item.neighborhood_id, item]));
+  const lensLookup = useMemo(
+    () => new Map(lensData.map((item) => [item.neighborhood_id, item])),
+    [lensData]
+  );
+  const compareLookup = useMemo(
+    () => new Map(compareData.map((item) => [item.neighborhood_id, item])),
+    [compareData]
+  );
+  const maxDeltaMagnitude = useMemo(
+    () => compareData.reduce(
+      (maximum, item) => item.delta === null
+        ? maximum
+        : Math.max(maximum, Math.abs(item.delta)),
+      0
+    ),
+    [compareData]
+  );
 
   useEffect(() => {
     fetch("/neighborhoods")
@@ -95,26 +131,30 @@ export default function ClientMap({
 
       {neighborhoods && (
         <GeoJSON
-          key={`fetch-${fetchId}`}
+          key={`fetch-${fetchId}-${compareMode}-${maxDeltaMagnitude}`}
           data={neighborhoods}
           style={(feature) => {
-            const lens = lensLookupRef.current.get(
-              feature!.properties.neighborhood_id
-            );
+            const neighborhoodId = feature!.properties.neighborhood_id;
+            const lens = lensLookup.get(neighborhoodId);
+            const comparison = compareLookup.get(neighborhoodId);
             return {
               color: "#444",
               weight: 1,
-              fillColor: getColor(lens, activeLens, lens1Mode),
+              fillColor: compareMode
+                ? getDeltaColor(comparison?.delta ?? null, maxDeltaMagnitude)
+                : getColor(lens, activeLens, lens1Mode),
               fillOpacity: 0.85,
             };
           }}
           onEachFeature={(feature, layer) => {
             layer.on({
               click: () => {
-                const lens = lensLookupRef.current.get(
-                  feature.properties.neighborhood_id
-                );
-                onSelectNeighborhood(lens ?? null);
+                const neighborhoodId = feature.properties.neighborhood_id;
+                if (compareMode) {
+                  onSelectCompareNeighborhood(compareLookup.get(neighborhoodId) ?? null);
+                } else {
+                  onSelectNeighborhood(lensLookup.get(neighborhoodId) ?? null);
+                }
               },
             });
           }}

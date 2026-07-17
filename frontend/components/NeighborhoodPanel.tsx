@@ -1,9 +1,18 @@
 "use client";
 
 import type { LensData } from "@/types/lens";
+import type { CompareData } from "@/types/compare";
 
 interface NeighborhoodPanelProps {
   neighborhood: LensData | null;
+  compareMode: boolean;
+  compareNeighborhood: CompareData | null;
+  compareRanges: {
+    baselineStart: string;
+    baselineEnd: string;
+    compareStart: string;
+    compareEnd: string;
+  };
   activeLens: 1 | 2 | 3;
   lens1Mode: "raw" | "per_capita";
   dateRange: { start: string; end: string };
@@ -87,12 +96,14 @@ function Metric({
   tip,
   comparison,
   delta,
+  valueColor,
 }: {
   label: string;
   value: string | number;
   tip?: string;
   comparison?: string;
   delta?: number;
+  valueColor?: string;
 }) {
   const deltaLabel = delta != null
     ? `${delta >= 0 ? "+" : ""}${delta.toFixed(0)}% ${delta >= 0 ? "above" : "below"} median`
@@ -126,7 +137,7 @@ function Metric({
         {label}
         {tip && <Info tip={tip} />}
       </div>
-      <div style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}>
+      <div style={{ fontSize: 24, fontWeight: 700, color: valueColor ?? "#111827" }}>
         {value}
       </div>
       {comparison && (
@@ -224,6 +235,11 @@ function Flag({
               {info.fix} →
             </button>
           )}
+          {info.fix && !onFix && (
+            <div style={{ marginTop: 4, fontSize: 11, color: "#92400e", fontWeight: 600 }}>
+              We suggest moving end dates to {fmtMonth(stableEndDate())}
+            </div>
+          )}
         </>
       )}
     </div>
@@ -232,12 +248,122 @@ function Flag({
 
 export default function NeighborhoodPanel({
   neighborhood,
+  compareMode,
+  compareNeighborhood,
+  compareRanges,
   activeLens,
   lens1Mode,
   dateRange,
   onFixProvisional,
 }: NeighborhoodPanelProps) {
   const meta = LENS_META[activeLens];
+
+  if (compareMode) {
+    if (!compareNeighborhood) {
+      return (
+        <div style={GLASS}>
+          <h2 style={{ marginTop: 0, marginBottom: 8, color: "#111827", fontSize: 18 }}>
+            Enforcement change
+          </h2>
+          <p style={{ color: "#4b5563", lineHeight: 1.6, margin: 0, fontSize: 13 }}>
+            Click a neighborhood to compare its before and after enforcement ratios.
+          </p>
+        </div>
+      );
+    }
+
+    const percentageChange =
+      compareNeighborhood.baseline_ratio !== null &&
+      compareNeighborhood.baseline_ratio !== 0 &&
+      compareNeighborhood.compare_ratio !== null
+        ? ((compareNeighborhood.compare_ratio - compareNeighborhood.baseline_ratio) /
+            compareNeighborhood.baseline_ratio) * 100
+        : null;
+    const deltaColor = compareNeighborhood.delta === null || compareNeighborhood.delta === 0
+      ? "#64748b"
+      : compareNeighborhood.delta > 0
+        ? "#b45309"
+        : "#2563eb";
+    const percentageColor = percentageChange === null || percentageChange === 0
+      ? "#64748b"
+      : percentageChange > 0
+        ? "#b45309"
+        : "#2563eb";
+
+    return (
+      <div style={GLASS}>
+        <div style={{ marginBottom: 14 }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#64748b",
+              textTransform: "uppercase",
+              letterSpacing: ".08em",
+              marginBottom: 3,
+            }}
+          >
+            Lens 2 — Officer Enforcement — Custom date
+          </div>
+          <h2 style={{ margin: 0, marginBottom: 6, color: "#111827", fontSize: 18 }}>
+            {compareNeighborhood.neighborhood_name}
+          </h2>
+          <p style={{ margin: 0, fontSize: 13, color: "#64748b", lineHeight: 1.45 }}>
+            Officer-initiated incidents per 100 victim-reported serious crimes.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+          <Metric
+            label="Before ratio"
+            value={compareNeighborhood.baseline_ratio === null
+              ? "Not applicable"
+              : `${compareNeighborhood.baseline_ratio} per 100`}
+            comparison={`${fmtMonth(compareRanges.baselineStart)} – ${fmtMonth(compareRanges.baselineEnd)}`}
+          />
+          <Metric
+            label="After ratio"
+            value={compareNeighborhood.compare_ratio === null
+              ? "Not applicable"
+              : `${compareNeighborhood.compare_ratio} per 100`}
+            comparison={`${fmtMonth(compareRanges.compareStart)} – ${fmtMonth(compareRanges.compareEnd)}`}
+          />
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+          <Metric
+            label="Delta"
+            value={compareNeighborhood.delta === null
+              ? "Not applicable"
+              : `${compareNeighborhood.delta > 0 ? "+" : ""}${compareNeighborhood.delta}`}
+            valueColor={deltaColor}
+          />
+          <Metric
+            label="% change"
+            value={percentageChange === null
+              ? "Not applicable"
+              : `${percentageChange > 0 ? "+" : ""}${percentageChange.toFixed(1)}%`}
+            valueColor={percentageColor}
+          />
+        </div>
+
+        {neighborhood && (
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 8, textTransform: "uppercase", letterSpacing: ".08em" }}>
+              Data flags
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <Flag flagKey="low_confidence" active={neighborhood.low_confidence} />
+              <Flag flagKey="per_capita_na" active={!neighborhood.per_capita_applicable} />
+              <Flag
+                flagKey="provisional"
+                active={(Date.now() - new Date(compareRanges.compareEnd).getTime()) / 86_400_000 < 90}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (!neighborhood) {
     return (

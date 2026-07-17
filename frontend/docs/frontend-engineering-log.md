@@ -413,3 +413,104 @@ Current frontend polish tasks:
 - Improve floating sidebar styling.
 - Add hover effects and smoother transitions.
 
+---
+
+# July 17, 2026
+
+## Sprint 4 — Card 2: Compare Mode UI and Delta Choropleth (#64)
+
+### Objective
+
+Add a frontend comparison mode for viewing the change in officer-initiated enforcement ratios between two date windows. The implementation is built against the Card 1 `GET /lens/compare` API contract while that endpoint is still under review.
+
+### Work Completed
+
+- Added a Compare toggle to the controls bar.
+- Added Before and After month ranges with a start and end picker for each range.
+- Added typed compare-mode state without replacing or discarding the normal lens data.
+- Added `CompareData` in `frontend/types/compare.ts`.
+- Added a typed `GET /lens/compare` request using:
+  - `baseline_start`
+  - `baseline_end`
+  - `compare_start`
+  - `compare_end`
+- Added runtime response validation using `unknown` and a type guard.
+- Added client-side date validation so an invalid comparison window does not send a request.
+- Added a symmetric diverging delta choropleth:
+  - Red indicates increased enforcement.
+  - Blue indicates decreased enforcement.
+  - Grey indicates a null or unavailable delta.
+  - Zero uses a separate neutral color and is visually distinct from null.
+- Added a delta legend using the style guide's glass-small surface recipe.
+- Added compare-mode neighborhood details for:
+  - Before ratio
+  - After ratio
+  - Delta
+  - Percentage change
+- Applied the required delta text colors:
+  - Increase: `#b45309`
+  - Decrease: `#2563eb`
+- Added responsive control wrapping for screens at or below 640px.
+- Made lens selection exit Compare mode and immediately restore the selected normal lens.
+
+### Definition of Done Checklist
+
+- [x] Compare toggle appears in the controls bar.
+- [x] Compare mode displays Before and After start/end month pickers.
+- [x] Toggling Compare off restores the normal controls and lens view.
+- [x] Selecting another lens while Compare is active exits Compare mode.
+- [x] Date changes request `GET /lens/compare` with all four date parameters.
+- [x] Positive deltas render red and negative deltas render blue.
+- [x] The delta scale is symmetric around zero.
+- [x] Null delta renders grey and differs visually from zero.
+- [x] The neighborhood panel shows before ratio, after ratio, delta, and percentage change.
+- [x] Normal lens data remains cached when Compare is toggled off.
+- [x] Compare data and the compare fetch path contain no `any`.
+- [x] The compare fetch handler contains no unsafe or forced type assertions.
+- [x] Invalid After windows return before the request is made.
+- [x] New UI follows the existing glass, typography, color, and spacing system.
+- [x] Controls do not overflow at 640px.
+- [x] Verify Tenderloin, Mission, and SOMA colors against the live Card 1 response.
+- [x] Verify real before/after neighborhood values after Card 1 is merged locally.
+
+### Verification Completed
+
+- `npx tsc --noEmit` passes.
+- The production Next.js build passes.
+- Focused ESLint checks pass for the compare API, types, controls, map, and neighborhood panel supporting files.
+- `git diff --check` passes.
+- Repository searches for the prohibited assertion patterns return no matches.
+- Browser-tested the Compare toggle and all four default date pickers at `http://localhost:3000/`.
+- Browser-tested invalid After dates and confirmed the client validation message appears.
+- Browser-tested toggling back to the normal controls and panel.
+- Measured the responsive layout at exactly 640px:
+  - Viewport width: 640px
+  - Controls width: 604px
+  - Page scroll width: 640px
+  - No internal controls overflow
+
+### Live Backend Integration
+
+Card 1 was pulled into the frontend branch and the compare UI was tested against the live local endpoint using the acceptance windows.
+
+- `GET /lens/compare` returned all 41 neighborhoods.
+- Mission returned `29.4 → 72.0`, delta `+42.6`.
+- South of Market returned `55.9 → 135.2`, delta `+79.3`.
+- Tenderloin returned `102.9 → 132.3`, delta `+29.4`.
+- All three neighborhoods rendered on the red side of the delta scale.
+- Clicking South of Market displayed both ratios, delta `+79.3`, and percentage change `+141.9%`.
+- Neighborhoods with null deltas rendered grey.
+- Neighborhoods with zero deltas rendered with the separate neutral center color.
+- Backend request logs confirmed that switching Compare off sent no new lens request.
+- Backend request logs confirmed that an invalid After window sent no compare request.
+- Browser-tested selecting Officer Enforcement while Compare was active; Compare exited, the normal date controls returned, and Lens 2 became active.
+
+The final backend response includes `baseline_count` in addition to `compare_count`. The frontend type and runtime validator were updated to match this final contract.
+
+### Backend Test Environment Note
+
+The live endpoint works, but the Card 1 test file does not collect in the existing Docker container because the repository-level `/app/__init__.py` shadows the `/app/app` API package. Pytest reports `ModuleNotFoundError: No module named 'app.api'` before running any tests. This is a backend test-environment issue and does not affect the live endpoint or Card 2 browser behavior.
+
+### Existing Project Lint Notes
+
+The full-project ESLint command still reports pre-existing issues in the normal lens fetch path in `app/page.tsx`. These issues were present before Card 2 and are not part of the compare fetch path. All focused checks for the new compare implementation pass.
