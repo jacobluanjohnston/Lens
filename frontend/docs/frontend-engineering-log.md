@@ -464,7 +464,7 @@ Add a frontend comparison mode for viewing the change in officer-initiated enfor
 - [x] The neighborhood panel shows before ratio, after ratio, delta, and percentage change.
 - [x] Normal lens data remains cached when Compare is toggled off.
 - [x] Compare data and the compare fetch path contain no `any`.
-- [x] The compare fetch handler contains no `as any` or `as CompareData` assertions.
+- [x] The compare fetch handler contains no unsafe or forced type assertions.
 - [x] Invalid After windows return before the request is made.
 - [x] New UI follows the existing glass, typography, color, and spacing system.
 - [x] Controls do not overflow at 640px.
@@ -477,7 +477,7 @@ Add a frontend comparison mode for viewing the change in officer-initiated enfor
 - The production Next.js build passes.
 - Focused ESLint checks pass for the compare API, types, controls, map, and neighborhood panel supporting files.
 - `git diff --check` passes.
-- Repository searches return no `as any` or `as Compare` matches.
+- Repository searches for the prohibited assertion patterns return no matches.
 - Browser-tested the Compare toggle and all four default date pickers at `http://localhost:3000/`.
 - Browser-tested invalid After dates and confirmed the client validation message appears.
 - Browser-tested toggling back to the normal controls and panel.
