@@ -120,7 +120,30 @@ lens/
 ├── docker-compose.yml
 └── pytest.ini
 ```
+---
 
+## Deployment Strutcure
+
+Deployment:
+
+The app runs on a shared instance so any teammate can see real SF data without running anything locally — no local setup, no cloning the repo, no loading data themselves.
+
+URL: https://parky-efren-nondynastically.ngrok-free.dev
+
+
+
+Credentials: none needed to view the app. Postgres behind the scenes uses local dev credentials (lens / lens) and is never exposed outside the host machine.
+
+How this works
+
+
+Dcker compose up on the host machine starts the database, backend, and frontend together — no separate --profile flag, no manual steps.Migrations run automatically. The backend container's startup command is chained: alembic upgrade head && uvicorn. Every time the backend container starts, it applies any pending migrations before serving traffic — nobody has to remember to run alembic upgrade head by hand.
+
+The frontend runs a production build, not the dev server — next build + next start inside the container, rather than next dev. This avoids the hot-reload/dev-server fragility that comes with sharing a next dev instance (broken hydration, HMR websocket issues), since a shared demo instance doesn't need live-editing.
+
+Health checks confirm both services are actually ready.
+
+The URL is a public tunnel (ngrok), not a bare local IP. A local network IP only reaches teammates on the exact same WiFi/LAN — since not everyone on the team is on the same network (or same campus eduroam, which also blocks device-to-device traffic via client isolation), the host runs ngrok http 3000 to expose the local instance through a public HTTPS URL that works for anyone,anywhere.
 ---
 
 ## Team
