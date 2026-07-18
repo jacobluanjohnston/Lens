@@ -183,6 +183,31 @@ The app runs on a shared environment all teammates can access with one URL. No m
 
 ---
 
+### CARD 7 — CI: wire frontend tests and fill critical logic gaps
+**Points: 5**
+**Blocked by:** nothing
+
+#### What it is
+The CI pipeline runs lint, migrations, and backend/pipeline tests on every PR but not the frontend Jest suite. This card wires `npm test` into CI and adds tests for the three pieces of logic most likely to draw professor/TA scrutiny: the proactive/reactive category bucketing that underlies all Lens 2 numbers, the per-capita arithmetic, and the compare delta calculation.
+
+#### Definition of Done
+- [ ] `ci.yml` runs `npm test` as a required step on every PR
+
+**Frontend tests (add to `frontend/__tests__/`):**
+- [ ] `metricFor` returns `raw_count` when `lens1Mode === "raw"` and `per_capita` when `lens1Mode === "per_capita"` — the bug that caused a runtime crash in Card 4 must not regress
+- [ ] Provisional flag renders when end date is within 90 days of today and does not render when outside that window
+
+**Backend/pipeline tests (add to `backend/tests/` or `pipeline/tests/`):**
+- [ ] Proactive/reactive category bucket assignment: Drug Offense, Warrant, Prostitution, Drug Violation map to officer-initiated; Burglary, Robbery, Assault, Motor Vehicle Theft map to victim-reported — if these buckets are wrong, every Lens 2 number is silently wrong
+- [ ] Lens 1 per-capita calculation: given a seeded neighborhood with known population and incident count, the returned `per_capita` value matches the expected arithmetic — tests the math, not just the schema shape
+- [ ] Compare delta calculation: given seeded baseline and compare rollup rows with known ratios, the returned `delta` matches `round(compare_ratio - baseline_ratio, 1)`
+
+#### Acceptance Criteria
+- `npm test` and `pytest` both exit 0 in CI on a clean branch
+- The category bucket test explicitly names every category in both lists — not a spot-check
+
+---
+
 ## Stretch cards (do only if must-do cards are merged with ≥ 2 days left)
 
 ---
@@ -252,25 +277,6 @@ Right now the officer enforcement calculation hardcodes which categories count a
 **Blocked by:** Stretch A Sub-task B
 
 Before any Lens 3 clearance rate can be called externally validated, compare it against CA DOJ OpenJustice data. Document result in `docs/spikes/g4_external_validation.md`. If numbers are in the right order of magnitude and rank order is consistent, Lens 3 is cleared for use. If not, document why and what it means for interpretation.
-
----
-
-### STRETCH D — Controls bar: collision avoidance on narrow viewports
-**Points: 2**
-**Blocked by:** nothing
-
-#### What it is
-On viewports ≤ 640px wide, the controls bar (top-left) and the right-side neighborhood panel overlap. This card makes the controls bar aware of the panel so it never renders behind it.
-
-#### Definition of Done
-- [ ] Controls bar detects available horizontal space and collapses or repositions before it collides with the right panel
-- [ ] Behavior is smooth — no layout jump, no hidden controls
-- [ ] Tested at 375px, 414px, and 640px viewport widths
-- [ ] No regression on desktop (≥ 1024px) layouts
-
-#### Acceptance Criteria
-- On a 375px-wide viewport, all controls are accessible without the bar overlapping the panel
-- Controls bar does not overflow or clip at any of the three test widths
 
 ---
 
