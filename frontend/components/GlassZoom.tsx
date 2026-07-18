@@ -34,8 +34,8 @@ export default function GlassZoom() {
     <div
       style={{
         position: "absolute",
-        top: 20,
-        right: 20,
+        bottom: 40,
+        left: 18,
         zIndex: 1000,
         display: "flex",
         flexDirection: "column",

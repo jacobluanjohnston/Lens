@@ -9,7 +9,7 @@ import { fetchCompareData } from "@/lib/api";
 import Map from "@/components/Map";
 import Controls from "@/components/Controls";
 import LensPanel from "@/components/LensPanel";
-import FlagsPanel from "@/components/FlagsPanel";
+import RankingsPanel from "@/components/RankingsPanel";
 import NeighborhoodPanel from "@/components/NeighborhoodPanel";
 
 function isoDate(d: Date) {
@@ -296,7 +296,6 @@ export default function Home() {
           overflowY: "auto",
           zIndex: 1000,
           pointerEvents: "none",
-          paddingRight: 4,
         }}
       >
         <div style={{ pointerEvents: "auto" }}>
@@ -327,7 +326,15 @@ export default function Home() {
         </div>
 
         <div style={{ pointerEvents: "auto" }}>
-          <FlagsPanel />
+          <RankingsPanel
+            compareMode={compareMode}
+            activeLens={activeLens}
+            lens1Mode={lens1Mode}
+            lensData={lensData}
+            compareData={compareData}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
         </div>
 
         {(compareValidationError ?? error) && (
