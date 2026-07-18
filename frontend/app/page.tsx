@@ -24,7 +24,7 @@ function DeltaLegend({ maxMagnitude }: { maxMagnitude: number }) {
       style={{
         position: "absolute",
         left: 18,
-        bottom: 32,
+        bottom: 200,
         zIndex: 1000,
         width: 240,
         background: "rgba(255,255,255,.12)",
