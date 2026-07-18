@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { PRESET_EVENTS } from "@/lib/presetEvents";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const MIN_YEAR = 2018;
@@ -194,6 +195,57 @@ function MonthPicker({ label, value, disabled, onChange }: MonthPickerProps) {
     </div>
   );
 }
+interface PresetDropdownProps {
+  disabled: boolean;
+  onSelectPreset: (preset: {
+    baselineStart: string;
+    baselineEnd: string;
+    compareStart: string;
+    compareEnd: string;
+  }) => void;
+}
+
+function PresetDropdown({ disabled, onSelectPreset }: PresetDropdownProps) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <label style={LABEL_STYLE}>Preset events</label>
+      <select
+        aria-label="Preset events"
+        value=""
+        disabled={disabled}
+        onChange={(e) => {
+          const preset = PRESET_EVENTS.find((p) => p.id === e.target.value);
+          if (!preset) return;
+          onSelectPreset({
+            baselineStart: preset.baselineStart,
+            baselineEnd: preset.baselineEnd,
+            compareStart: preset.compareStart,
+            compareEnd: preset.compareEnd,
+          });
+        }}
+        style={{
+          width: 190,
+          padding: "6px 8px",
+          fontSize: 13,
+          borderRadius: 8,
+          border: "1px solid rgba(255,255,255,.28)",
+          background: "rgba(255,255,255,.22)",
+          color: "#111827",
+          cursor: disabled ? "default" : "pointer",
+        }}
+      >
+        <option value="" disabled hidden>
+          Select an event…
+        </option>
+        {PRESET_EVENTS.map((preset) => (
+          <option key={preset.id} value={preset.id}>
+            {preset.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
 interface ControlsProps {
   start: string;
@@ -297,6 +349,15 @@ export default function Controls({
 
       {compareMode ? (
         <>
+          <PresetDropdown
+            disabled={loading}
+            onSelectPreset={(preset) => {
+              onBaselineStartChange(preset.baselineStart);
+              onBaselineEndChange(preset.baselineEnd);
+              onCompareStartChange(preset.compareStart);
+              onCompareEndChange(preset.compareEnd);
+            }}
+          />
           <MonthPicker key={`before-start-${baselineStart}`} label="Before start" value={baselineStart} disabled={loading} onChange={onBaselineStartChange} />
           <MonthPicker key={`before-end-${baselineEnd}`} label="Before end" value={baselineEnd} disabled={loading} onChange={onBaselineEndChange} />
           <MonthPicker key={`after-start-${compareStart}`} label="After start" value={compareStart} disabled={loading} onChange={onCompareStartChange} />
