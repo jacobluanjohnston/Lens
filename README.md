@@ -27,41 +27,31 @@ A retrospective analysis tool for auditing police enforcement patterns using ope
 
 **Prerequisites:** Docker and Docker Compose.
 
-### Database + API only
-
-```bash
-docker compose up db backend
-```
-
-The backend API will be available at `http://localhost:8000`. Auto-reloads on code changes.
-
 ### Full stack (DB + API + frontend)
 
 ```bash
 docker compose up
 ```
 
-The frontend will be available at `http://localhost:3000`.
+The frontend will be available at `http://localhost:3000`. The backend API will be available at `http://localhost:8000`. Migrations run automatically on backend startup — no manual step required.
 
-### Run migrations
-
-Migrations must be run once after the database starts (or after any schema change):
+### Database + API only
 
 ```bash
-docker compose exec backend alembic upgrade head
+docker compose up db backend
 ```
 
 ### Verify everything is working
 
 ```bash
-# PostGIS extension
-docker compose exec db psql -U lens -d lens -c "SELECT PostGIS_Version();"
-
 # API health
 curl http://localhost:8000/health
 
 # Lens 1 data (should return 41 neighborhoods)
 curl "http://localhost:8000/lens/1?start=2024-01-01&end=2025-01-01"
+
+# PostGIS extension
+docker compose exec db psql -U lens -d lens -c "SELECT PostGIS_Version();"
 ```
 
 ### Run locally without Docker
@@ -82,20 +72,22 @@ npm run dev
 ## Running tests
 
 ```bash
+# Backend + pipeline
 pytest
-```
 
-Tests cover API endpoint behavior, lens calculation logic (including the Lens 2 enforcement ratio), and pipeline transform correctness. No database required for the pure unit tests.
+# Frontend
+cd frontend && npm test
+```
 
 ---
 
-## Repo Structure
+## Repo structure
 
 ```
 lens/
 ├── backend/
 │   ├── app/
-│   │   ├── api/              # route handlers: incidents, lens, neighborhoods
+│   │   ├── api/              # route handlers: lens, compare, neighborhoods
 │   │   └── main.py           # FastAPI app entry point
 │   ├── alembic/              # migrations — never hand-edit schema
 │   │   └── versions/
@@ -107,51 +99,47 @@ lens/
 │   ├── analysis/             # exploratory scripts used to generate spike findings
 │   ├── sources/              # Socrata API client
 │   └── tests/                # transform unit tests
-├── frontend/            # Next.js frontend (current)
-│   └── src/
-│       ├── app/              # page.tsx — main layout and data fetching
-│       ├── components/       # Map, Controls, LensPanel, NeighborhoodPanel
-│       └── types/            # TypeScript types
+├── frontend/
+│   ├── app/                  # page.tsx — main layout and data fetching
+│   ├── components/           # Map, Controls, LensPanel, NeighborhoodPanel, RankingsPanel
+│   ├── lib/                  # API helpers, preset events
+│   └── types/                # TypeScript types
 ├── docs/
 │   ├── adr/                  # architecture decision records
 │   ├── spikes/               # spike findings: what we learned, therefore what we did
 │   └── methodology.md        # lens definitions, flag definitions, denominators, limitations
-├── demo/
 ├── docker-compose.yml
 └── pytest.ini
 ```
+
 ---
 
-## Deployment Strutcure
+## Deployment
 
-Deployment:
+The app runs on a shared instance — any teammate can access real SF data without cloning the repo or running anything locally.
 
-The app runs on a shared instance so any teammate can see real SF data without running anything locally — no local setup, no cloning the repo, no loading data themselves.
+**URL:** https://parky-efren-nondynastically.ngrok-free.app
 
-URL: https://parky-efren-nondynastically.ngrok-free.dev
+**Credentials:** none required to view the app. The database uses local dev credentials (`lens` / `lens`) and is never exposed outside the host machine.
 
+### How it works
 
+`docker compose up` on the host machine starts the database, backend, and frontend in the correct order, verified by health checks.
 
-Credentials: none needed to view the app. Postgres behind the scenes uses local dev credentials (lens / lens) and is never exposed outside the host machine.
+Migrations run automatically. The backend startup command chains `alembic upgrade head && uvicorn` — every time the container starts, any pending migrations are applied before the server accepts traffic.
 
-How this works
+The frontend runs a production build (`next build` + `next start`) rather than the dev server, avoiding the HMR/hydration issues that come with sharing a `next dev` instance.
 
+The URL is served via ngrok rather than a bare local IP. A local IP only works on the same network, and campus eduroam blocks device-to-device traffic via client isolation. ngrok exposes the instance over a public HTTPS URL that works from anywhere.
 
-Dcker compose up on the host machine starts the database, backend, and frontend together — no separate --profile flag, no manual steps.Migrations run automatically. The backend container's startup command is chained: alembic upgrade head && uvicorn. Every time the backend container starts, it applies any pending migrations before serving traffic — nobody has to remember to run alembic upgrade head by hand.
-
-The frontend runs a production build, not the dev server — next build + next start inside the container, rather than next dev. This avoids the hot-reload/dev-server fragility that comes with sharing a next dev instance (broken hydration, HMR websocket issues), since a shared demo instance doesn't need live-editing.
-
-Health checks confirm both services are actually ready.
-
-The URL is a public tunnel (ngrok), not a bare local IP. A local network IP only reaches teammates on the exact same WiFi/LAN — since not everyone on the team is on the same network (or same campus eduroam, which also blocks device-to-device traffic via client isolation), the host runs ngrok http 3000 to expose the local instance through a public HTTPS URL that works for anyone,anywhere.
 ---
 
 ## Team
 
-| Member            | Role                 |
-|-------------------|----------------------|
-| Jacob L. Johnston | Product owner        |
-| Louisa Taufaasau  | Initial scrum master |
-| Preetam Donepudi  | —                    |
-| Ishita Jakka      | —                    |
-| Heli Kadakia      | —                    |
+| Member | Role |
+|---|---|
+| Jacob L. Johnston | Product owner |
+| Louisa Taufaasau | Scrum master |
+| Preetam Donepudi | Engineer |
+| Ishita Jakka | Engineer |
+| Heli Kadakia | Engineer |
