@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { vi, describe, it, expect } from "vitest";
 import Controls from "@/components/Controls";
 
 const baseProps = {
@@ -15,14 +14,14 @@ const baseProps = {
   baselineEnd: "2024-12-01",
   compareStart: "2025-01-01",
   compareEnd: "2025-09-01",
-  onStartChange: vi.fn(),
-  onEndChange: vi.fn(),
-  onCategoryChange: vi.fn(),
-  onCompareModeChange: vi.fn(),
-  onBaselineStartChange: vi.fn(),
-  onBaselineEndChange: vi.fn(),
-  onCompareStartChange: vi.fn(),
-  onCompareEndChange: vi.fn(),
+  onStartChange: jest.fn(),
+  onEndChange: jest.fn(),
+  onCategoryChange: jest.fn(),
+  onCompareModeChange: jest.fn(),
+  onBaselineStartChange: jest.fn(),
+  onBaselineEndChange: jest.fn(),
+  onCompareStartChange: jest.fn(),
+  onCompareEndChange: jest.fn(),
 };
 
 describe("PresetDropdown — Lurie preset wiring", () => {
