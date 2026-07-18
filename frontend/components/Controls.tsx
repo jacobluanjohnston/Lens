@@ -196,8 +196,9 @@ function MonthPicker({ label, value, disabled, onChange }: MonthPickerProps) {
   );
 }
 interface PresetDropdownProps {
+  value: string;
   disabled: boolean;
-  onSelectPreset: (preset: {
+  onSelectPreset: (id: string, preset: {
     baselineStart: string;
     baselineEnd: string;
     compareStart: string;
@@ -205,18 +206,18 @@ interface PresetDropdownProps {
   }) => void;
 }
 
-function PresetDropdown({ disabled, onSelectPreset }: PresetDropdownProps) {
+function PresetDropdown({ value, disabled, onSelectPreset }: PresetDropdownProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <label style={LABEL_STYLE}>Preset events</label>
       <select
         aria-label="Preset events"
-        value=""
+        value={value}
         disabled={disabled}
         onChange={(e) => {
           const preset = PRESET_EVENTS.find((p) => p.id === e.target.value);
           if (!preset) return;
-          onSelectPreset({
+          onSelectPreset(preset.id, {
             baselineStart: preset.baselineStart,
             baselineEnd: preset.baselineEnd,
             compareStart: preset.compareStart,
@@ -291,6 +292,8 @@ export default function Controls({
   onCompareStartChange,
   onCompareEndChange,
 }: ControlsProps) {
+  const [activePreset, setActivePreset] = useState("");
+
   return (
     <div
       className="controls-bar"
@@ -350,18 +353,20 @@ export default function Controls({
       {compareMode ? (
         <>
           <PresetDropdown
+            value={activePreset}
             disabled={loading}
-            onSelectPreset={(preset) => {
+            onSelectPreset={(id, preset) => {
+              setActivePreset(id);
               onBaselineStartChange(preset.baselineStart);
               onBaselineEndChange(preset.baselineEnd);
               onCompareStartChange(preset.compareStart);
               onCompareEndChange(preset.compareEnd);
             }}
           />
-          <MonthPicker key={`before-start-${baselineStart}`} label="Before start" value={baselineStart} disabled={loading} onChange={onBaselineStartChange} />
-          <MonthPicker key={`before-end-${baselineEnd}`} label="Before end" value={baselineEnd} disabled={loading} onChange={onBaselineEndChange} />
-          <MonthPicker key={`after-start-${compareStart}`} label="After start" value={compareStart} disabled={loading} onChange={onCompareStartChange} />
-          <MonthPicker key={`after-end-${compareEnd}`} label="After end" value={compareEnd} disabled={loading} onChange={onCompareEndChange} />
+          <MonthPicker key={`before-start-${baselineStart}`} label="Before start" value={baselineStart} disabled={loading} onChange={(v) => { setActivePreset(""); onBaselineStartChange(v); }} />
+          <MonthPicker key={`before-end-${baselineEnd}`} label="Before end" value={baselineEnd} disabled={loading} onChange={(v) => { setActivePreset(""); onBaselineEndChange(v); }} />
+          <MonthPicker key={`after-start-${compareStart}`} label="After start" value={compareStart} disabled={loading} onChange={(v) => { setActivePreset(""); onCompareStartChange(v); }} />
+          <MonthPicker key={`after-end-${compareEnd}`} label="After end" value={compareEnd} disabled={loading} onChange={(v) => { setActivePreset(""); onCompareEndChange(v); }} />
         </>
       ) : (
         <>
