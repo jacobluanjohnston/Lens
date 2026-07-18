@@ -146,4 +146,4 @@ The URL is served via ngrok rather than a bare local IP. A local IP only works o
 | Louisa Taufaasau | Scrum master; choropleth map layers; compare mode UI & delta choropleth; neighborhood sidebar; controls bar |
 | Ishita Jakka | Neighborhood rankings sidebar; batch aggregation job; precomputed aggregate tables; geography dimension table |
 | Heli Kadakia | Policy event presets; deployment infrastructure; frontend design; UI collision fixes |
-| Preetam Donepudi | Incident data model; Alembic migrations; ingestion pipeline |
+| Preetam Donepudi | Incident data model; Alembic migrations; ingestion pipeline; compare endpoint (backend API) |
