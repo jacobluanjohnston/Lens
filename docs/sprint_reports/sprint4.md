@@ -137,7 +137,7 @@ A ranked list of all 41 neighborhoods below the neighborhood detail panel. In no
 ---
 
 ### CARD 5 — Language simplification
-**Points: 2**
+**Points: 1**
 **Blocked by:** nothing
 
 #### What it is
