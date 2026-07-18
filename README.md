@@ -142,8 +142,8 @@ The URL is served via ngrok rather than a bare local IP. A local IP only works o
 
 | Member | Contributions |
 |---|---|
-| Jacob L. Johnston | Product owner; data pipeline & ingestion; backend API & PostGIS spatial work; spikes & methodology docs; language simplification |
-| Louisa Taufaasau | Scrum master; choropleth map layers; compare mode UI & delta choropleth; neighborhood sidebar; controls bar |
-| Ishita Jakka | Neighborhood rankings sidebar; batch aggregation job; precomputed aggregate tables; geography dimension table |
-| Heli Kadakia | Policy event presets; deployment infrastructure; frontend design; UI collision fixes |
-| Preetam Donepudi | Incident data model; Alembic migrations; ingestion pipeline; compare endpoint (backend API) |
+| Jacob L. Johnston | Product owner; full-stack scaffold (Docker, CI, FastAPI, PostGIS, Leaflet, Alembic); bulk Socrata ingest pipeline (1M+ SF records); PostGIS point-in-polygon neighborhood assignment; Lens 1 & 2 API endpoints; per-capita denominator spike (ACS B01003 + census tract crosswalk); proactive/reactive classifier spike; G2 & G3 resolution spikes; methodology docs & ADRs; plain-language copy pass |
+| Louisa Taufaasau | Scrum master; Next.js migration (Leaflet via dynamic SSR); choropleth map layer; lens toggle; neighborhood drill-down panel with flags; compare mode UI with Before/After pickers and diverging red/blue delta choropleth; controls bar collision avoidance |
+| Ishita Jakka | Geography dimension table (41 SF neighborhoods + ACS population); precomputed aggregate table schema & Alembic migration; batch aggregation job producing 78,470 neighborhood × month × category rollup rows that underlie all lens endpoints; neighborhood rankings sidebar |
+| Heli Kadakia | Policy event preset dropdown (Lurie & World Cup) with provisional-data warning; Docker Compose deployment with automatic migrations on startup; frontend design; delta legend collision fix |
+| Preetam Donepudi | Incident data model (Pydantic schemas + SQLAlchemy ORM); Alembic migrations for raw and normalized incident tables; Socrata API client & SF field mappings; before/after compare API endpoint returning per-neighborhood enforcement ratio delta between two date windows |
