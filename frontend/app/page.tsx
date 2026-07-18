@@ -37,7 +37,7 @@ function DeltaLegend({ maxMagnitude }: { maxMagnitude: number }) {
       }}
     >
       <div style={{ fontSize: 11, fontWeight: 700, color: "#475569", marginBottom: 8 }}>
-        Change in enforcement ratio
+        Change in police stops vs. crime reports
       </div>
       <div
         style={{
@@ -54,7 +54,7 @@ function DeltaLegend({ maxMagnitude }: { maxMagnitude: number }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, fontSize: 11, color: "#64748b" }}>
         <span style={{ width: 12, height: 12, borderRadius: 3, background: "#9ca3af" }} />
-        <span>No comparable ratio</span>
+        <span>No comparable data</span>
       </div>
     </div>
   );

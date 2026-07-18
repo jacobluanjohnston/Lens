@@ -31,14 +31,14 @@ const GLASS = {
 
 const LENS_META: Record<1 | 2 | 3, { label: string; description: string }> = {
   1: {
-    label: "Lens 1 — Incidence",
+    label: "Lens 1 — Incidents",
     description:
       "How many incidents were reported here? High counts may reflect patrol intensity, not actual crime — more officers in an area generate more reports.",
   },
   2: {
-    label: "Lens 2 — Officer Enforcement",
+    label: "Police Stops vs. Crime Reports",
     description:
-      "How much officer-initiated activity relative to victim-reported crime? Compares proactive incidents (drug stops, warrants, prostitution) to serious victim-reported crimes (burglary, robbery, assault, vehicle theft).",
+      "Compares police-initiated stops (drug stops, warrants, prostitution) to serious crimes reported by residents (burglary, robbery, assault, vehicle theft).",
   },
   3: {
     label: "Lens 3 — Resolution Gap",
@@ -165,11 +165,11 @@ function Flag({
 }) {
   const FLAGS: Record<string, { what: string; why: string; fix?: string }> = {
     low_confidence: {
-      what: "High geocoding failure rate",
-      why: "Many incidents here couldn't be placed on the map, so counts likely understate actual activity. The failure rate isn't random — it correlates with data-quality disparities across neighborhoods.",
+      what: "Some incidents couldn't be placed on the map",
+      why: "Some incidents in this neighborhood have incomplete address information in the source data and can't be shown on the map. This means counts here may be understated — and this gap tends to affect some neighborhoods more than others.",
     },
     per_capita_na: {
-      what: "No resident population",
+      what: "No residents — per-person figures not shown",
       why: "This area (e.g. a park, industrial zone, or the Farallones) has no residents to divide by. Per-capita figures are suppressed to avoid meaningless numbers.",
     },
     provisional: {
@@ -266,7 +266,7 @@ export default function NeighborhoodPanel({
             Enforcement change
           </h2>
           <p style={{ color: "#4b5563", lineHeight: 1.6, margin: 0, fontSize: 13 }}>
-            Click a neighborhood to compare its before and after enforcement ratios.
+            Click a neighborhood to see how enforcement changed between the two periods.
           </p>
         </div>
       );
@@ -302,26 +302,26 @@ export default function NeighborhoodPanel({
               marginBottom: 3,
             }}
           >
-            Lens 2 — Officer Enforcement — Custom date
+            Police Stops vs. Crime Reports
           </div>
           <h2 style={{ margin: 0, marginBottom: 6, color: "#111827", fontSize: 18 }}>
             {compareNeighborhood.neighborhood_name}
           </h2>
           <p style={{ margin: 0, fontSize: 13, color: "#64748b", lineHeight: 1.45 }}>
-            Officer-initiated incidents per 100 victim-reported serious crimes.
+            Compares police-initiated stops (drug stops, warrants, prostitution) to serious crimes reported by residents (burglary, robbery, assault, vehicle theft).
           </p>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
           <Metric
-            label="Before ratio"
+            label="Before"
             value={compareNeighborhood.baseline_ratio === null
               ? "Not applicable"
               : `${compareNeighborhood.baseline_ratio} per 100`}
             comparison={`${fmtMonth(compareRanges.baselineStart)} – ${fmtMonth(compareRanges.baselineEnd)}`}
           />
           <Metric
-            label="After ratio"
+            label="After"
             value={compareNeighborhood.compare_ratio === null
               ? "Not applicable"
               : `${compareNeighborhood.compare_ratio} per 100`}
@@ -331,7 +331,7 @@ export default function NeighborhoodPanel({
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
           <Metric
-            label="Delta"
+            label="Change"
             value={compareNeighborhood.delta === null
               ? "Not applicable"
               : `${compareNeighborhood.delta > 0 ? "+" : ""}${compareNeighborhood.delta}`}
@@ -397,17 +397,19 @@ export default function NeighborhoodPanel({
           {meta.label} · {periodLabel}
         </div>
 
-        <h2 style={{ margin: 0, marginBottom: 6, color: "#111827", fontSize: 18 }}>
+        <h2 style={{ margin: 0, marginBottom: activeLens === 2 ? 0 : 6, color: "#111827", fontSize: 18 }}>
           {neighborhood.neighborhood_name}
         </h2>
 
-        <p style={{ margin: 0, fontSize: 13, color: "#64748b", lineHeight: 1.45 }}>
-          {meta.description}
-        </p>
+        {activeLens !== 2 && (
+          <p style={{ margin: 0, fontSize: 13, color: "#64748b", lineHeight: 1.45 }}>
+            {meta.description}
+          </p>
+        )}
       </div>
 
       {/* Lens-specific metrics */}
-      <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
+      <div style={{ display: "grid", gap: 8, marginBottom: activeLens === 2 ? 8 : 16 }}>
         {activeLens === 1 && (
           <>
             <div style={{ opacity: lens1Mode === "raw" ? 1 : 0.4, transition: "opacity .2s" }}>
@@ -451,7 +453,7 @@ export default function NeighborhoodPanel({
 
         {activeLens === 2 && (
           <Metric
-            label="Enforcement Ratio"
+            label="Police Stops per Crime Report"
             value={
               neighborhood.value != null
                 ? `${neighborhood.value} per 100`
@@ -476,6 +478,13 @@ export default function NeighborhoodPanel({
           </div>
         )}
       </div>
+
+      {/* Lens 2 description — shown after the metric value per DoD */}
+      {activeLens === 2 && (
+        <p style={{ margin: "0 0 16px", fontSize: 13, color: "#64748b", lineHeight: 1.45 }}>
+          {meta.description}
+        </p>
+      )}
 
       {/* Data flags */}
       <div>

@@ -12,7 +12,7 @@ const LENSES = [
     id: 1 as const,
     color: "#f59e0b",
     icon: "◉",
-    title: "Incidence",
+    title: "Incidents",
     sub: "Reported incidents by neighborhood and category",
     disabled: false,
   },
@@ -20,8 +20,8 @@ const LENSES = [
     id: 2 as const,
     color: "#6366f1",
     icon: "◉",
-    title: "Officer Enforcement",
-    sub: "Proactive stops per 100 victim-reported crimes",
+    title: "Police Stops vs. Crime Reports",
+    sub: "How much police-initiated activity vs. crimes reported by residents",
     disabled: false,
   },
   {
@@ -167,7 +167,7 @@ export default function LensPanel({ activeLens, onLensChange, lens1Mode, onLens1
                         transition: "all .15s",
                       }}
                     >
-                      {mode === "raw" ? "Total" : "Per Capita"}
+                      {mode === "raw" ? "Total" : "Per Resident"}
                     </button>
                   );
                 })}
