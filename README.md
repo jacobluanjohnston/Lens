@@ -136,10 +136,10 @@ The URL is served via ngrok rather than a bare local IP. A local IP only works o
 
 ## Team
 
-| Member | Role |
+| Member | Contributions |
 |---|---|
-| Jacob L. Johnston | Product owner |
-| Louisa Taufaasau | Scrum master |
-| Preetam Donepudi | Engineer |
-| Ishita Jakka | Engineer |
-| Heli Kadakia | Engineer |
+| Jacob L. Johnston | Product owner; data pipeline & ingestion; backend API & PostGIS spatial work; spikes & methodology docs; language simplification |
+| Louisa Taufaasau | Scrum master; choropleth map layers; compare mode UI & delta choropleth; neighborhood sidebar; controls bar |
+| Ishita Jakka | Neighborhood rankings sidebar; batch aggregation job; precomputed aggregate tables; geography dimension table |
+| Heli Kadakia | Policy event presets; deployment infrastructure; frontend design; UI collision fixes |
+| Preetam Donepudi | Incident data model; Alembic migrations; ingestion pipeline |

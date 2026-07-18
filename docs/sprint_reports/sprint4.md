@@ -233,6 +233,41 @@ Before any Lens 3 clearance rate can be called externally validated, compare it 
 
 ---
 
+### STRETCH D — Controls bar: collision avoidance on narrow viewports
+**Points: 2**
+**Blocked by:** nothing
+
+#### What it is
+On viewports ≤ 640px wide, the controls bar (top-left) and the right-side neighborhood panel overlap. This card makes the controls bar aware of the panel so it never renders behind it.
+
+#### Definition of Done
+- [ ] Controls bar detects available horizontal space and collapses or repositions before it collides with the right panel
+- [ ] Behavior is smooth — no layout jump, no hidden controls
+- [ ] Tested at 375px, 414px, and 640px viewport widths
+- [ ] No regression on desktop (≥ 1024px) layouts
+
+#### Acceptance Criteria
+- On a 375px-wide viewport, all controls are accessible without the bar overlapping the panel
+- Controls bar does not overflow or clip at any of the three test widths
+
+---
+
+### STRETCH E — Fix bottom-left UI collision with delta legend and Leaflet controls
+**Points: 1**
+**Blocked by:** nothing
+
+#### What it is
+In compare mode, the delta legend (bottom-left) and Leaflet's default zoom/attribution controls overlap. This card resolves the collision so both are visible and neither is obscured.
+
+#### Definition of Done
+- [ ] Delta legend and Leaflet controls do not overlap at any supported viewport width
+- [ ] Fix does not affect non-compare-mode layout
+
+#### Acceptance Criteria
+- In compare mode, the delta legend and zoom controls are both fully visible at 1280px and 1440px viewport widths
+
+---
+
 ## Backlog (not this sprint)
 
 - Compare mode: "Move after end to [month]" fix button — when the After window's end date is within 90 days of today, the provisional warning should include a button that moves the compare end date back to the last stable month (same logic as normal mode's `onFixProvisional`). The warning alone is sufficient for now; this is a UX convenience.
