@@ -38,7 +38,7 @@ The backend API will be available at `http://localhost:8000`. Auto-reloads on co
 ### Full stack (DB + API + frontend)
 
 ```bash
-docker compose --profile frontend up
+docker compose up
 ```
 
 The frontend will be available at `http://localhost:3000`.
