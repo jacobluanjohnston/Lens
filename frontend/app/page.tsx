@@ -296,7 +296,6 @@ export default function Home() {
           overflowY: "auto",
           zIndex: 1000,
           pointerEvents: "none",
-          paddingRight: 4,
         }}
       >
         <div style={{ pointerEvents: "auto" }}>
@@ -330,6 +329,7 @@ export default function Home() {
           <RankingsPanel
             compareMode={compareMode}
             activeLens={activeLens}
+            lens1Mode={lens1Mode}
             lensData={lensData}
             compareData={compareData}
             selectedId={selectedId}

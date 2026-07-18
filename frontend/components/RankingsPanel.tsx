@@ -6,6 +6,7 @@ import type { CompareData } from "@/types/compare";
 interface RankingsPanelProps {
   compareMode: boolean;
   activeLens: 1 | 2 | 3;
+  lens1Mode: "raw" | "per_capita";
   lensData: LensData[];
   compareData: CompareData[];
   selectedId: string | null;
@@ -15,21 +16,24 @@ interface RankingsPanelProps {
 function metricFor(
   compareMode: boolean,
   activeLens: 1 | 2 | 3,
+  lens1Mode: "raw" | "per_capita",
   row: LensData | CompareData
 ): number | null {
   if (compareMode) {
     return (row as CompareData).delta ?? null;
   }
   if (activeLens === 1) {
-    return (row as LensData).per_capita ?? null;
+    return lens1Mode === "raw"
+      ? ((row as LensData).raw_count ?? null)
+      : ((row as LensData).per_capita ?? null);
   }
-  // Lens 2 (and Lens 3 until it exists): enforcement ratio
   return (row as LensData).value ?? null;
 }
 
 function formatMetric(
   compareMode: boolean,
   activeLens: 1 | 2 | 3,
+  lens1Mode: "raw" | "per_capita",
   value: number | null
 ): string {
   if (value == null) return "—";
@@ -37,8 +41,8 @@ function formatMetric(
     const sign = value > 0 ? "+" : "";
     return `${sign}${value.toFixed(1)}`;
   }
-  if (activeLens === 1) {
-    return value.toFixed(1);
+  if (activeLens === 1 && lens1Mode === "raw") {
+    return Math.round(value).toLocaleString();
   }
   return value.toFixed(1);
 }
@@ -46,6 +50,7 @@ function formatMetric(
 export default function RankingsPanel({
   compareMode,
   activeLens,
+  lens1Mode,
   lensData,
   compareData,
   selectedId,
@@ -54,8 +59,8 @@ export default function RankingsPanel({
   const source = compareMode ? compareData : lensData;
 
   const ranked = [...source].sort((a, b) => {
-    const aVal = metricFor(compareMode, activeLens, a);
-    const bVal = metricFor(compareMode, activeLens, b);
+    const aVal = metricFor(compareMode, activeLens, lens1Mode, a);
+    const bVal = metricFor(compareMode, activeLens, lens1Mode, b);
     // nulls last
     if (aVal == null && bVal == null) return 0;
     if (aVal == null) return 1;
@@ -92,7 +97,7 @@ export default function RankingsPanel({
 
       <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 6 }}>
         {ranked.map((row, index) => {
-          const value = metricFor(compareMode, activeLens, row);
+          const value = metricFor(compareMode, activeLens, lens1Mode, row);
           return (
             <div
               key={row.neighborhood_id}
@@ -118,7 +123,7 @@ export default function RankingsPanel({
                 {row.neighborhood_name}
               </span>
               <span style={{ fontWeight: 600, color: "#334155" }}>
-                {formatMetric(compareMode, activeLens, value)}
+                {formatMetric(compareMode, activeLens, lens1Mode, value)}
               </span>
             </div>
           );
