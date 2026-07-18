@@ -137,7 +137,7 @@ A ranked list of all 41 neighborhoods below the neighborhood detail panel. In no
 ---
 
 ### CARD 5 — Language simplification
-**Points: 2**
+**Points: 1**
 **Blocked by:** nothing
 
 #### What it is
@@ -184,6 +184,28 @@ The app runs on a shared environment all teammates can access with one URL. No m
 ---
 
 ## Stretch cards (do only if must-do cards are merged with ≥ 2 days left)
+
+---
+
+### STRETCH D — Controls bar: collision avoidance on narrow viewports
+**Points: 2**
+**Blocked by:** nothing
+
+#### What it is
+On viewports narrow enough that the controls bar and the right-side panel column approach each other, date pickers slide behind the neighborhood panel and become unreachable. The controls bar needs to be aware of how much horizontal space it actually has and reflow so every input stays accessible.
+
+#### Definition of Done
+- [ ] Controls bar width is capped so it never overlaps the right panel column at any viewport width ≥ 375px
+- [ ] All date pickers (two in normal mode, four in compare mode) are fully visible and clickable when the neighborhood panel is open
+- [ ] On viewports ≤ 640px, the controls bar wraps to a second row or otherwise reflows — no input is hidden or unreachable
+- [ ] The four compare date pickers do not overflow off-screen on narrow viewports
+- [ ] No horizontal scrollbar appears on `<main>` at any tested viewport width
+- [ ] Layout at ≥ 1024px is pixel-identical to the current design — this card changes nothing on desktop
+
+#### Acceptance Criteria
+- At 375px viewport width (iPhone SE), all visible date pickers are reachable and tappable without horizontal scrolling
+- With a neighborhood panel open on a 768px viewport, no date picker is obscured by the panel
+- Switching into compare mode on a narrow viewport (4 pickers visible) does not push any picker off-screen
 
 ---
 
