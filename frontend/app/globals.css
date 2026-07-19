@@ -179,9 +179,9 @@ body {
     min-height: 0;
     pointer-events: auto;
     overflow-y: auto;
-    /* 40vh − (column_top 172px + lens ~60px + column_gap 16px) */
-    margin-top: calc(50vh - 248px);
-    max-height: calc(50vh - 18px);
+    /* 55vh − (column_top 172px + lens ~60px + column_gap 16px) */
+    margin-top: calc(55vh - 248px);
+    max-height: calc(45vh - 18px);
     -webkit-overflow-scrolling: touch;
   }
 
@@ -223,9 +223,9 @@ body {
     /* max-height/overflow already set to none/visible in the ≤640px block */
   }
 
-  /* 40vh − (column_top 104px + lens ~60px + column_gap 16px) */
+  /* 55vh − (column_top 104px + lens ~60px + column_gap 16px) */
   .mobile-detail-panels {
-    margin-top: calc(50vh - 180px);
-    max-height: calc(50vh - 18px);
+    margin-top: calc(55vh - 180px);
+    max-height: calc(45vh - 18px);
   }
 }
