@@ -16,7 +16,7 @@ const LABEL_STYLE: React.CSSProperties = {
 };
 
 const TRIGGER_STYLE: React.CSSProperties = {
-  width: 112,
+  width: "var(--mp-width, 112px)",
   padding: "6px 10px",
   fontSize: 13,
   fontWeight: 600,
@@ -230,7 +230,7 @@ function PresetDropdown({ value, disabled, onSelectPreset }: PresetDropdownProps
           });
         }}
         style={{
-          width: 190,
+          width: "var(--preset-width, 190px)",
           padding: "6px 8px",
           fontSize: 13,
           borderRadius: 8,
@@ -347,8 +347,8 @@ export default function Controls({
           </>}
         </svg>
 
-        {/* Wordmark — hidden below sm (640px), logo icon stays visible */}
-        <div className="hidden sm:block">
+        {/* Wordmark — hidden below sm (640px) and at medium viewports */}
+        <div className="hidden sm:block lens-wordmark">
           <div style={{ fontSize: 18, fontWeight: 800, color: "#111827", lineHeight: 1, letterSpacing: "-0.04em" }}>
             Lens
           </div>
@@ -390,7 +390,7 @@ export default function Controls({
             onChange={(e) => onCategoryChange(e.target.value)}
             disabled={loading}
             style={{
-              width: 145,
+              width: "var(--select-width, 145px)",
               padding: "6px 8px",
               fontSize: 13,
               borderRadius: 8,

@@ -79,6 +79,13 @@ body {
     max-width: calc(100vw - 414px);
     max-height: calc(100vh - 36px);
     overflow: visible;
+    --mp-width: 80px;
+    --preset-width: 150px;
+    --select-width: 110px;
+  }
+
+  .controls-bar .lens-wordmark {
+    display: none;
   }
 }
 
