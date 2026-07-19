@@ -70,7 +70,11 @@ function MonthPicker({ label, value, disabled, onChange }: MonthPickerProps) {
     : "Select…";
 
   return (
-    <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: 3, position: "relative" }}>
+    <div
+      ref={ref}
+      className={`month-picker${open ? " open" : ""}`}
+      style={{ display: "flex", flexDirection: "column", gap: 3, position: "relative" }}
+    >
       <label style={LABEL_STYLE}>{label}</label>
 
       <button
@@ -88,6 +92,7 @@ function MonthPicker({ label, value, disabled, onChange }: MonthPickerProps) {
 
       {open && (
         <div
+          className="month-picker-popover"
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
@@ -380,6 +385,7 @@ export default function Controls({
         <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
           <label style={LABEL_STYLE}>Crime</label>
           <select
+            className="crime-select"
             value={category}
             onChange={(e) => onCategoryChange(e.target.value)}
             disabled={loading}

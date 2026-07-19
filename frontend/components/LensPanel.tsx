@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 interface LensPanelProps {
   activeLens: 1 | 2 | 3;
   onLensChange: (lens: 1 | 2 | 3) => void;
@@ -35,8 +37,17 @@ const LENSES = [
 ] as const;
 
 export default function LensPanel({ activeLens, onLensChange, lens1Mode, onLens1ModeChange }: LensPanelProps) {
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+  const activeLensTitle = LENSES.find((lens) => lens.id === activeLens)?.title ?? "Lens";
+
+  const selectLens = (lens: 1 | 2 | 3) => {
+    onLensChange(lens);
+    setMobileExpanded(false);
+  };
+
   return (
     <div
+      className={`lens-panel${mobileExpanded ? " mobile-expanded" : ""}`}
       style={{
         background: "rgba(255,255,255,.14)",
         backdropFilter: "blur(28px)",
@@ -51,15 +62,29 @@ export default function LensPanel({ activeLens, onLensChange, lens1Mode, onLens1
         gap: 2,
       }}
     >
-      {LENSES.map((lens) => {
-        const active = activeLens === lens.id;
+      <button
+        type="button"
+        className="lens-panel-mobile-toggle"
+        aria-expanded={mobileExpanded}
+        aria-controls="lens-panel-options"
+        onClick={() => setMobileExpanded((expanded) => !expanded)}
+      >
+        <span>
+          Lens <span aria-hidden="true">·</span> {activeLensTitle}
+        </span>
+        <span aria-hidden="true">{mobileExpanded ? "▲" : "▼"}</span>
+      </button>
 
-        return (
-          <div key={lens.id}>
-            <button
-              onClick={() => !lens.disabled && onLensChange(lens.id)}
-              disabled={lens.disabled}
-              style={{
+      <div id="lens-panel-options" className="lens-panel-options">
+        {LENSES.map((lens) => {
+          const active = activeLens === lens.id;
+
+          return (
+            <div key={lens.id}>
+              <button
+                onClick={() => !lens.disabled && selectLens(lens.id)}
+                disabled={lens.disabled}
+                style={{
                 display: "flex",
                 alignItems: "flex-start",
                 gap: 10,
@@ -76,8 +101,8 @@ export default function LensPanel({ activeLens, onLensChange, lens1Mode, onLens1
                 opacity: lens.disabled ? 0.45 : 1,
                 transition: "background .18s, border .18s",
                 width: "100%",
-              }}
-            >
+                }}
+              >
               {/* Colored icon */}
               <span
                 style={{
@@ -133,7 +158,7 @@ export default function LensPanel({ activeLens, onLensChange, lens1Mode, onLens1
                   {lens.sub}
                 </div>
               </div>
-            </button>
+              </button>
 
             {/* Lens 1 sub-toggle: Total vs Per Capita */}
             {active && lens.id === 1 && (
@@ -173,9 +198,10 @@ export default function LensPanel({ activeLens, onLensChange, lens1Mode, onLens1
                 })}
               </div>
             )}
-          </div>
-        );
-      })}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

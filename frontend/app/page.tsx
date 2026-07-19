@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Incident } from "@/types/incident";
 import type { LensData } from "@/types/lens";
 import type { CompareData } from "@/types/compare";
@@ -21,10 +21,8 @@ const today = new Date();
 function DeltaLegend({ maxMagnitude }: { maxMagnitude: number }) {
   return (
     <div
+      className="delta-legend"
       style={{
-        position: "absolute",
-        left: 18,
-        bottom: 200,
         zIndex: 1000,
         width: 240,
         background: "rgba(255,255,255,.12)",
@@ -74,6 +72,10 @@ export default function Home() {
 
   const [activeLens, setActiveLens] = useState<1 | 2 | 3>(1);
   const [lens1Mode, setLens1Mode] = useState<"raw" | "per_capita">("per_capita");
+  const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
+  const mobileDetailsToggleRef = useRef<HTMLButtonElement>(null);
+  const mobileDetailsCloseRef = useRef<HTMLButtonElement>(null);
+  const hasOpenedMobileDetails = useRef(false);
 
   // Store only the ID so the selection survives lens switches.
   // The displayed data is derived from lensData after each fetch.
@@ -91,6 +93,7 @@ export default function Home() {
     compareMode && (baselineEnd <= baselineStart || compareEnd <= compareStart)
       ? "Each comparison end month must be after its start month."
       : null;
+  const displayedCompareData = compareValidationError ? [] : compareData;
 
   // Single selection ID shared across all modes — switching lenses or toggling
   // compare never clears or replaces the selected neighborhood.
@@ -98,7 +101,7 @@ export default function Home() {
     ? (lensData.find((d) => d.neighborhood_id === selectedId) ?? null)
     : null;
   const selectedCompareNeighborhood = selectedId
-    ? (compareData.find((item) => item.neighborhood_id === selectedId) ?? null)
+    ? (displayedCompareData.find((item) => item.neighborhood_id === selectedId) ?? null)
     : null;
   const maxDeltaMagnitude = compareData.reduce(
     (maximum, item) => item.delta === null
@@ -106,6 +109,15 @@ export default function Home() {
       : Math.max(maximum, Math.abs(item.delta)),
     0
   );
+
+  useEffect(() => {
+    if (mobileDetailsOpen) {
+      hasOpenedMobileDetails.current = true;
+      requestAnimationFrame(() => mobileDetailsCloseRef.current?.focus());
+    } else if (hasOpenedMobileDetails.current) {
+      requestAnimationFrame(() => mobileDetailsToggleRef.current?.focus());
+    }
+  }, [mobileDetailsOpen]);
 
   // Shift end date to 3 months ago — outside the 90-day provisional window.
   function fixProvisional() {
@@ -116,8 +128,13 @@ export default function Home() {
   }
 
   function selectLens(lens: 1 | 2 | 3) {
-    setCompareMode(false);
+    if (lens !== activeLens) setCompareMode(false);
     setActiveLens(lens);
+  }
+
+  function selectNeighborhood(neighborhoodId: string | null) {
+    setSelectedId(neighborhoodId);
+    if (neighborhoodId) setMobileDetailsOpen(true);
   }
 
   async function fetchLensData() {
@@ -227,6 +244,7 @@ export default function Home() {
 
   return (
     <main
+      className={`app-shell${compareMode ? " compare-mode" : ""}`}
       style={{
         position: "relative",
         height: "100vh",
@@ -269,11 +287,11 @@ export default function Home() {
           lens1Mode={lens1Mode}
           lensData={lensData}
           compareMode={compareMode}
-          compareData={compareValidationError ? [] : compareData}
+          compareData={displayedCompareData}
           fetchId={compareMode ? compareFetchId : fetchId}
-          onSelectNeighborhood={(lens) => setSelectedId(lens?.neighborhood_id ?? null)}
+          onSelectNeighborhood={(lens) => selectNeighborhood(lens?.neighborhood_id ?? null)}
           onSelectCompareNeighborhood={(comparison) =>
-            setSelectedId(comparison?.neighborhood_id ?? null)
+            selectNeighborhood(comparison?.neighborhood_id ?? null)
           }
         />
 
@@ -284,12 +302,8 @@ export default function Home() {
 
       {/* Floating Right Panels */}
       <div
+        className={`right-panel-column${mobileDetailsOpen ? " mobile-details-open" : ""}`}
         style={{
-          position: "absolute",
-          top: 20,
-          right: 20,
-          width: 360,
-          maxHeight: "calc(100vh - 40px)",
           display: "flex",
           flexDirection: "column",
           gap: 16,
@@ -307,35 +321,16 @@ export default function Home() {
           />
         </div>
 
-        <div style={{ pointerEvents: "auto" }}>
-          <NeighborhoodPanel
-            neighborhood={selectedNeighborhood}
-            compareMode={compareMode}
-            compareNeighborhood={selectedCompareNeighborhood}
-            compareRanges={{
-              baselineStart,
-              baselineEnd,
-              compareStart,
-              compareEnd,
-            }}
-            activeLens={activeLens}
-            lens1Mode={lens1Mode}
-            dateRange={{ start, end }}
-            onFixProvisional={fixProvisional}
-          />
-        </div>
-
-        <div style={{ pointerEvents: "auto" }}>
-          <RankingsPanel
-            compareMode={compareMode}
-            activeLens={activeLens}
-            lens1Mode={lens1Mode}
-            lensData={lensData}
-            compareData={compareData}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-          />
-        </div>
+        <button
+          ref={mobileDetailsToggleRef}
+          type="button"
+          className="mobile-details-toggle"
+          aria-expanded={mobileDetailsOpen}
+          aria-controls="mobile-neighborhood-details"
+          onClick={() => setMobileDetailsOpen(true)}
+        >
+          View neighborhoods
+        </button>
 
         {(compareValidationError ?? error) && (
           <div
@@ -352,6 +347,48 @@ export default function Home() {
             {compareValidationError ?? error}
           </div>
         )}
+
+        <div id="mobile-neighborhood-details" className="mobile-detail-panels">
+          <button
+            ref={mobileDetailsCloseRef}
+            type="button"
+            className="mobile-details-close"
+            onClick={() => setMobileDetailsOpen(false)}
+            aria-label="Close neighborhood details and return to map"
+          >
+            Return to map
+          </button>
+
+          <div style={{ pointerEvents: "auto" }}>
+            <NeighborhoodPanel
+              neighborhood={selectedNeighborhood}
+              compareMode={compareMode}
+              compareNeighborhood={selectedCompareNeighborhood}
+              compareRanges={{
+                baselineStart,
+                baselineEnd,
+                compareStart,
+                compareEnd,
+              }}
+              activeLens={activeLens}
+              lens1Mode={lens1Mode}
+              dateRange={{ start, end }}
+              onFixProvisional={fixProvisional}
+            />
+          </div>
+
+          <div style={{ pointerEvents: "auto" }}>
+            <RankingsPanel
+              compareMode={compareMode}
+              activeLens={activeLens}
+              lens1Mode={lens1Mode}
+              lensData={lensData}
+              compareData={displayedCompareData}
+              selectedId={selectedId}
+              onSelect={selectNeighborhood}
+            />
+          </div>
+        </div>
       </div>
     </main>
   );
