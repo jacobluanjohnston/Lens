@@ -208,3 +208,13 @@ body {
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
   }
 }
+
+/* Wider phones (≥430px) fit FROM/TO/CRIME on one row — controls bar is ~70px tall,
+   so the 172px panel-top set above is too generous. Compare mode keeps its own 210px
+   via higher specificity and isn't affected by this rule. */
+@media (min-width: 430px) and (max-width: 640px) {
+  .right-panel-column {
+    top: 104px;
+    max-height: calc(100vh - 122px);
+  }
+}
