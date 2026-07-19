@@ -196,9 +196,14 @@ body {
   }
 
   /* Expanded lens options always float as an overlay so they never push the
-     neighbourhood panel down regardless of open/close state. */
+     neighbourhood panel down regardless of open/close state.
+     z-index: 100 here is load-bearing: backdrop-filter on .lens-panel creates
+     a new stacking context, so inner z-indices are local to it. Promoting the
+     panel itself to z-index 100 in the column's stacking context means the
+     expanded options paint above the sticky "Return to map" button (z-index 1). */
   .right-panel-column .lens-panel {
     position: relative;
+    z-index: 100;
   }
 
   .right-panel-column .lens-panel.mobile-expanded .lens-panel-options {
