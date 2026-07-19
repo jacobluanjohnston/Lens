@@ -47,6 +47,7 @@ body {
   right: 20px;
   width: 360px;
   max-height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 
 .glass-zoom-controls {
@@ -112,7 +113,9 @@ body {
     right: auto;
     left: 18px;
     width: calc(100vw - 36px);
-    max-height: calc(100vh - 190px);
+    /* Let the column grow freely — mobile-detail-panels handles its own scroll */
+    max-height: none;
+    overflow-y: visible;
   }
 
   .compare-mode .right-panel-column {
@@ -165,8 +168,10 @@ body {
   }
 
   /* Neighbourhood panels always visible — no open/close gating on mobile.
-     This div is its own scroll container so the column stays pointer-events:none
-     and the map remains tappable above and in the gaps between glass cards. */
+     margin-top pushes the panels to ~40vh so the map is visible as a strip
+     between the lens picker (at column top ~172px) and the panels.
+     The panel is its own scroll container; the column stays pointer-events:none
+     so the map is tappable in the gap above the panels. */
   .mobile-detail-panels {
     display: flex;
     flex-direction: column;
@@ -174,8 +179,9 @@ body {
     min-height: 0;
     pointer-events: auto;
     overflow-y: auto;
-    /* <430px: column top 172px + lens ~50px + gap 16px + bottom margin 18px */
-    max-height: calc(100vh - 260px);
+    /* 40vh − (column_top 172px + lens ~60px + column_gap 16px) */
+    margin-top: calc(40vh - 248px);
+    max-height: calc(60vh - 18px);
     -webkit-overflow-scrolling: touch;
   }
 
@@ -214,11 +220,12 @@ body {
 @media (min-width: 430px) and (max-width: 640px) {
   .right-panel-column {
     top: 104px;
-    max-height: calc(100vh - 122px);
+    /* max-height/overflow already set to none/visible in the ≤640px block */
   }
 
-  /* ≥430px: column top 104px + lens ~50px + gap 16px + bottom margin 18px */
+  /* 40vh − (column_top 104px + lens ~60px + column_gap 16px) */
   .mobile-detail-panels {
-    max-height: calc(100vh - 190px);
+    margin-top: calc(40vh - 180px);
+    max-height: calc(60vh - 18px);
   }
 }

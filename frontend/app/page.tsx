@@ -293,7 +293,6 @@ export default function Home() {
           display: "flex",
           flexDirection: "column",
           gap: 16,
-          overflowY: "auto",
           zIndex: 1000,
           pointerEvents: "none",
         }}
