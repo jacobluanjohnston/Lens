@@ -183,7 +183,7 @@ The app runs on a shared environment all teammates can access with one URL. No m
 
 ---
 
-### CARD 7 — CI: wire frontend tests and fill critical logic gaps
+### CARD 11 — CI: wire frontend tests and fill critical logic gaps
 **Points: 5**
 **Blocked by:** nothing
 
@@ -208,12 +208,13 @@ The CI pipeline runs lint, migrations, and backend/pipeline tests on every PR bu
 
 ---
 
-## Stretch cards (do only if must-do cards are merged with ≥ 2 days left)
+## Stretch cards
 
 ---
 
-### STRETCH D — Controls bar: collision avoidance on narrow viewports
+### CARD 7 — Controls bar: collision avoidance on narrow viewports
 **Points: 2**
+**Owner:** ltaufaas
 **Blocked by:** nothing
 
 #### What it is
@@ -225,12 +226,61 @@ On viewports narrow enough that the controls bar and the right-side panel column
 - [ ] On viewports ≤ 640px, the controls bar wraps to a second row or otherwise reflows — no input is hidden or unreachable
 - [ ] The four compare date pickers do not overflow off-screen on narrow viewports
 - [ ] No horizontal scrollbar appears on `<main>` at any tested viewport width
-- [ ] Layout at ≥ 1024px is pixel-identical to the current design — this card changes nothing on desktop
+- [ ] Layout at ≥ 1320px is pixel-identical to the current design (see note below)
+
+**Note:** The one-row Compare controls are ~916px wide; the right panel is 360px. They cannot coexist at widths below 1320px without overlapping. 641–1319px uses a wrapped layout; ≥1320px preserves the original single-row desktop layout.
 
 #### Acceptance Criteria
 - At 375px viewport width (iPhone SE), all visible date pickers are reachable and tappable without horizontal scrolling
 - With a neighborhood panel open on a 768px viewport, no date picker is obscured by the panel
 - Switching into compare mode on a narrow viewport (4 pickers visible) does not push any picker off-screen
+
+---
+
+### CARD 8 — Spike: Lurie enforcement shift validation
+**Points: 1**
+**Owner:** jacobluanjohnston
+**Blocked by:** nothing
+
+#### What it is
+Confirm the Lurie inauguration finding (SOMA +79, Mission +43, Tenderloin lower) against year-over-year baselines before citing it in documentation or the demo.
+
+#### Definition of Done
+- [ ] Spike doc in `docs/spikes/` confirming (or revising) the numbers
+- [ ] Year-over-year baseline manually computed and compared to the compare-mode output
+- [ ] Finding summarized in STATUS.md
+
+---
+
+### CARD 9 — Fix bottom-left UI collision with delta legend and Leaflet controls
+**Points: 1**
+**Owner:** hkadakia05
+**Blocked by:** nothing
+
+#### What it is
+In compare mode, the delta legend (bottom-left) and Leaflet's default zoom/attribution controls overlap. This card resolves the collision so both are visible and neither is obscured.
+
+#### Definition of Done
+- [ ] Delta legend and Leaflet controls do not overlap at any supported viewport width
+- [ ] Fix does not affect non-compare-mode layout
+
+#### Acceptance Criteria
+- In compare mode, the delta legend and zoom controls are both fully visible at 1280px and 1440px viewport widths
+
+---
+
+### CARD 10 — Spike: World Cup validation
+**Points: 1**
+**Owner:** jacobluanjohnston
+**Blocked by:** nothing
+
+#### What it is
+Run the same year-over-year enforcement shift check on the World Cup window (May–Jul 2026) once enough data is available. Document result before citing it publicly.
+
+#### Definition of Done
+- [ ] Spike doc in `docs/spikes/` confirming which neighborhoods show enforcement shift during the World Cup window
+- [ ] Noted whether the finding is strong enough to cite or is still provisional
+- [ ] Finding summarized in STATUS.md
 
 ---
 
@@ -277,22 +327,6 @@ Right now the officer enforcement calculation hardcodes which categories count a
 **Blocked by:** Stretch A Sub-task B
 
 Before any Lens 3 clearance rate can be called externally validated, compare it against CA DOJ OpenJustice data. Document result in `docs/spikes/g4_external_validation.md`. If numbers are in the right order of magnitude and rank order is consistent, Lens 3 is cleared for use. If not, document why and what it means for interpretation.
-
----
-
-### STRETCH E — Fix bottom-left UI collision with delta legend and Leaflet controls
-**Points: 1**
-**Blocked by:** nothing
-
-#### What it is
-In compare mode, the delta legend (bottom-left) and Leaflet's default zoom/attribution controls overlap. This card resolves the collision so both are visible and neither is obscured.
-
-#### Definition of Done
-- [ ] Delta legend and Leaflet controls do not overlap at any supported viewport width
-- [ ] Fix does not affect non-compare-mode layout
-
-#### Acceptance Criteria
-- In compare mode, the delta legend and zoom controls are both fully visible at 1280px and 1440px viewport widths
 
 ---
 
