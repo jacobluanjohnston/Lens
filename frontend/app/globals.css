@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Hide mobile-only chrome on desktop — overridden inside the ≤640px block */
+.mobile-details-toggle,
+.mobile-details-close {
+  display: none;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -187,16 +193,15 @@ body {
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-  }
-
-  .right-panel-column.mobile-details-open {
-    top: 40vh;
-    max-height: calc(60vh - 18px);
     pointer-events: auto;
+    overflow-y: auto;
+    /* <430px: column top 172px + lens ~50px + gap 16px + bottom margin 18px */
+    max-height: calc(100vh - 260px);
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Expanded lens options always float as an overlay so they never push the
-     neighbourhood panel down regardless of open/close state.
+     neighbourhood panel down.
      z-index: 100 here is load-bearing: backdrop-filter on .lens-panel creates
      a new stacking context, so inner z-indices are local to it. Promoting the
      panel itself to z-index 100 in the column's stacking context means the
@@ -251,5 +256,10 @@ body {
   .right-panel-column {
     top: 104px;
     max-height: calc(100vh - 122px);
+  }
+
+  /* ≥430px: column top 104px + lens ~50px + gap 16px + bottom margin 18px */
+  .right-panel-column.mobile-details-open .mobile-detail-panels {
+    max-height: calc(100vh - 190px);
   }
 }

@@ -314,7 +314,9 @@ export default function Home() {
           display: "flex",
           flexDirection: "column",
           gap: 16,
-          overflowY: "auto",
+          // When the neighbourhood panel is open it handles its own scroll;
+          // the column should not clip or scroll so the panel can size freely.
+          overflowY: mobileDetailsOpen ? "visible" : "auto",
           zIndex: 1000,
           pointerEvents: "none",
         }}
