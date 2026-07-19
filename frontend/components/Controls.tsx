@@ -318,7 +318,7 @@ export default function Controls({
       }}
     >
       {/* Logo */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 8, alignSelf: "center" }}>
         {/* 2×2 grid mark — colors track the active lens's choropleth scale */}
         <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
           {compareMode && <>
