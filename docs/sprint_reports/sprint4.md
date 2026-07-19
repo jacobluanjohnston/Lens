@@ -291,7 +291,22 @@ In compare mode, the delta legend (bottom-left) and Leaflet's default zoom/attri
 
 ---
 
-### CARD 10 — Spike: mobile responsive breakpoint system
+### CARD 10 — Spike: World Cup validation
+**Points: 1**
+**Owner:** jacobluanjohnston
+**Blocked by:** nothing
+
+#### What it is
+Run the same year-over-year enforcement shift check on the World Cup window (May–Jul 2026) once enough data is available. Document result before citing it publicly.
+
+#### Definition of Done
+- [ ] Spike doc in `docs/spikes/` confirming which neighborhoods show enforcement shift during the World Cup window
+- [ ] Noted whether the finding is strong enough to cite or is still provisional
+- [ ] Finding summarized in STATUS.md
+
+---
+
+### CARD 12 — Spike: mobile responsive breakpoint system
 **Points: 2**
 **Blocked by:** nothing
 
@@ -314,21 +329,6 @@ A spike writeup that records the non-obvious findings from the controls bar / pa
 #### Acceptance Criteria
 - A teammate who didn't do this work can read the spike and correctly update a `column top` value without breaking the panel gap
 - The `backdrop-filter` stacking context explanation is specific enough that a future engineer recognizes the symptom and knows the fix without re-debugging it
-
----
-
-### CARD 11 — Spike: World Cup validation
-**Points: 1**
-**Owner:** jacobluanjohnston
-**Blocked by:** nothing
-
-#### What it is
-Run the same year-over-year enforcement shift check on the World Cup window (May–Jul 2026) once enough data is available. Document result before citing it publicly.
-
-#### Definition of Done
-- [ ] Spike doc in `docs/spikes/` confirming which neighborhoods show enforcement shift during the World Cup window
-- [ ] Noted whether the finding is strong enough to cite or is still provisional
-- [ ] Finding summarized in STATUS.md
 
 ---
 
