@@ -110,8 +110,8 @@ body {
   }
 
   .compare-mode .right-panel-column {
-    top: 276px;
-    max-height: calc(100vh - 294px);
+    top: 210px;
+    max-height: calc(100vh - 228px);
   }
 
   .compare-mode .glass-zoom-controls {
