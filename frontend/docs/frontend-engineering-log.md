@@ -514,3 +514,96 @@ The live endpoint works, but the Card 1 test file does not collect in the existi
 ### Existing Project Lint Notes
 
 The full-project ESLint command still reports pre-existing issues in the normal lens fetch path in `app/page.tsx`. These issues were present before Card 2 and are not part of the compare fetch path. All focused checks for the new compare implementation pass.
+
+---
+
+# July 18, 2026
+
+## Sprint 4 — Stretch D: Controls Bar Collision Avoidance
+
+### Objective
+
+Keep every normal and compare date picker visible and reachable when the controls bar approaches the 360px right-panel column. The responsive change must prevent off-screen controls and horizontal page scrolling while preserving the existing wide-desktop layout.
+
+### Baseline Measurements
+
+Browser measurements against the merged controls, preset dropdown, neighborhood panel, and rankings panel confirmed the collision:
+
+| Viewport | Mode | Controls | Right panel | Baseline result |
+|---|---|---|---|---|
+| 375px | Normal | 18–357px | −5–355px | Overlap |
+| 375px | Compare | 18–357px | −5–355px | Overlap |
+| 640px | Normal | 18–622px | 260–620px | Overlap |
+| 640px | Compare | 18–622px | 260–620px | Overlap |
+| 768px | Normal | 18–537px | 388–748px | Overlap |
+| 768px | Compare | 18–750px, 875px internal width | 388–748px | Overlap and off-screen controls |
+| 1024px | Compare | 18–934px | 644–1004px | Overlap |
+| 1200px | Compare | 18–934px | 820–1180px | Overlap |
+
+The policy preset added after the original card was written increased the compare bar's intrinsic width. It does not fit beside the right column until approximately 1314px. Therefore, preserving the existing layout at exactly 1024px conflicts with the higher-priority requirement that controls never overlap. The original single-row layout is preserved from 1320px upward, where it fits without collision.
+
+### Work Completed
+
+- Added responsive classes for the application shell, controls bar, right-panel column, Leaflet controls, and delta legend.
+- Preserved the existing absolute desktop positions when the controls and sidebar have enough space.
+- Added collision-aware wrapping from 641px through 1319px.
+- Capped the controls width to the space left of the 360px right-panel column with a 16px gap.
+- Reflowed the right-panel column below the controls at 640px and below.
+- Used separate mobile panel offsets for normal and compare modes because compare mode has a taller wrapped controls bar.
+- Kept the mobile right column within 18px viewport gutters.
+- Moved the delta legend below the Leaflet `+`, `−`, and `SF` controls.
+- Used the sentence-case legend label: "Change in police stops vs. crime reports."
+
+### Final Browser Verification
+
+| Viewport | Mode | Controls result | Panel result | Horizontal overflow |
+|---|---|---|---|---|
+| 375px | Normal | Both pickers visible | Reflowed below controls | None |
+| 375px | Compare | All four pickers visible and tappable | Reflowed below controls | None |
+| 640px | Normal | Both pickers visible | Reflowed below controls | None |
+| 640px | Compare | All four pickers visible | Reflowed below controls | None |
+| 768px | Normal | Wrapped left of panel | Panel remains at right | None |
+| 768px | Compare | All four pickers wrapped left of panel | Panel remains at right | None |
+| 1024px | Compare | Wrapped without collision | Panel remains at right | None |
+| 1200px | Compare | Wrapped without collision | Panel remains at right | None |
+| 1320px | Compare | Original single-row layout | Panel remains at right | None |
+| 1440px | Compare | Original single-row layout | Panel remains at right | None |
+
+At 375px, the Before start picker was opened and changed from April 2024 to January 2024 through the visible month popup, confirming that it was reachable and tappable rather than only visually present.
+
+### Automated Verification
+
+- `npm test -- --runInBand`: passed (1 suite, 1 test).
+- `npm run build`: passed after synchronizing the newly merged Jest dependencies.
+- `npx tsc --noEmit`: passed.
+- `git diff --check`: passed.
+- Full-project ESLint still reports pre-existing issues in `app/page.tsx` and `NeighborhoodPanel.tsx`; the responsive changes introduced no additional lint findings.
+
+### Files Changed
+
+- `frontend/app/globals.css`
+- `frontend/app/page.tsx`
+- `frontend/components/Controls.tsx`
+- `frontend/components/GlassZoom.tsx`
+- `frontend/components/LensPanel.tsx`
+- `frontend/docs/frontend-engineering-log.md`
+
+### Mobile Usability Follow-up
+
+- Replaced the permanently expanded lens selector on viewports at or below 640px with a compact, 40px-tall summary showing the active lens.
+- The summary is a real button with `aria-expanded` and `aria-controls`; tapping it reveals the complete lens selector.
+- Selecting a lens automatically collapses the selector again so the map and neighborhood information regain vertical space.
+- Kept the full lens panel unchanged above the mobile breakpoint.
+- Added `frontend/components/LensPanel.tsx` to the files changed for this card.
+- Kept the map usable on phones by hiding the neighborhood detail and rankings panels behind a `View neighborhoods` control.
+- Added a `Return to map` action at the top of the open mobile drawer.
+- Made map-polygon and ranking selections open the mobile detail drawer automatically.
+- Moved keyboard focus to `Return to map` when the drawer opens and restored it to `View neighborhoods` when the drawer closes.
+- Kept Compare mode active when the analyst re-selects the already-active Police Stops lens; Compare now exits only when switching to a different lens.
+- Kept validation and API errors outside the collapsed mobile drawer so failures are immediately visible without opening neighborhood details.
+- Cleared stale comparison panel and ranking values while a comparison date range is invalid, preventing old metrics from appearing under new invalid date labels.
+- Allowed month-picker popovers to extend beyond the responsive controls surface so the calendar is never clipped by the wrapped controls container.
+- Raised the controls stacking context only while a month picker is open, keeping the calendar above the lens and neighborhood panels.
+- Matched the mobile crime dropdown to the 112px month-picker width so it no longer extends farther across the phone controls bar.
+- Moved the Leaflet zoom/reset stack to the lower-right beside the delta legend in mobile Compare mode, keeping all three controls reachable on short 400×597 viewports without shrinking tap targets.
+- Kept the neighborhood panels permanently visible at tablet and desktop widths.

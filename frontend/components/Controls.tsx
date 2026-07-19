@@ -16,7 +16,7 @@ const LABEL_STYLE: React.CSSProperties = {
 };
 
 const TRIGGER_STYLE: React.CSSProperties = {
-  width: 112,
+  width: "var(--mp-width, 112px)",
   padding: "6px 10px",
   fontSize: 13,
   fontWeight: 600,
@@ -70,7 +70,11 @@ function MonthPicker({ label, value, disabled, onChange }: MonthPickerProps) {
     : "Select…";
 
   return (
-    <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: 3, position: "relative" }}>
+    <div
+      ref={ref}
+      className={`month-picker${open ? " open" : ""}`}
+      style={{ display: "flex", flexDirection: "column", gap: 3, position: "relative" }}
+    >
       <label style={LABEL_STYLE}>{label}</label>
 
       <button
@@ -88,6 +92,7 @@ function MonthPicker({ label, value, disabled, onChange }: MonthPickerProps) {
 
       {open && (
         <div
+          className="month-picker-popover"
           style={{
             position: "absolute",
             top: "calc(100% + 6px)",
@@ -225,7 +230,7 @@ function PresetDropdown({ value, disabled, onSelectPreset }: PresetDropdownProps
           });
         }}
         style={{
-          width: 190,
+          width: "var(--preset-width, 190px)",
           padding: "6px 8px",
           fontSize: 13,
           borderRadius: 8,
@@ -292,7 +297,7 @@ export default function Controls({
   onCompareStartChange,
   onCompareEndChange,
 }: ControlsProps) {
-  const [activePreset, setActivePreset] = useState("");
+  const [activePreset, setActivePreset] = useState("lurie-inauguration");
 
   return (
     <div
@@ -313,7 +318,7 @@ export default function Controls({
       }}
     >
       {/* Logo */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 8, alignSelf: "center" }}>
         {/* 2×2 grid mark — colors track the active lens's choropleth scale */}
         <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
           {compareMode && <>
@@ -342,8 +347,8 @@ export default function Controls({
           </>}
         </svg>
 
-        {/* Wordmark — hidden below sm (640px), logo icon stays visible */}
-        <div className="hidden sm:block">
+        {/* Wordmark — hidden below sm (640px) and at medium viewports */}
+        <div className="hidden sm:block lens-wordmark">
           <div style={{ fontSize: 18, fontWeight: 800, color: "#111827", lineHeight: 1, letterSpacing: "-0.04em" }}>
             Lens
           </div>
@@ -363,10 +368,10 @@ export default function Controls({
               onCompareEndChange(preset.compareEnd);
             }}
           />
-          <MonthPicker key={`before-start-${baselineStart}`} label="Before start" value={baselineStart} disabled={loading} onChange={(v) => { setActivePreset(""); onBaselineStartChange(v); }} />
-          <MonthPicker key={`before-end-${baselineEnd}`} label="Before end" value={baselineEnd} disabled={loading} onChange={(v) => { setActivePreset(""); onBaselineEndChange(v); }} />
-          <MonthPicker key={`after-start-${compareStart}`} label="After start" value={compareStart} disabled={loading} onChange={(v) => { setActivePreset(""); onCompareStartChange(v); }} />
-          <MonthPicker key={`after-end-${compareEnd}`} label="After end" value={compareEnd} disabled={loading} onChange={(v) => { setActivePreset(""); onCompareEndChange(v); }} />
+          <MonthPicker key={`before-start-${baselineStart}`} label="Before" value={baselineStart} disabled={loading} onChange={(v) => { setActivePreset(""); onBaselineStartChange(v); }} />
+          <MonthPicker key={`before-end-${baselineEnd}`} label="Until" value={baselineEnd} disabled={loading} onChange={(v) => { setActivePreset(""); onBaselineEndChange(v); }} />
+          <MonthPicker key={`after-start-${compareStart}`} label="After" value={compareStart} disabled={loading} onChange={(v) => { setActivePreset(""); onCompareStartChange(v); }} />
+          <MonthPicker key={`after-end-${compareEnd}`} label="Until" value={compareEnd} disabled={loading} onChange={(v) => { setActivePreset(""); onCompareEndChange(v); }} />
         </>
       ) : (
         <>
@@ -380,11 +385,12 @@ export default function Controls({
         <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
           <label style={LABEL_STYLE}>Crime</label>
           <select
+            className="crime-select"
             value={category}
             onChange={(e) => onCategoryChange(e.target.value)}
             disabled={loading}
             style={{
-              width: 145,
+              width: "var(--select-width, 145px)",
               padding: "6px 8px",
               fontSize: 13,
               borderRadius: 8,
@@ -425,7 +431,7 @@ export default function Controls({
             cursor: "pointer",
           }}
         >
-          {compareMode ? "Exit compare" : "Before / After"}
+          {compareMode ? "Exit Compare" : "Before / After"}
         </button>
       )}
     </div>

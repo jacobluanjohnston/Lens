@@ -32,9 +32,9 @@ export default function GlassZoom() {
 
   return (
     <div
+      className="glass-zoom-controls"
       style={{
         position: "absolute",
-        bottom: 40,
         left: 18,
         zIndex: 1000,
         display: "flex",

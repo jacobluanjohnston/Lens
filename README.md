@@ -58,6 +58,39 @@ curl "http://localhost:8000/lens/1?start=2024-01-01&end=2025-01-01"
 docker compose exec db psql -U lens -d lens -c "SELECT PostGIS_Version();"
 ```
 
+### Frontend with hot reload (recommended for active development)
+
+The full `docker compose up` runs a production build — every CSS or component change requires a full rebuild. For active frontend work, run the frontend outside Docker so changes reload instantly:
+
+```bash
+# Terminal 1 — DB + backend only
+docker compose up db backend
+
+# Terminal 2 — frontend dev server (hot reload)
+cd frontend
+npm run dev
+```
+
+To avoid setting the env var every time, create `frontend/.env.local` once:
+
+```
+NEXT_PUBLIC_API_TARGET=http://localhost:8000
+```
+
+**Switching back to full Docker** (e.g. to test the production build or share via ngrok):
+
+```bash
+# Stop just the frontend dev server (Ctrl+C in its terminal), then:
+docker compose up --build frontend
+```
+
+**Switching back to local dev** from full Docker:
+
+```bash
+docker compose stop frontend   # DB and backend keep running
+cd frontend && npm run dev
+```
+
 ### Run locally without Docker
 
 ```bash
@@ -142,7 +175,7 @@ The URL is served via ngrok rather than a bare local IP. A local IP only works o
 
 | Member | Contributions |
 |---|---|
-| Jacob L. Johnston | Product owner; full-stack scaffold (Docker, CI, FastAPI, PostGIS, Leaflet, Alembic); bulk Socrata ingest pipeline (1M+ SF records); PostGIS point-in-polygon neighborhood assignment; Lens 1 & 2 API endpoints; per-capita denominator spike (ACS B01003 + census tract crosswalk); proactive/reactive classifier spike; G2 & G3 resolution spikes; co-built lens toggle, choropleth layer & neighborhood sidebar; Lurie & World Cup enforcement shift spike validation; plain-language copy pass; methodology docs & ADRs |
+| Jacob L. Johnston | Product owner; full-stack scaffold (Docker, CI, FastAPI, PostGIS, Leaflet, Alembic); bulk Socrata ingest pipeline (1M+ SF records); PostGIS point-in-polygon neighborhood assignment; Lens 1 & 2 API endpoints; per-capita denominator spike (ACS B01003 + census tract crosswalk); proactive/reactive classifier spike; G2 & G3 resolution spikes; overall frontend testing & review across all sprint features; Lurie & World Cup enforcement shift spike validation; plain-language copy pass; methodology docs & ADRs |
 | Louisa Taufaasau | Scrum master; frontend design; Next.js migration (Leaflet via dynamic SSR); choropleth map layer; lens toggle; neighborhood drill-down panel with flags; compare mode UI with Before/After pickers and diverging red/blue delta choropleth; controls bar collision avoidance |
 | Ishita Jakka | Geography dimension table (41 SF neighborhoods + ACS population); precomputed aggregate table schema & Alembic migration; batch aggregation job producing 78,470 neighborhood × month × category rollup rows that underlie all lens endpoints; neighborhood rankings sidebar |
 | Heli Kadakia | Policy event preset dropdown (Lurie & World Cup) with provisional-data warning; Docker Compose deployment with automatic migrations on startup; frontend design; delta legend collision fix |

@@ -21,10 +21,8 @@ const today = new Date();
 function DeltaLegend({ maxMagnitude }: { maxMagnitude: number }) {
   return (
     <div
+      className="delta-legend"
       style={{
-        position: "absolute",
-        left: 18,
-        bottom: 200,
         zIndex: 1000,
         width: 240,
         background: "rgba(255,255,255,.12)",
@@ -91,6 +89,7 @@ export default function Home() {
     compareMode && (baselineEnd <= baselineStart || compareEnd <= compareStart)
       ? "Each comparison end month must be after its start month."
       : null;
+  const displayedCompareData = compareValidationError ? [] : compareData;
 
   // Single selection ID shared across all modes — switching lenses or toggling
   // compare never clears or replaces the selected neighborhood.
@@ -98,7 +97,7 @@ export default function Home() {
     ? (lensData.find((d) => d.neighborhood_id === selectedId) ?? null)
     : null;
   const selectedCompareNeighborhood = selectedId
-    ? (compareData.find((item) => item.neighborhood_id === selectedId) ?? null)
+    ? (displayedCompareData.find((item) => item.neighborhood_id === selectedId) ?? null)
     : null;
   const maxDeltaMagnitude = compareData.reduce(
     (maximum, item) => item.delta === null
@@ -116,8 +115,12 @@ export default function Home() {
   }
 
   function selectLens(lens: 1 | 2 | 3) {
-    setCompareMode(false);
+    if (lens !== activeLens) setCompareMode(false);
     setActiveLens(lens);
+  }
+
+  function selectNeighborhood(neighborhoodId: string | null) {
+    setSelectedId(neighborhoodId);
   }
 
   async function fetchLensData() {
@@ -227,6 +230,7 @@ export default function Home() {
 
   return (
     <main
+      className={`app-shell${compareMode ? " compare-mode" : ""}`}
       style={{
         position: "relative",
         height: "100vh",
@@ -269,11 +273,11 @@ export default function Home() {
           lens1Mode={lens1Mode}
           lensData={lensData}
           compareMode={compareMode}
-          compareData={compareValidationError ? [] : compareData}
+          compareData={displayedCompareData}
           fetchId={compareMode ? compareFetchId : fetchId}
-          onSelectNeighborhood={(lens) => setSelectedId(lens?.neighborhood_id ?? null)}
+          onSelectNeighborhood={(lens) => selectNeighborhood(lens?.neighborhood_id ?? null)}
           onSelectCompareNeighborhood={(comparison) =>
-            setSelectedId(comparison?.neighborhood_id ?? null)
+            selectNeighborhood(comparison?.neighborhood_id ?? null)
           }
         />
 
@@ -284,16 +288,11 @@ export default function Home() {
 
       {/* Floating Right Panels */}
       <div
+        className="right-panel-column"
         style={{
-          position: "absolute",
-          top: 20,
-          right: 20,
-          width: 360,
-          maxHeight: "calc(100vh - 40px)",
           display: "flex",
           flexDirection: "column",
           gap: 16,
-          overflowY: "auto",
           zIndex: 1000,
           pointerEvents: "none",
         }}
@@ -304,36 +303,6 @@ export default function Home() {
             onLensChange={selectLens}
             lens1Mode={lens1Mode}
             onLens1ModeChange={setLens1Mode}
-          />
-        </div>
-
-        <div style={{ pointerEvents: "auto" }}>
-          <NeighborhoodPanel
-            neighborhood={selectedNeighborhood}
-            compareMode={compareMode}
-            compareNeighborhood={selectedCompareNeighborhood}
-            compareRanges={{
-              baselineStart,
-              baselineEnd,
-              compareStart,
-              compareEnd,
-            }}
-            activeLens={activeLens}
-            lens1Mode={lens1Mode}
-            dateRange={{ start, end }}
-            onFixProvisional={fixProvisional}
-          />
-        </div>
-
-        <div style={{ pointerEvents: "auto" }}>
-          <RankingsPanel
-            compareMode={compareMode}
-            activeLens={activeLens}
-            lens1Mode={lens1Mode}
-            lensData={lensData}
-            compareData={compareData}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
           />
         </div>
 
@@ -352,6 +321,38 @@ export default function Home() {
             {compareValidationError ?? error}
           </div>
         )}
+
+        <div className="mobile-detail-panels">
+          <div style={{ pointerEvents: "auto" }}>
+            <NeighborhoodPanel
+              neighborhood={selectedNeighborhood}
+              compareMode={compareMode}
+              compareNeighborhood={selectedCompareNeighborhood}
+              compareRanges={{
+                baselineStart,
+                baselineEnd,
+                compareStart,
+                compareEnd,
+              }}
+              activeLens={activeLens}
+              lens1Mode={lens1Mode}
+              dateRange={{ start, end }}
+              onFixProvisional={fixProvisional}
+            />
+          </div>
+
+          <div style={{ pointerEvents: "auto" }}>
+            <RankingsPanel
+              compareMode={compareMode}
+              activeLens={activeLens}
+              lens1Mode={lens1Mode}
+              lensData={lensData}
+              compareData={displayedCompareData}
+              selectedId={selectedId}
+              onSelect={selectNeighborhood}
+            />
+          </div>
+        </div>
       </div>
     </main>
   );
