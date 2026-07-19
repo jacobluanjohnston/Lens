@@ -291,7 +291,33 @@ In compare mode, the delta legend (bottom-left) and Leaflet's default zoom/attri
 
 ---
 
-### CARD 10 — Spike: World Cup validation
+### CARD 10 — Spike: mobile responsive breakpoint system
+**Points: 2**
+**Blocked by:** nothing
+
+#### What it is
+A spike writeup that records the non-obvious findings from the controls bar / panel layout work — specifically that pixel-width breakpoints alone can't distinguish a phone from a narrow desktop browser, that `backdrop-filter` silently traps stacking contexts, and the formula that keeps the panel gap correct when column positions change. The goal is that the next person doing responsive layout work starts from the findings, not from scratch.
+
+#### Definition of Done
+- [x] `docs/spikes/mobile_responsive_breakpoints.md` exists and covers:
+  - The "we learned X, therefore Y" summary up front
+  - Why `(hover: hover) and (pointer: fine)` instead of a pixel threshold
+  - The three-tier breakpoint table with `column top` values for each zone
+  - The panel gap formula and the warning about keeping it in sync with `column top`
+  - The `backdrop-filter` stacking context trap and fix
+  - The compare mode controls bar row counts per device
+  - The device list used for manual testing and why each device was chosen
+  - Known remaining rough edges (SE compare mode, landscape)
+- [x] CARD 7 implementation notes reference the spike
+- [x] No methodology content lives only in conversation history — it is in the file
+
+#### Acceptance Criteria
+- A teammate who didn't do this work can read the spike and correctly update a `column top` value without breaking the panel gap
+- The `backdrop-filter` stacking context explanation is specific enough that a future engineer recognizes the symptom and knows the fix without re-debugging it
+
+---
+
+### CARD 11 — Spike: World Cup validation
 **Points: 1**
 **Owner:** jacobluanjohnston
 **Blocked by:** nothing
@@ -365,32 +391,6 @@ In compare mode, the delta legend (bottom-left) and Leaflet's default zoom/attri
 
 #### Acceptance Criteria
 - In compare mode, the delta legend and zoom controls are both fully visible at 1280px and 1440px viewport widths
-
----
-
-### STRETCH F — Spike: mobile responsive breakpoint system
-**Points: 2**
-**Blocked by:** nothing
-
-#### What it is
-A spike writeup that records the non-obvious findings from the controls bar / panel layout work — specifically that pixel-width breakpoints alone can't distinguish a phone from a narrow desktop browser, that `backdrop-filter` silently traps stacking contexts, and the formula that keeps the panel gap correct when column positions change. The goal is that the next person doing responsive layout work starts from the findings, not from scratch.
-
-#### Definition of Done
-- [x] `docs/spikes/mobile_responsive_breakpoints.md` exists and covers:
-  - The "we learned X, therefore Y" summary up front
-  - Why `(hover: hover) and (pointer: fine)` instead of a pixel threshold
-  - The three-tier breakpoint table with `column top` values for each zone
-  - The panel gap formula and the warning about keeping it in sync with `column top`
-  - The `backdrop-filter` stacking context trap and fix
-  - The compare mode controls bar row counts per device
-  - The device list used for manual testing and why each device was chosen
-  - Known remaining rough edges (SE compare mode, landscape)
-- [x] `docs/sprint_reports/sprint4.md` STRETCH D implementation notes reference the spike
-- [x] No methodology content lives only in conversation history — it is in the file
-
-#### Acceptance Criteria
-- A teammate who didn't do this work can read the spike and correctly update a `column top` value without breaking the panel gap
-- The `backdrop-filter` stacking context explanation is specific enough that a future engineer recognizes the symptom and knows the fix without re-debugging it
 
 ---
 
