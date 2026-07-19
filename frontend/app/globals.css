@@ -119,8 +119,17 @@ body {
   }
 
   .compare-mode .right-panel-column {
-    top: 210px;
-    max-height: calc(100vh - 228px);
+    /* iPhone SE: compare controls wrap to 4 rows, bottom ≈247px from top.
+       280px gives a clear buffer. max-height:none so column doesn't clip. */
+    top: 280px;
+    max-height: none;
+  }
+
+  .compare-mode .mobile-detail-panels {
+    /* No map-gap needed in compare mode — skip the 55vh margin-top and
+       let panels sit right below the lens picker. */
+    margin-top: 0;
+    max-height: calc(100vh - 374px); /* 280px col + 60px lens + 16px gap + 18px bottom */
   }
 
   .compare-mode .glass-zoom-controls {
@@ -227,5 +236,16 @@ body {
   .mobile-detail-panels {
     margin-top: calc(55vh - 180px);
     max-height: calc(45vh - 18px);
+  }
+
+  /* ≥430px compare mode: controls wrap to 3 rows only, bottom ≈192px.
+     220px gives a comfortable clear. Panels start right below lens picker. */
+  .compare-mode .right-panel-column {
+    top: 220px;
+  }
+
+  .compare-mode .mobile-detail-panels {
+    margin-top: 0;
+    max-height: calc(100vh - 314px); /* 220px col + 60px lens + 16px gap + 18px */
   }
 }
