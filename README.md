@@ -58,6 +58,39 @@ curl "http://localhost:8000/lens/1?start=2024-01-01&end=2025-01-01"
 docker compose exec db psql -U lens -d lens -c "SELECT PostGIS_Version();"
 ```
 
+### Frontend with hot reload (recommended for active development)
+
+The full `docker compose up` runs a production build — every CSS or component change requires a full rebuild. For active frontend work, run the frontend outside Docker so changes reload instantly:
+
+```bash
+# Terminal 1 — DB + backend only
+docker compose up db backend
+
+# Terminal 2 — frontend dev server (hot reload)
+cd frontend
+npm run dev
+```
+
+To avoid setting the env var every time, create `frontend/.env.local` once:
+
+```
+NEXT_PUBLIC_API_TARGET=http://localhost:8000
+```
+
+**Switching back to full Docker** (e.g. to test the production build or share via ngrok):
+
+```bash
+# Stop just the frontend dev server (Ctrl+C in its terminal), then:
+docker compose up --build frontend
+```
+
+**Switching back to local dev** from full Docker:
+
+```bash
+docker compose stop frontend   # DB and backend keep running
+cd frontend && npm run dev
+```
+
 ### Run locally without Docker
 
 ```bash
