@@ -372,7 +372,7 @@ export default function NeighborhoodPanel({
           Neighborhood
         </h2>
         <p style={{ color: "#4b5563", lineHeight: 1.6, margin: 0 }}>
-          Click a neighborhood on the map to view detailed metrics and
+          Click a neighborhood to view detailed metrics and
           comparison data.
         </p>
       </div>
