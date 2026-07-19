@@ -431,7 +431,7 @@ export default function Controls({
             cursor: "pointer",
           }}
         >
-          {compareMode ? "Exit compare" : "Before / After"}
+          {compareMode ? "Exit Compare" : "Before / After"}
         </button>
       )}
     </div>

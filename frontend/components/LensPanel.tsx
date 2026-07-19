@@ -67,10 +67,22 @@ export default function LensPanel({ activeLens, onLensChange, lens1Mode, onLens1
         className="lens-panel-mobile-toggle"
         aria-expanded={mobileExpanded}
         aria-controls="lens-panel-options"
-        onClick={() => setMobileExpanded((expanded) => !expanded)}
+        onClick={() => {
+          const isMobile = typeof window !== "undefined" && window.innerWidth <= 640;
+          if (isMobile && activeLens === 1) {
+            onLens1ModeChange(lens1Mode === "raw" ? "per_capita" : "raw");
+          } else {
+            setMobileExpanded((expanded) => !expanded);
+          }
+        }}
       >
         <span>
           View: {activeLensTitle}
+          {activeLens === 1 && (
+            <span style={{ fontWeight: 400, opacity: 0.7 }}>
+              {" "}· {lens1Mode === "raw" ? "Total" : "Per Resident"}
+            </span>
+          )}
         </span>
         <span aria-hidden="true">{mobileExpanded ? "▲" : "▼"}</span>
       </button>

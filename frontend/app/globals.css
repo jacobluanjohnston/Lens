@@ -189,8 +189,19 @@ body {
     min-height: 0;
   }
 
-  .mobile-detail-panels > div:first-of-type {
-    margin-top: 48px;
+  .mobile-details-toggle {
+    display: none !important;
+  }
+
+  .right-panel-column.mobile-details-open {
+    top: 40vh;
+    max-height: calc(60vh - 18px);
+  }
+
+  /* Hide the lens panel inside the bottom sheet so the neighbourhood panel
+     starts at a constant position regardless of which lens is selected. */
+  .right-panel-column.mobile-details-open > div:first-child {
+    display: none;
   }
 
   .mobile-details-close {
