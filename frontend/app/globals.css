@@ -180,8 +180,8 @@ body {
     pointer-events: auto;
     overflow-y: auto;
     /* 40vh − (column_top 172px + lens ~60px + column_gap 16px) */
-    margin-top: calc(40vh - 248px);
-    max-height: calc(60vh - 18px);
+    margin-top: calc(50vh - 248px);
+    max-height: calc(50vh - 18px);
     -webkit-overflow-scrolling: touch;
   }
 
@@ -225,7 +225,7 @@ body {
 
   /* 40vh − (column_top 104px + lens ~60px + column_gap 16px) */
   .mobile-detail-panels {
-    margin-top: calc(40vh - 180px);
-    max-height: calc(60vh - 18px);
+    margin-top: calc(50vh - 180px);
+    max-height: calc(50vh - 18px);
   }
 }
