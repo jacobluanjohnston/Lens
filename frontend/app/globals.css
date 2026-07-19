@@ -126,10 +126,10 @@ body {
   }
 
   .compare-mode .mobile-detail-panels {
-    /* No map-gap needed in compare mode — skip the 55vh margin-top and
-       let panels sit right below the lens picker. */
-    margin-top: 0;
-    max-height: calc(100vh - 374px); /* 280px col + 60px lens + 16px gap + 18px bottom */
+    /* Same 55vh gap as normal mode so the map is visible below the lens picker.
+       Margin pushes panels to 55vh; formula: 55vh − (col_top 280 + lens 60 + gap 16) */
+    margin-top: calc(55vh - 356px);
+    max-height: calc(45vh - 18px);
   }
 
   .compare-mode .glass-zoom-controls {
@@ -223,29 +223,29 @@ body {
   }
 }
 
-/* Wider phones (≥430px) fit FROM/TO/CRIME on one row — controls bar is ~70px tall,
-   so the 172px panel-top set above is too generous. Compare mode keeps its own 210px
-   via higher specificity and isn't affected by this rule. */
+/* ≥430px phones (e.g. iPhone 14 Pro Max, 430px wide): controls still wrap to 2 rows
+   in Lens 1 mode (Logo+FROM+TO on row 1, CRIME on row 2) — bar bottom ≈148px.
+   top:160px clears that with a 12px buffer. */
 @media (min-width: 430px) and (max-width: 640px) {
   .right-panel-column {
-    top: 104px;
+    top: 160px;
     /* max-height/overflow already set to none/visible in the ≤640px block */
   }
 
-  /* 55vh − (column_top 104px + lens ~60px + column_gap 16px) */
+  /* 55vh − (column_top 160px + lens ~60px + column_gap 16px) */
   .mobile-detail-panels {
-    margin-top: calc(55vh - 180px);
+    margin-top: calc(55vh - 236px);
     max-height: calc(45vh - 18px);
   }
 
-  /* ≥430px compare mode: controls wrap to 3 rows only, bottom ≈192px.
-     220px gives a comfortable clear. Panels start right below lens picker. */
+  /* ≥430px compare mode: controls wrap to 3 rows, bottom ≈192px. 220px clears it. */
   .compare-mode .right-panel-column {
     top: 220px;
   }
 
+  /* Same 55vh gap as normal mode — formula: 55vh − (col_top 220 + lens 60 + gap 16) */
   .compare-mode .mobile-detail-panels {
-    margin-top: 0;
-    max-height: calc(100vh - 314px); /* 220px col + 60px lens + 16px gap + 18px */
+    margin-top: calc(55vh - 296px);
+    max-height: calc(45vh - 18px);
   }
 }
