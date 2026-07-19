@@ -192,21 +192,16 @@ body {
   .right-panel-column.mobile-details-open {
     top: 40vh;
     max-height: calc(60vh - 18px);
+    pointer-events: auto;
   }
 
-  /* Hide the lens panel inside the bottom sheet so the neighbourhood panel
-     starts at a constant position regardless of which lens is selected or expanded. */
-  .right-panel-column.mobile-details-open > div:first-child {
-    display: none;
-  }
-
-  /* When NOT in details mode, make the expanded lens options float over the
-     content below instead of pushing it down. */
-  .right-panel-column:not(.mobile-details-open) .lens-panel {
+  /* Expanded lens options always float as an overlay so they never push the
+     neighbourhood panel down regardless of open/close state. */
+  .right-panel-column .lens-panel {
     position: relative;
   }
 
-  .right-panel-column:not(.mobile-details-open) .lens-panel.mobile-expanded .lens-panel-options {
+  .right-panel-column .lens-panel.mobile-expanded .lens-panel-options {
     display: block;
     position: absolute;
     top: 100%;

@@ -73,6 +73,13 @@ export default function Home() {
   const [activeLens, setActiveLens] = useState<1 | 2 | 3>(1);
   const [lens1Mode, setLens1Mode] = useState<"raw" | "per_capita">("per_capita");
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
+
+  // Open the neighbourhood sheet immediately on narrow screens.
+  useEffect(() => {
+    if (window.innerWidth <= 640) setMobileDetailsOpen(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const mobileDetailsToggleRef = useRef<HTMLButtonElement>(null);
   const mobileDetailsCloseRef = useRef<HTMLButtonElement>(null);
   const hasOpenedMobileDetails = useRef(false);
