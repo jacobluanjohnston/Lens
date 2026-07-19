@@ -249,3 +249,16 @@ body {
     max-height: calc(45vh - 18px);
   }
 }
+
+/* ≥495px (narrow desktop browser): all controls fit on one row — bar bottom ≈91px.
+   The 160px above was for 2-row wrapping; bring it back down to 104px here. */
+@media (min-width: 495px) and (max-width: 640px) {
+  .right-panel-column {
+    top: 104px;
+  }
+
+  /* 55vh − (column_top 104px + lens ~60px + column_gap 16px) */
+  .mobile-detail-panels {
+    margin-top: calc(55vh - 180px);
+  }
+}
