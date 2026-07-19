@@ -368,10 +368,10 @@ export default function Controls({
               onCompareEndChange(preset.compareEnd);
             }}
           />
-          <MonthPicker key={`before-start-${baselineStart}`} label="Before start" value={baselineStart} disabled={loading} onChange={(v) => { setActivePreset(""); onBaselineStartChange(v); }} />
-          <MonthPicker key={`before-end-${baselineEnd}`} label="Before end" value={baselineEnd} disabled={loading} onChange={(v) => { setActivePreset(""); onBaselineEndChange(v); }} />
-          <MonthPicker key={`after-start-${compareStart}`} label="After start" value={compareStart} disabled={loading} onChange={(v) => { setActivePreset(""); onCompareStartChange(v); }} />
-          <MonthPicker key={`after-end-${compareEnd}`} label="After end" value={compareEnd} disabled={loading} onChange={(v) => { setActivePreset(""); onCompareEndChange(v); }} />
+          <MonthPicker key={`before-start-${baselineStart}`} label="Before" value={baselineStart} disabled={loading} onChange={(v) => { setActivePreset(""); onBaselineStartChange(v); }} />
+          <MonthPicker key={`before-end-${baselineEnd}`} label="Until" value={baselineEnd} disabled={loading} onChange={(v) => { setActivePreset(""); onBaselineEndChange(v); }} />
+          <MonthPicker key={`after-start-${compareStart}`} label="After" value={compareStart} disabled={loading} onChange={(v) => { setActivePreset(""); onCompareStartChange(v); }} />
+          <MonthPicker key={`after-end-${compareEnd}`} label="Until" value={compareEnd} disabled={loading} onChange={(v) => { setActivePreset(""); onCompareEndChange(v); }} />
         </>
       ) : (
         <>
