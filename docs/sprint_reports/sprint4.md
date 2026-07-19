@@ -235,6 +235,28 @@ On viewports narrow enough that the controls bar and the right-side panel column
 - With a neighborhood panel open on a 768px viewport, no date picker is obscured by the panel
 - Switching into compare mode on a narrow viewport (4 pickers visible) does not push any picker off-screen
 
+#### Implementation notes (shipped in `frontend/controls-collision-avoidance`)
+
+Spike: `docs/spikes/mobile_responsive_breakpoints.md`
+
+**How we tested:** manually, in Chrome DevTools device emulation. Every CSS change required a sweep of the full device list. Devices that sit near a breakpoint boundary (iPhone 14 Pro Max at exactly 430px) are where things break — always check those first.
+
+**The breakpoint system we landed on:**
+
+| Breakpoint | Targets | `column top` |
+|---|---|---|
+| `max-width: 640px` | all phones | 172px |
+| `min-width: 430px, max-width: 640px` | wider phones (14 Pro Max+) | 160px |
+| `max-width: 640px` + `hover:hover` + `pointer:fine` | narrow desktop browser only | 104px |
+
+The `hover/pointer` media query is the key insight: a phone and a desktop browser at the same pixel width look identical to a plain `min-width` rule. `pointer: fine` only fires for a real mouse — Chrome DevTools phone emulation correctly reports `pointer: coarse`, so it doesn't accidentally apply to emulated devices.
+
+**The panel gap formula:** neighbourhood panels are pushed down with `margin-top: calc(TARGET_VH - (column_top + lens_height + gap))` so a visible map strip sits between the lens picker and the panels. If `column_top` ever changes, the formula must be updated or the gap breaks silently (no error — it just looks wrong).
+
+**The `backdrop-filter` stacking context trap:** the frosted-glass blur on the lens picker creates a stacking context, which scopes any `z-index` inside it to be local. The fix is `z-index: 100` on the `.lens-panel` element itself (not its children) so it wins against the neighbourhood panels in the column's outer stacking context.
+
+**Compare mode is harder:** the controls bar wraps to 4 rows on iPhone SE in compare mode (bar bottom ≈248px vs. 2 rows in normal mode), so the column must start at 280px instead of 172px. Each phone size requires its own `top` value for compare mode — see the methodology doc for the full table.
+
 ---
 
 ### CARD 8 — Spike: Lurie enforcement shift validation
@@ -284,6 +306,32 @@ Run the same year-over-year enforcement shift check on the World Cup window (May
 
 ---
 
+### CARD 12 — Spike: mobile responsive breakpoint system
+**Points: 2**
+**Blocked by:** nothing
+
+#### What it is
+A spike writeup that records the non-obvious findings from the controls bar / panel layout work — specifically that pixel-width breakpoints alone can't distinguish a phone from a narrow desktop browser, that `backdrop-filter` silently traps stacking contexts, and the formula that keeps the panel gap correct when column positions change. The goal is that the next person doing responsive layout work starts from the findings, not from scratch.
+
+#### Definition of Done
+- [x] `docs/spikes/mobile_responsive_breakpoints.md` exists and covers:
+  - The "we learned X, therefore Y" summary up front
+  - Why `(hover: hover) and (pointer: fine)` instead of a pixel threshold
+  - The three-tier breakpoint table with `column top` values for each zone
+  - The panel gap formula and the warning about keeping it in sync with `column top`
+  - The `backdrop-filter` stacking context trap and fix
+  - The compare mode controls bar row counts per device
+  - The device list used for manual testing and why each device was chosen
+  - Known remaining rough edges (SE compare mode, landscape)
+- [x] CARD 7 implementation notes reference the spike
+- [x] No methodology content lives only in conversation history — it is in the file
+
+#### Acceptance Criteria
+- A teammate who didn't do this work can read the spike and correctly update a `column top` value without breaking the panel gap
+- The `backdrop-filter` stacking context explanation is specific enough that a future engineer recognizes the symptom and knows the fix without re-debugging it
+
+---
+
 ### STRETCH A — Resolution Gap: assault surgery
 **Points: 8 total — three sub-tasks, do in order**
 
@@ -327,6 +375,22 @@ Right now the officer enforcement calculation hardcodes which categories count a
 **Blocked by:** Stretch A Sub-task B
 
 Before any Lens 3 clearance rate can be called externally validated, compare it against CA DOJ OpenJustice data. Document result in `docs/spikes/g4_external_validation.md`. If numbers are in the right order of magnitude and rank order is consistent, Lens 3 is cleared for use. If not, document why and what it means for interpretation.
+
+---
+
+### STRETCH E — Fix bottom-left UI collision with delta legend and Leaflet controls
+**Points: 1**
+**Blocked by:** nothing
+
+#### What it is
+In compare mode, the delta legend (bottom-left) and Leaflet's default zoom/attribution controls overlap. This card resolves the collision so both are visible and neither is obscured.
+
+#### Definition of Done
+- [ ] Delta legend and Leaflet controls do not overlap at any supported viewport width
+- [ ] Fix does not affect non-compare-mode layout
+
+#### Acceptance Criteria
+- In compare mode, the delta legend and zoom controls are both fully visible at 1280px and 1440px viewport widths
 
 ---
 
