@@ -67,14 +67,7 @@ export default function LensPanel({ activeLens, onLensChange, lens1Mode, onLens1
         className="lens-panel-mobile-toggle"
         aria-expanded={mobileExpanded}
         aria-controls="lens-panel-options"
-        onClick={() => {
-          const isMobile = typeof window !== "undefined" && window.innerWidth <= 640;
-          if (isMobile && activeLens === 1) {
-            onLens1ModeChange(lens1Mode === "raw" ? "per_capita" : "raw");
-          } else {
-            setMobileExpanded((expanded) => !expanded);
-          }
-        }}
+        onClick={() => setMobileExpanded((expanded) => !expanded)}
       >
         <span>
           View: {activeLensTitle}
