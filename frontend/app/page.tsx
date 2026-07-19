@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Incident } from "@/types/incident";
 import type { LensData } from "@/types/lens";
 import type { CompareData } from "@/types/compare";
@@ -72,17 +72,6 @@ export default function Home() {
 
   const [activeLens, setActiveLens] = useState<1 | 2 | 3>(1);
   const [lens1Mode, setLens1Mode] = useState<"raw" | "per_capita">("per_capita");
-  const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
-
-  // Open the neighbourhood sheet immediately on narrow screens.
-  useEffect(() => {
-    if (window.innerWidth <= 640) setMobileDetailsOpen(true);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const mobileDetailsToggleRef = useRef<HTMLButtonElement>(null);
-  const mobileDetailsCloseRef = useRef<HTMLButtonElement>(null);
-  const hasOpenedMobileDetails = useRef(false);
 
   // Store only the ID so the selection survives lens switches.
   // The displayed data is derived from lensData after each fetch.
@@ -117,15 +106,6 @@ export default function Home() {
     0
   );
 
-  useEffect(() => {
-    if (mobileDetailsOpen) {
-      hasOpenedMobileDetails.current = true;
-      requestAnimationFrame(() => mobileDetailsCloseRef.current?.focus());
-    } else if (hasOpenedMobileDetails.current) {
-      requestAnimationFrame(() => mobileDetailsToggleRef.current?.focus());
-    }
-  }, [mobileDetailsOpen]);
-
   // Shift end date to 3 months ago — outside the 90-day provisional window.
   function fixProvisional() {
     const d = new Date();
@@ -141,7 +121,6 @@ export default function Home() {
 
   function selectNeighborhood(neighborhoodId: string | null) {
     setSelectedId(neighborhoodId);
-    if (neighborhoodId) setMobileDetailsOpen(true);
   }
 
   async function fetchLensData() {
@@ -309,14 +288,12 @@ export default function Home() {
 
       {/* Floating Right Panels */}
       <div
-        className={`right-panel-column${mobileDetailsOpen ? " mobile-details-open" : ""}`}
+        className="right-panel-column"
         style={{
           display: "flex",
           flexDirection: "column",
           gap: 16,
-          // When the neighbourhood panel is open it handles its own scroll;
-          // the column should not clip or scroll so the panel can size freely.
-          overflowY: mobileDetailsOpen ? "visible" : "auto",
+          overflowY: "auto",
           zIndex: 1000,
           pointerEvents: "none",
         }}
@@ -329,17 +306,6 @@ export default function Home() {
             onLens1ModeChange={setLens1Mode}
           />
         </div>
-
-        <button
-          ref={mobileDetailsToggleRef}
-          type="button"
-          className="mobile-details-toggle"
-          aria-expanded={mobileDetailsOpen}
-          aria-controls="mobile-neighborhood-details"
-          onClick={() => setMobileDetailsOpen(true)}
-        >
-          View neighborhoods
-        </button>
 
         {(compareValidationError ?? error) && (
           <div
@@ -357,17 +323,7 @@ export default function Home() {
           </div>
         )}
 
-        <div id="mobile-neighborhood-details" className="mobile-detail-panels">
-          <button
-            ref={mobileDetailsCloseRef}
-            type="button"
-            className="mobile-details-close"
-            onClick={() => setMobileDetailsOpen(false)}
-            aria-label="Close neighborhood details and return to map"
-          >
-            Return to map
-          </button>
-
+        <div className="mobile-detail-panels">
           <div style={{ pointerEvents: "auto" }}>
             <NeighborhoodPanel
               neighborhood={selectedNeighborhood}

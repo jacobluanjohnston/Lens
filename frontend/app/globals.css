@@ -164,31 +164,10 @@ body {
     padding-top: 2px;
   }
 
-  .mobile-details-toggle {
-    display: block;
-    width: 100%;
-    min-height: 40px;
-    padding: 8px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.72);
-    color: #111827;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    pointer-events: auto;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
-  }
-
+  /* Neighbourhood panels always visible — no open/close gating on mobile.
+     This div is its own scroll container so the column stays pointer-events:none
+     and the map remains tappable above and in the gaps between glass cards. */
   .mobile-detail-panels {
-    display: none;
-  }
-
-  .right-panel-column.mobile-details-open .mobile-details-toggle {
-    display: none;
-  }
-
-  .right-panel-column.mobile-details-open .mobile-detail-panels {
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -200,12 +179,11 @@ body {
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Expanded lens options always float as an overlay so they never push the
-     neighbourhood panel down.
-     z-index: 100 here is load-bearing: backdrop-filter on .lens-panel creates
-     a new stacking context, so inner z-indices are local to it. Promoting the
-     panel itself to z-index 100 in the column's stacking context means the
-     expanded options paint above the sticky "Return to map" button (z-index 1). */
+  /* Expanded lens picker floats as an opaque overlay so it never pushes the
+     neighbourhood panels down and no content behind it bleeds through.
+     z-index:100 on lens-panel is load-bearing: backdrop-filter creates a stacking
+     context, making child z-indices local to it. Promoting the whole panel to
+     z-index:100 in the column context puts it above the neighbourhood panels. */
   .right-panel-column .lens-panel {
     position: relative;
     z-index: 100;
@@ -218,7 +196,7 @@ body {
     left: 0;
     right: 0;
     z-index: 10;
-    background: rgba(255,255,255,.14);
+    background: rgba(255,255,255,.92);
     backdrop-filter: blur(28px);
     -webkit-backdrop-filter: blur(28px);
     border: 1px solid rgba(255,255,255,.22);
@@ -227,25 +205,6 @@ body {
     padding: 0 8px 8px;
     padding-top: 2px;
     box-shadow: 0 12px 40px rgba(15,23,42,.20);
-  }
-
-  .mobile-details-close {
-    display: block;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    width: 100%;
-    min-height: 40px;
-    padding: 8px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.9);
-    color: #111827;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    pointer-events: auto;
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
   }
 }
 
@@ -259,7 +218,7 @@ body {
   }
 
   /* ≥430px: column top 104px + lens ~50px + gap 16px + bottom margin 18px */
-  .right-panel-column.mobile-details-open .mobile-detail-panels {
+  .mobile-detail-panels {
     max-height: calc(100vh - 190px);
   }
 }
