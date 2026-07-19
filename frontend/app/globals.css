@@ -189,6 +189,10 @@ body {
     min-height: 0;
   }
 
+  .mobile-detail-panels > div:first-of-type {
+    margin-top: 48px;
+  }
+
   .mobile-details-close {
     display: block;
     position: sticky;
@@ -206,7 +210,6 @@ body {
     cursor: pointer;
     pointer-events: auto;
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
-    margin-bottom: 48px;
   }
 }
 
