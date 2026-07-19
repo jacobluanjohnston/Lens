@@ -126,10 +126,10 @@ body {
   }
 
   .compare-mode .mobile-detail-panels {
-    /* Same 55vh gap as normal mode so the map is visible below the lens picker.
-       Margin pushes panels to 55vh; formula: 55vh − (col_top 280 + lens 60 + gap 16) */
-    margin-top: calc(55vh - 356px);
-    max-height: calc(45vh - 18px);
+    /* Push panels to 65vh so a real map strip is visible below the lens picker.
+       Formula: 65vh − (col_top 280 + lens 60 + gap 16) */
+    margin-top: calc(65vh - 356px);
+    max-height: calc(35vh - 18px);
   }
 
   .compare-mode .glass-zoom-controls {
@@ -250,9 +250,10 @@ body {
   }
 }
 
-/* ≥495px (narrow desktop browser): all controls fit on one row — bar bottom ≈91px.
-   The 160px above was for 2-row wrapping; bring it back down to 104px here. */
-@media (min-width: 495px) and (max-width: 640px) {
+/* Narrow desktop browser: use hover+pointer to distinguish a real mouse from touch.
+   Chrome DevTools phone emulation correctly reports pointer:coarse so this won't fire
+   for emulated phones — only for an actual desktop browser window dragged narrow. */
+@media (max-width: 640px) and (hover: hover) and (pointer: fine) {
   .right-panel-column {
     top: 104px;
   }
