@@ -70,7 +70,7 @@ export default function LensPanel({ activeLens, onLensChange, lens1Mode, onLens1
         onClick={() => setMobileExpanded((expanded) => !expanded)}
       >
         <span>
-          Lens <span aria-hidden="true">·</span> {activeLensTitle}
+          View: {activeLensTitle}
         </span>
         <span aria-hidden="true">{mobileExpanded ? "▲" : "▼"}</span>
       </button>
