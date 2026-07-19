@@ -297,7 +297,7 @@ export default function Controls({
   onCompareStartChange,
   onCompareEndChange,
 }: ControlsProps) {
-  const [activePreset, setActivePreset] = useState("");
+  const [activePreset, setActivePreset] = useState("lurie-inauguration");
 
   return (
     <div
