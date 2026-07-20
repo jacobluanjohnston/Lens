@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PRESET_EVENTS } from "@/lib/presetEvents";
+import { runReport } from "@/lib/generateReport";
+import GenerateReportModal from "@/components/GenerateReportModal";
+import { exportReportPdf } from "@/lib/exportReportPdf";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const MIN_YEAR = 2018;
@@ -298,8 +301,11 @@ export default function Controls({
   onCompareEndChange,
 }: ControlsProps) {
   const [activePreset, setActivePreset] = useState("lurie-inauguration");
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportProgress, setReportProgress] = useState<string | null>(null);
 
   return (
+    <>
     <div
       className="controls-bar"
       style={{
@@ -411,29 +417,93 @@ export default function Controls({
       )}
 
       {activeLens === 2 && (
-        <button
-          type="button"
-          aria-pressed={compareMode}
-          onClick={() => onCompareModeChange(!compareMode)}
-          style={{
-            alignSelf: "flex-end",
-            padding: "8px 16px",
-            borderRadius: 8,
-            border: compareMode
-              ? "1px solid rgba(99,102,241,.45)"
-              : "1px solid rgba(255,255,255,.28)",
-            background: compareMode
-              ? "rgba(99,102,241,.14)"
-              : "rgba(255,255,255,.22)",
-            color: compareMode ? "#4338ca" : "#475569",
-            fontSize: 11,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          {compareMode ? "Exit Compare" : "Before / After"}
-        </button>
+        <>
+          {compareMode && (
+            <button
+              type="button"
+              onClick={() => setReportModalOpen(true)}
+              style={{
+                alignSelf: "flex-end",
+                padding: "8px 16px",
+                borderRadius: 8,
+                border: "1px solid rgba(255,255,255,.28)",
+                background: "rgba(255,255,255,.22)",
+                color: "#111827",
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: "inherit",
+                cursor: "pointer",
+              }}
+            >
+              Generate Report
+            </button>
+          )}
+          {reportProgress && (
+            <span
+              style={{
+                alignSelf: "flex-end",
+                fontSize: 11,
+                fontWeight: 600,
+                color: "#475569",
+                padding: "8px 4px",
+              }}
+            >
+              {reportProgress}
+            </span>
+          )}
+          <button
+            type="button"
+            aria-pressed={compareMode}
+            onClick={() => onCompareModeChange(!compareMode)}
+            style={{
+              alignSelf: "flex-end",
+              padding: "8px 16px",
+              borderRadius: 8,
+              border: compareMode
+                ? "1px solid rgba(99,102,241,.45)"
+                : "1px solid rgba(255,255,255,.28)",
+              background: compareMode
+                ? "rgba(99,102,241,.14)"
+                : "rgba(255,255,255,.22)",
+              color: compareMode ? "#4338ca" : "#475569",
+              fontSize: 11,
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            {compareMode ? "Exit Compare" : "Before / After"}
+          </button>
+        </>
       )}
     </div>
+
+      <GenerateReportModal
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        onConfirm={(config) => {
+          setReportModalOpen(false);
+          setReportProgress("Starting report…");
+
+          void (async () => {
+            try {
+              const report = await runReport(config, (done, total, label) => {
+                if (done >= total) {
+                  setReportProgress(null);
+                } else {
+                  setReportProgress(
+                    `Comparing ${label} (${done + 1}/${total})…`
+                  );
+                }
+              });
+              exportReportPdf(report);
+              setReportProgress(null);
+            } catch (err) {
+              console.error(err);
+              setReportProgress("Report failed");
+            }
+          })();
+        }}
+      />
+    </>
   );
 }
