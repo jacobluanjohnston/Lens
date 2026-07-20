@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PRESET_EVENTS } from "@/lib/presetEvents";
-import { runReport } from "@/lib/generateReport";
+import { runReportWithFocus } from "@/lib/generateReport";
 import GenerateReportModal from "@/components/GenerateReportModal";
 import { exportReportPdf } from "@/lib/exportReportPdf";
 
@@ -419,37 +419,47 @@ export default function Controls({
       {activeLens === 2 && (
         <>
           {compareMode && (
-            <button
-              type="button"
-              onClick={() => setReportModalOpen(true)}
+            <div
               style={{
+                position: "relative",
                 alignSelf: "flex-end",
-                padding: "8px 16px",
-                borderRadius: 8,
-                border: "1px solid rgba(255,255,255,.28)",
-                background: "rgba(255,255,255,.22)",
-                color: "#111827",
-                fontSize: 13,
-                fontWeight: 600,
-                fontFamily: "inherit",
-                cursor: "pointer",
               }}
             >
-              Generate Report
-            </button>
-          )}
-          {reportProgress && (
-            <span
-              style={{
-                alignSelf: "flex-end",
-                fontSize: 11,
-                fontWeight: 600,
-                color: "#475569",
-                padding: "8px 4px",
-              }}
-            >
-              {reportProgress}
-            </span>
+              {reportProgress && (
+                <span
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    bottom: "100%",
+                    marginBottom: 4,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "#475569",
+                    whiteSpace: "nowrap",
+                    textAlign: "right",
+                  }}
+                >
+                  {reportProgress}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setReportModalOpen(true)}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,.28)",
+                  background: "rgba(255,255,255,.22)",
+                  color: "#111827",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  fontFamily: "inherit",
+                  cursor: "pointer",
+                }}
+              >
+                Generate Report
+              </button>
+            </div>
           )}
           <button
             type="button"
@@ -486,15 +496,30 @@ export default function Controls({
 
           void (async () => {
             try {
-              const report = await runReport(config, (done, total, label) => {
-                if (done >= total) {
-                  setReportProgress(null);
-                } else {
-                  setReportProgress(
-                    `Comparing ${label} (${done + 1}/${total})…`
-                  );
+              const presetLabel = PRESET_EVENTS.find(
+                (p) => p.id === activePreset
+              )?.label;
+
+              const report = await runReportWithFocus(
+                config,
+                {
+                  label: "Selected window",
+                  eventLabel: presetLabel,
+                  baselineStart,
+                  baselineEnd,
+                  compareStart,
+                  compareEnd,
+                },
+                (done, total, label) => {
+                  if (done >= total) {
+                    setReportProgress(null);
+                  } else {
+                    setReportProgress(
+                      `Comparing ${label} (${done + 1}/${total})…`
+                    );
+                  }
                 }
-              });
+              );
               exportReportPdf(report);
               setReportProgress(null);
             } catch (err) {

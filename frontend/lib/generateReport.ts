@@ -152,3 +152,169 @@ export async function runReport(
     pairs,
   };
 }
+
+export interface FocusWindow {
+  label: string;
+  eventLabel?: string;
+  baselineStart: string;
+  baselineEnd: string;
+  compareStart: string;
+  compareEnd: string;
+}
+
+export interface AnomalyAssessment {
+  isAnomaly: boolean;
+  headline: string;
+  detail: string;
+  focusTopMover: Mover | null;
+  focusCityMedian: number | null;
+  historicalMaxTopDelta: number | null;
+  historicalMedianOfMedians: number | null;
+}
+
+export interface ReportObjectWithFocus extends ReportObject {
+  focus: YearPairResult | null;
+  focusEventLabel?: string;
+  anomaly: AnomalyAssessment;
+}
+
+function topMoverDelta(pair: YearPairResult): number | null {
+  if (pair.status !== "ok" || pair.topPositive.length === 0) return null;
+  return pair.topPositive[0].delta;
+}
+
+function formatDeltaShort(delta: number): string {
+  const sign = delta > 0 ? "+" : "";
+  return `${sign}${delta.toFixed(1)}`;
+}
+
+/** Compare focus window to earlier YoY pairs — excludes the latest pair (often the outlier year). */
+export function assessAnomaly(
+  focus: YearPairResult | null,
+  historical: YearPairResult[]
+): AnomalyAssessment {
+  // Baseline = all modal year-pairs except the most recent (e.g. 2021-2024, not 2024-2025)
+  const baselineHistorical =
+    historical.length > 1 ? historical.slice(0, -1) : historical;
+
+  const okBaseline = baselineHistorical.filter((p) => p.status === "ok");
+  const baselineTopDeltas = okBaseline
+    .map(topMoverDelta)
+    .filter((d): d is number => d != null);
+  const baselineMedians = okBaseline
+    .map((p) => p.citywideMedianDelta)
+    .filter((d): d is number => d != null);
+
+  const focusTop = focus?.status === "ok" ? focus.topPositive[0] ?? null : null;
+  const focusTopDelta = focusTop?.delta ?? null;
+  const focusMedian = focus?.citywideMedianDelta ?? null;
+
+  const historicalMinTop =
+    baselineTopDeltas.length > 0 ? Math.min(...baselineTopDeltas) : null;
+  const historicalMaxTop =
+    baselineTopDeltas.length > 0 ? Math.max(...baselineTopDeltas) : null;
+  const historicalMedianOfMedians =
+    baselineMedians.length > 0
+      ? Math.round(
+          (baselineMedians.reduce((a, b) => a + b, 0) / baselineMedians.length) *
+            10
+        ) / 10
+      : null;
+
+  const baselineRangeLabel =
+    okBaseline.length > 0
+      ? `${okBaseline[0].yearPair.label.replace(/[–—]/g, "-").split("-")[0]}-${okBaseline[okBaseline.length - 1].yearPair.label.replace(/[–—]/g, "-").split("-")[1]}`
+      : "prior years";
+
+  if (!focus || focus.status !== "ok") {
+    return {
+      isAnomaly: false,
+      headline: "Could not assess this window.",
+      detail:
+        focus?.status === "unavailable"
+          ? "Selected window data unavailable."
+          : "No focus comparison was run.",
+      focusTopMover: null,
+      focusCityMedian: null,
+      historicalMaxTopDelta: historicalMaxTop,
+      historicalMedianOfMedians,
+    };
+  }
+
+  const name = focusTop?.neighborhood_name ?? "The top neighborhood";
+  const focusDelta = focusTopDelta ?? 0;
+
+  const rangeText =
+    historicalMinTop != null && historicalMaxTop != null
+      ? `${formatDeltaShort(historicalMinTop)} to ${formatDeltaShort(historicalMaxTop)}`
+      : "unavailable";
+
+  const isAnomaly =
+    historicalMaxTop != null && focusDelta > historicalMaxTop + 15;
+
+  if (isAnomaly && historicalMaxTop != null) {
+    return {
+      isAnomaly: true,
+      headline: "This window looks abnormal compared to prior years.",
+      detail: `Compared to ${baselineRangeLabel}, typical top-neighborhood increases were about ${rangeText}. ${name} changed ${formatDeltaShort(focusDelta)} in the selected window. This is an anomaly.`,
+      focusTopMover: focusTop,
+      focusCityMedian: focusMedian,
+      historicalMaxTopDelta: historicalMaxTop,
+      historicalMedianOfMedians,
+    };
+  }
+
+  return {
+    isAnomaly: false,
+    headline: "This window is in line with prior years.",
+    detail: `Compared to ${baselineRangeLabel}, typical top-neighborhood increases were about ${rangeText}. ${name} changed ${formatDeltaShort(focusDelta)} in the selected window - similar to that range.`,
+    focusTopMover: focusTop,
+    focusCityMedian: focusMedian,
+    historicalMaxTopDelta: historicalMaxTop,
+    historicalMedianOfMedians,
+  };
+}
+
+export async function runReportWithFocus(
+  config: ReportConfig,
+  focusWindow: FocusWindow,
+  onProgress?: (done: number, total: number, label: string) => void
+): Promise<ReportObjectWithFocus> {
+  const report = await runReport(config, onProgress);
+
+  let focus: YearPairResult | null = null;
+  try {
+    const data = await fetchCompareData(
+      focusWindow.baselineStart,
+      focusWindow.baselineEnd,
+      focusWindow.compareStart,
+      focusWindow.compareEnd
+    );
+    focus = summarizeCompareResult(
+      {
+        label: focusWindow.label,
+        baselineStart: focusWindow.baselineStart,
+        baselineEnd: focusWindow.baselineEnd,
+        compareStart: focusWindow.compareStart,
+        compareEnd: focusWindow.compareEnd,
+      },
+      data
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "data unavailable";
+    focus = unavailablePair(
+      {
+        label: focusWindow.label,
+        baselineStart: focusWindow.baselineStart,
+        baselineEnd: focusWindow.baselineEnd,
+        compareStart: focusWindow.compareStart,
+        compareEnd: focusWindow.compareEnd,
+      },
+      message
+    );
+  }
+
+  const anomaly = assessAnomaly(focus, report.pairs);
+
+  return { ...report, focus, focusEventLabel: focusWindow.eventLabel, anomaly };
+}
