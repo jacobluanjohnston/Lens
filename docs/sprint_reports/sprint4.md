@@ -265,12 +265,14 @@ The `hover/pointer` media query is the key insight: a phone and a desktop browse
 **Blocked by:** nothing
 
 #### What it is
-Confirm the Lurie inauguration finding (SOMA +79, Mission +43, Tenderloin lower) against year-over-year baselines before citing it in documentation or the demo.
+Confirm the Lurie inauguration finding (SOMA +79.0, Mission +43.0, Tenderloin +29.4) against year-over-year baselines before citing it in the demo or any public presentation. Spike doc: `docs/spikes/lurie_enforcement_shift.md`.
 
 #### Definition of Done
-- [ ] Spike doc in `docs/spikes/` confirming (or revising) the numbers
-- [ ] Year-over-year baseline manually computed and compared to the compare-mode output
+- [x] Spike doc exists at `docs/spikes/lurie_enforcement_shift.md` with deltas, plain-language explanation, and demo script
+- [ ] Year-over-year baselines manually computed (2022–23, 2023–24) and compared to 2024–25 delta to confirm the 4–6× claim for SOMA
+- [ ] Tenderloin historical baseline confirmed — is +29.4 actually below its own typical year-over-year?
 - [ ] Finding summarized in STATUS.md
+- [ ] World Cup chapter added to spike once Jul 2026 data is complete (see CARD 10)
 
 ---
 
@@ -329,6 +331,42 @@ A spike writeup that records the non-obvious findings from the controls bar / pa
 #### Acceptance Criteria
 - A teammate who didn't do this work can read the spike and correctly update a `column top` value without breaking the panel gap
 - The `backdrop-filter` stacking context explanation is specific enough that a future engineer recognizes the symptom and knows the fix without re-debugging it
+
+---
+
+### CARD 13 — Generate Report: year-over-year PDF export
+**Points: 8**
+**Blocked by:** CARD 2 (compare mode UI)
+
+#### What it is
+A "Generate Report" button that automatically runs the compare analysis across multiple date windows — year by year, or with the months shifted — and exports the findings as a PDF. The core use case is the demo: instead of manually cycling through date presets, one click produces a document an analyst could hand to a supervisor or present at a hearing.
+
+#### What it does
+1. User sets a base date range (e.g. Jan–Sep each year)
+2. Clicks "Generate Report"
+3. LENS automatically runs the compare endpoint for each year pair: 2022 vs 2021, 2023 vs 2022, 2024 vs 2023, 2025 vs 2024
+4. Collects the top movers (biggest positive and negative deltas) for each window
+5. Exports a PDF with: one page per year-pair showing the choropleth, top 5 movers, and the plain-language summary
+
+#### Definition of Done
+- [ ] "Generate Report" button appears in compare mode
+- [ ] Clicking it opens a configuration modal: base month range (e.g. Jan–Sep), start year, end year
+- [ ] On confirm, runs the compare endpoint N times (one per year-pair) sequentially — shows a progress indicator
+- [ ] Collects results into a structured report object: year-pair, top 5 positive movers, top 5 negative movers, citywide median delta
+- [ ] PDF export uses a library (react-pdf or jsPDF) — no server-side rendering required
+- [ ] Each PDF page includes: year-pair label, top movers table with delta values, one-line plain-language summary per neighborhood
+- [ ] PDF is downloadable, not opened in a new tab
+- [ ] Report generation does not block the UI — user can still interact with the map while it runs
+- [ ] If any year-pair returns an error, it is noted in the PDF as "data unavailable" rather than crashing the whole export
+
+#### Acceptance Criteria
+- Analyst sets Jan–Sep, 2021–2025, clicks Generate Report → PDF downloads with 4 pages (one per year-pair)
+- SOMA appears in the top movers for the 2024–2025 page with delta ~+79
+- Analyst can run the Lurie preset and generate report in under 3 clicks from a cold start
+- PDF is readable without LENS open — it includes neighborhood names, delta values, and the date windows
+
+#### Why this matters for the demo
+The two-click Lurie story is compelling live. The PDF makes it citable — an analyst walks out of the demo with a document. That's the difference between "interesting tool" and "tool I can actually use in my work."
 
 ---
 
