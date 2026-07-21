@@ -166,10 +166,6 @@ export interface AnomalyAssessment {
   isAnomaly: boolean;
   headline: string;
   detail: string;
-  focusTopMover: Mover | null;
-  focusCityMedian: number | null;
-  historicalMaxTopDelta: number | null;
-  historicalMedianOfMedians: number | null;
 }
 
 export interface ReportObjectWithFocus extends ReportObject {
@@ -201,25 +197,14 @@ export function assessAnomaly(
   const baselineTopDeltas = okBaseline
     .map(topMoverDelta)
     .filter((d): d is number => d != null);
-  const baselineMedians = okBaseline
-    .map((p) => p.citywideMedianDelta)
-    .filter((d): d is number => d != null);
 
   const focusTop = focus?.status === "ok" ? focus.topPositive[0] ?? null : null;
   const focusTopDelta = focusTop?.delta ?? null;
-  const focusMedian = focus?.citywideMedianDelta ?? null;
 
   const historicalMinTop =
     baselineTopDeltas.length > 0 ? Math.min(...baselineTopDeltas) : null;
   const historicalMaxTop =
     baselineTopDeltas.length > 0 ? Math.max(...baselineTopDeltas) : null;
-  const historicalMedianOfMedians =
-    baselineMedians.length > 0
-      ? Math.round(
-          (baselineMedians.reduce((a, b) => a + b, 0) / baselineMedians.length) *
-            10
-        ) / 10
-      : null;
 
   const baselineRangeLabel =
     okBaseline.length > 0
@@ -234,10 +219,6 @@ export function assessAnomaly(
         focus?.status === "unavailable"
           ? "Selected window data unavailable."
           : "No focus comparison was run.",
-      focusTopMover: null,
-      focusCityMedian: null,
-      historicalMaxTopDelta: historicalMaxTop,
-      historicalMedianOfMedians,
     };
   }
 
@@ -257,10 +238,6 @@ export function assessAnomaly(
       isAnomaly: true,
       headline: "This window looks abnormal compared to prior years.",
       detail: `Compared to ${baselineRangeLabel}, typical top-neighborhood increases were about ${rangeText}. ${name} changed ${formatDeltaShort(focusDelta)} in the selected window. This is an anomaly.`,
-      focusTopMover: focusTop,
-      focusCityMedian: focusMedian,
-      historicalMaxTopDelta: historicalMaxTop,
-      historicalMedianOfMedians,
     };
   }
 
@@ -268,10 +245,6 @@ export function assessAnomaly(
     isAnomaly: false,
     headline: "This window is in line with prior years.",
     detail: `Compared to ${baselineRangeLabel}, typical top-neighborhood increases were about ${rangeText}. ${name} changed ${formatDeltaShort(focusDelta)} in the selected window - similar to that range.`,
-    focusTopMover: focusTop,
-    focusCityMedian: focusMedian,
-    historicalMaxTopDelta: historicalMaxTop,
-    historicalMedianOfMedians,
   };
 }
 

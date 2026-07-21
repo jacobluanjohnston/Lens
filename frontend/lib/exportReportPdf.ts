@@ -41,19 +41,6 @@ function windowLine(pair: YearPairResult): string {
   return `${y.baselineStart.slice(0, 7)} to ${y.baselineEnd.slice(0, 7)} vs ${y.compareStart.slice(0, 7)} to ${y.compareEnd.slice(0, 7)}`;
 }
 
-function drawWrapped(
-  doc: jsPDF,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight = 5
-): number {
-  const lines = doc.splitTextToSize(text, maxWidth);
-  doc.text(lines, x, y);
-  return y + lines.length * lineHeight;
-}
-
 function drawWrappedCentered(
   doc: jsPDF,
   text: string,
