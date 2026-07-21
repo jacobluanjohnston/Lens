@@ -258,6 +258,7 @@ export default function Home() {
           baselineEnd={baselineEnd}
           compareStart={compareStart}
           compareEnd={compareEnd}
+          selectedNeighborhoodId={selectedId}
           onStartChange={setStart}
           onEndChange={setEnd}
           onCategoryChange={setCategory}

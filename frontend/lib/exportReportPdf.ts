@@ -23,17 +23,15 @@ function formatDelta(delta: number | null): string {
 }
 
 function pairLabel(pair: YearPairResult): string {
-  return pair.yearPair.label.replace(/[–—]/g, "-");
+  const raw = pair.yearPair.label.replace(/[–—]/g, "-");
+  const [a, b] = raw.split("-");
+  return a === b ? a : raw;
 }
 
-function topMoverName(pair: YearPairResult): string {
-  if (pair.status !== "ok" || pair.topPositive.length === 0) return "-";
-  return pair.topPositive[0].neighborhood_name;
-}
-
-function topMoverDelta(pair: YearPairResult): string {
-  if (pair.status !== "ok" || pair.topPositive.length === 0) return "-";
-  return formatDelta(pair.topPositive[0].delta);
+function neighborhoodDeltaFromPair(pair: YearPairResult, neighborhoodId: string): string {
+  if (pair.status !== "ok" || !neighborhoodId) return "-";
+  const mover = pair.allMovers.find((m) => m.neighborhood_id === neighborhoodId);
+  return mover != null ? formatDelta(mover.delta) : "-";
 }
 
 function windowLine(pair: YearPairResult): string {
@@ -65,106 +63,143 @@ export function exportReportPdf(report: ReportObjectWithFocus): void {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.text("LENS Year-over-Year Enforcement Report", centerX, y, {
+  doc.text("LENS Enforcement Comparison Report", centerX, y, {
     align: "center",
   });
   y += 12;
 
-  const rangeLabel = `${monthLabel(report.config.startMonth)}-${monthLabel(report.config.endMonth)}`;
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
-  y = drawWrappedCentered(
-    doc,
-    `Baseline: ${rangeLabel} month range across ${report.config.startYear}-${report.config.endYear}.`,
-    centerX,
-    y,
-    contentW
-  );
-  y += 4;
+  const focusNbrId = report.trackedNeighborhoodId;
+  const focusNbrName = report.trackedNeighborhoodName;
 
-  if (report.focus) {
-    doc.setFont("helvetica", "bold");
-    const dates = windowLine(report.focus);
-    const eventSuffix = report.focusEventLabel
-      ? ` (${report.focusEventLabel})`
-      : "";
+  function mLabel(d: string) {
+    return MONTHS[parseInt(d.slice(5, 7)) - 1] ?? d.slice(5, 7);
+  }
+
+  if (report.focusPairs && report.focusPairs.length > 0) {
+    const fp0 = report.focusPairs[0].yearPair;
+    const windowDesc = `${mLabel(fp0.baselineStart)}-${mLabel(fp0.baselineEnd)} vs ${mLabel(fp0.compareStart)}-${mLabel(fp0.compareEnd)}`;
+    const eventSuffix = report.focusEventLabel ? ` — ${report.focusEventLabel}` : "";
     y = drawWrappedCentered(
       doc,
-      `Selected window: ${dates}${eventSuffix}`,
+      `${windowDesc} each year, ${report.config.startYear}-${report.config.endYear}${eventSuffix}`,
       centerX,
       y,
       contentW
     );
-    y += 6;
+    y += 8;
   }
 
+  function drawTableHeader() {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("Period", margin, y);
+    doc.text("Delta", margin + 100, y);
+    doc.text("City median", margin + 140, y);
+    y += 5;
+    doc.setFont("helvetica", "normal");
+  }
+
+  function drawPairRow(pair: YearPairResult, label: string, bold: boolean) {
+    if (bold) doc.setFont("helvetica", "bold");
+    if (pair.status === "unavailable") {
+      doc.text(`${label} — data unavailable`, margin, y);
+    } else {
+      doc.text(label, margin, y);
+      doc.text(neighborhoodDeltaFromPair(pair, focusNbrId), margin + 100, y);
+      doc.text(formatDelta(pair.citywideMedianDelta), margin + 140, y);
+    }
+    y += 5;
+    if (bold) doc.setFont("helvetica", "normal");
+  }
+
+  // Pattern assessment
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.text(
     report.anomaly.isAnomaly
-      ? "Finding: Likely an anomaly"
-      : "Finding: typical year-over-year pattern",
+      ? "Pattern: anomalous relative to prior years — investigate further"
+      : "Pattern: within range of prior years",
     centerX,
     y,
     { align: "center" }
   );
-  y += 7;
-
+  y += 5;
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  const findingSummary = [report.anomaly.headline, report.anomaly.detail]
-    .filter(Boolean)
-    .join(" ");
+  doc.setFontSize(9);
+  const findingSummary = [report.anomaly.headline, report.anomaly.detail].filter(Boolean).join(" ");
   y = drawWrappedCentered(doc, findingSummary, centerX, y, contentW);
+  y += 3;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8);
+  doc.text(`Tracking: ${focusNbrName}`, centerX, y, { align: "center" });
+  doc.setFont("helvetica", "normal");
   y += 8;
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("Year-by-year comparison", centerX, y, { align: "center" });
-  y += 7;
+  // Table
+  if (report.focusPairs && report.focusPairs.length > 0) {
+    const fp0 = report.focusPairs[0].yearPair;
+    const windowDesc = `${mLabel(fp0.baselineStart)}-${mLabel(fp0.baselineEnd)} vs ${mLabel(fp0.compareStart)}-${mLabel(fp0.compareEnd)}`;
+    const eventLabel = report.focusEventLabel ? ` — ${report.focusEventLabel}` : "";
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.text("Period", margin, y);
-  doc.text("Top increase", margin + 55, y);
-  doc.text("Change", margin + 115, y);
-  doc.text("City median", margin + 145, y);
-  y += 5;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-
-  const rows: YearPairResult[] = [...report.pairs];
-  if (report.focus) rows.push(report.focus);
-
-  for (const pair of rows) {
-    if (pair.status === "unavailable") {
-      doc.text(`${pairLabel(pair)} - data unavailable`, margin, y);
-      y += 5;
-      continue;
-    }
-
-    const isFocus =
-      report.focus != null &&
-      pair.yearPair.baselineStart === report.focus.yearPair.baselineStart &&
-      pair.yearPair.compareStart === report.focus.yearPair.compareStart;
-
-    if (isFocus) doc.setFont("helvetica", "bold");
-
-    doc.text(
-      isFocus ? `${pairLabel(pair)} (selected)` : pairLabel(pair),
-      margin,
-      y
-    );
-    doc.text(topMoverName(pair), margin + 55, y);
-    doc.text(topMoverDelta(pair), margin + 115, y);
-    doc.text(formatDelta(pair.citywideMedianDelta), margin + 145, y);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text(`${windowDesc} each year${eventLabel}`, margin, y);
     y += 5;
+    drawTableHeader();
+    doc.setFontSize(9);
 
-    doc.setFont("helvetica", "normal");
+    for (const pair of report.focusPairs) {
+      const isSelected =
+        report.focus != null &&
+        pair.yearPair.baselineStart === report.focus.yearPair.baselineStart &&
+        pair.yearPair.compareStart === report.focus.yearPair.compareStart;
+      const rowLabel = isSelected
+        ? `${pairLabel(pair)} (selected)`
+        : pairLabel(pair);
+      drawPairRow(pair, rowLabel, isSelected);
+    }
   }
 
-  y += 8;
+  y += 6;
+
+  // ── DATA FLAG ────────────────────────────────────────────────────────
+  if (report.rightCensored) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("Data flag: right-censoring", centerX, y, { align: "center" });
+    y += 4;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    y = drawWrappedCentered(
+      doc,
+      `The ${report.config.endYear - 1}-${report.config.endYear} comparison includes recent months that may still be accumulating reports. Treat this period as provisional — clearance rates and incident counts are likely understated at the trailing edge.`,
+      centerX,
+      y,
+      contentW,
+      4
+    );
+    y += 6;
+  }
+
+  y += 2;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Methodology note", centerX, y, { align: "center" });
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  y = drawWrappedCentered(
+    doc,
+    "This report shows patterns in police-recorded enforcement data. It does not measure crime. Enforcement records reflect where officers were present, not where crime occurred. All findings are observational — correlation with a policy event does not establish causation. Each row uses the same before/after month structure as the selected event, applied to every year in the range, so all years are directly comparable. The anomaly threshold is mean + 2 standard deviations of the tracked neighborhood's own pre-event historical deltas; the event year and any right-censored years are excluded from the baseline. Analysts should investigate further before citing findings in a report or hearing.",
+    centerX,
+    y,
+    contentW,
+    4
+  );
+  y += 6;
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.text("Sources", centerX, y, { align: "center" });
@@ -176,7 +211,7 @@ export function exportReportPdf(report: ReportObjectWithFocus): void {
     y += 2;
   }
 
-  const { startYear, endYear, startMonth, endMonth } = report.config;
-  const filename = `lens-anomaly-report-${startYear}-${endYear}_${monthLabel(startMonth)}-${monthLabel(endMonth)}.pdf`;
+  const { startYear, endYear } = report.config;
+  const filename = `lens-anomaly-report-${startYear}-${endYear}.pdf`;
   doc.save(filename);
 }

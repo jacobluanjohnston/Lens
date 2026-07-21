@@ -23,6 +23,7 @@ export interface YearPairResult {
   status: "ok" | "unavailable";
   topPositive: Mover[];
   topNegative: Mover[];
+  allMovers: Mover[];
   citywideMedianDelta: number | null;
   errorMessage?: string;
 }
@@ -31,33 +32,71 @@ export interface ReportObject {
   config: ReportConfig;
   generatedAt: string; // ISO timestamp
   pairs: YearPairResult[];
+  rightCensored: boolean;
 }
 
-/** Pad month 1–12 to "01"–"12" */
-function mm(month: number): string {
-  return String(month).padStart(2, "0");
-}
+// Last year with a complete data ingest. Update when new annual data is loaded.
+export const MAX_REPORT_YEAR = 2026;
 
 /**
- * Build consecutive year-pairs for the same month range.
- * Jan–Sep, 2021–2025 → 4 pairs:
- *   2021 vs 2022, 2022 vs 2023, 2023 vs 2024, 2024 vs 2025
+ * Standard month range for year-over-year comparison: Jan–Sep.
+ * Sep is chosen as the cutoff to avoid the most recent months where
+ * reporting lag (right-censoring) is most severe.
  */
-export function buildYearPairs(config: ReportConfig): YearPair[] {
-  const { startMonth, endMonth, startYear, endYear } = config;
+const STD_START = "01";
+const STD_END = "09";
+
+/**
+ * Build consecutive year-pairs using the given month range.
+ * Defaults to Jan–Sep when called without months (standalone runReport).
+ */
+export function buildYearPairs(
+  config: ReportConfig,
+  startMonth: string = STD_START,
+  endMonth: string = STD_END
+): YearPair[] {
+  const { startYear, endYear } = config;
   const pairs: YearPair[] = [];
 
   for (let year = startYear; year < endYear; year++) {
     const next = year + 1;
     pairs.push({
       label: `${year}–${next}`,
-      baselineStart: `${year}-${mm(startMonth)}-01`,
-      baselineEnd: `${year}-${mm(endMonth)}-01`,
-      compareStart: `${next}-${mm(startMonth)}-01`,
-      compareEnd: `${next}-${mm(endMonth)}-01`,
+      baselineStart: `${year}-${startMonth}-01`,
+      baselineEnd: `${year}-${endMonth}-01`,
+      compareStart: `${next}-${startMonth}-01`,
+      compareEnd: `${next}-${endMonth}-01`,
     });
   }
 
+  return pairs;
+}
+
+/** Build year-pairs mirroring the focus window's month structure for every year in range. */
+function buildYearPairsFromFocus(
+  focusWindow: FocusWindow,
+  startYear: number,
+  endYear: number
+): YearPair[] {
+  const bStartM = focusWindow.baselineStart.slice(5, 7);
+  const bEndM = focusWindow.baselineEnd.slice(5, 7);
+  const cStartM = focusWindow.compareStart.slice(5, 7);
+  const cEndM = focusWindow.compareEnd.slice(5, 7);
+  const yearOffset =
+    parseInt(focusWindow.compareStart.slice(0, 4)) -
+    parseInt(focusWindow.baselineStart.slice(0, 4));
+
+  const pairs: YearPair[] = [];
+  for (let year = startYear; year < endYear; year++) {
+    const next = year + yearOffset;
+    pairs.push({
+      label: `${year}–${next}`,
+      baselineStart: `${year}-${bStartM}-01`,
+      baselineEnd: `${year}-${bEndM}-01`,
+      compareStart: `${next}-${cStartM}-01`,
+      compareEnd: `${next}-${cEndM}-01`,
+    });
+  }
   return pairs;
 }
 
@@ -100,6 +139,7 @@ export function summarizeCompareResult(
     status: "ok",
     topPositive,
     topNegative,
+    allMovers: sortedDesc,
     citywideMedianDelta:
       medianDelta != null ? Math.round(medianDelta * 10) / 10 : null,
   };
@@ -114,6 +154,7 @@ export function unavailablePair(
     status: "unavailable",
     topPositive: [],
     topNegative: [],
+    allMovers: [],
     citywideMedianDelta: null,
     errorMessage,
   };
@@ -150,6 +191,7 @@ export async function runReport(
     config,
     generatedAt: new Date().toISOString(),
     pairs,
+    rightCensored: config.endYear >= MAX_REPORT_YEAR,
   };
 }
 
@@ -160,6 +202,7 @@ export interface FocusWindow {
   baselineEnd: string;
   compareStart: string;
   compareEnd: string;
+  neighborhoodId?: string; // selected neighborhood to track; falls back to topPositive[0]
 }
 
 export interface AnomalyAssessment {
@@ -170,13 +213,11 @@ export interface AnomalyAssessment {
 
 export interface ReportObjectWithFocus extends ReportObject {
   focus: YearPairResult | null;
+  focusPairs: YearPairResult[]; // chosen window dates repeated for every year
   focusEventLabel?: string;
+  trackedNeighborhoodId: string;
+  trackedNeighborhoodName: string;
   anomaly: AnomalyAssessment;
-}
-
-function topMoverDelta(pair: YearPairResult): number | null {
-  if (pair.status !== "ok" || pair.topPositive.length === 0) return null;
-  return pair.topPositive[0].delta;
 }
 
 function formatDeltaShort(delta: number): string {
@@ -184,33 +225,32 @@ function formatDeltaShort(delta: number): string {
   return `${sign}${delta.toFixed(1)}`;
 }
 
-/** Compare focus window to earlier YoY pairs — excludes the latest pair (often the outlier year). */
+function mean(values: number[]): number {
+  return values.reduce((a, b) => a + b, 0) / values.length;
+}
+
+function stdDev(values: number[], avg: number): number {
+  const variance =
+    values.reduce((sum, v) => sum + (v - avg) ** 2, 0) / values.length;
+  return Math.sqrt(variance);
+}
+
+/**
+ * Compare focus window to a pre-filtered baseline of year-pairs.
+ *
+ * Identifies the top-mover neighborhood in the focus window (or uses
+ * forceNeighborhoodId when both sections should track the same neighborhood),
+ * then measures that neighborhood's delta across the provided baseline pairs.
+ * Threshold is mean + 2 SD of the baseline deltas.
+ *
+ * Caller is responsible for filtering the baseline to only pre-event pairs —
+ * this function uses the baseline as-is and does not drop any pairs internally.
+ */
 export function assessAnomaly(
   focus: YearPairResult | null,
-  historical: YearPairResult[]
+  baseline: YearPairResult[],
+  forceNeighborhoodId?: string
 ): AnomalyAssessment {
-  // Baseline = all modal year-pairs except the most recent (e.g. 2021-2024, not 2024-2025)
-  const baselineHistorical =
-    historical.length > 1 ? historical.slice(0, -1) : historical;
-
-  const okBaseline = baselineHistorical.filter((p) => p.status === "ok");
-  const baselineTopDeltas = okBaseline
-    .map(topMoverDelta)
-    .filter((d): d is number => d != null);
-
-  const focusTop = focus?.status === "ok" ? focus.topPositive[0] ?? null : null;
-  const focusTopDelta = focusTop?.delta ?? null;
-
-  const historicalMinTop =
-    baselineTopDeltas.length > 0 ? Math.min(...baselineTopDeltas) : null;
-  const historicalMaxTop =
-    baselineTopDeltas.length > 0 ? Math.max(...baselineTopDeltas) : null;
-
-  const baselineRangeLabel =
-    okBaseline.length > 0
-      ? `${okBaseline[0].yearPair.label.replace(/[–—]/g, "-").split("-")[0]}-${okBaseline[okBaseline.length - 1].yearPair.label.replace(/[–—]/g, "-").split("-")[1]}`
-      : "prior years";
-
   if (!focus || focus.status !== "ok") {
     return {
       isAnomaly: false,
@@ -222,29 +262,76 @@ export function assessAnomaly(
     };
   }
 
-  const name = focusTop?.neighborhood_name ?? "The top neighborhood";
-  const focusDelta = focusTopDelta ?? 0;
+  const forcedMover = forceNeighborhoodId
+    ? focus.allMovers.find((m) => m.neighborhood_id === forceNeighborhoodId) ?? null
+    : null;
+  const trackingMover = forcedMover ?? focus.topPositive[0] ?? null;
+
+  if (!trackingMover) {
+    return {
+      isAnomaly: false,
+      headline: "Could not assess this window.",
+      detail: "No neighborhoods with increased enforcement were found in the selected window.",
+    };
+  }
+
+  const name = trackingMover.neighborhood_name;
+  const nbrId = trackingMover.neighborhood_id;
+  const focusDelta = trackingMover.delta;
+
+  const okBaseline = baseline.filter((p) => p.status === "ok");
+
+  // Track this neighborhood's delta in each historical year-pair
+  const historicalDeltas = okBaseline
+    .map((p) => p.allMovers.find((m) => m.neighborhood_id === nbrId)?.delta ?? null)
+    .filter((d): d is number => d != null);
+
+  const baselineRangeLabel =
+    okBaseline.length > 0
+      ? `${okBaseline[0].yearPair.label.replace(/[–—]/g, "-").split("-")[0]}-${
+          okBaseline[okBaseline.length - 1].yearPair.label
+            .replace(/[–—]/g, "-")
+            .split("-")[1]
+        }`
+      : "prior years";
+
+  const historicalMin =
+    historicalDeltas.length > 0 ? Math.min(...historicalDeltas) : null;
+  const historicalMax =
+    historicalDeltas.length > 0 ? Math.max(...historicalDeltas) : null;
 
   const rangeText =
-    historicalMinTop != null && historicalMaxTop != null
-      ? `${formatDeltaShort(historicalMinTop)} to ${formatDeltaShort(historicalMaxTop)}`
+    historicalMin != null && historicalMax != null
+      ? `${formatDeltaShort(historicalMin)} to ${formatDeltaShort(historicalMax)}`
       : "unavailable";
 
-  const isAnomaly =
-    historicalMaxTop != null && focusDelta > historicalMaxTop + 15;
+  let isAnomaly = false;
+  let thresholdLabel = "";
 
-  if (isAnomaly && historicalMaxTop != null) {
+  if (historicalDeltas.length >= 2) {
+    const avg = mean(historicalDeltas);
+    const sd = stdDev(historicalDeltas, avg);
+    const threshold = avg + 2 * sd;
+    isAnomaly = focusDelta > threshold;
+    thresholdLabel = `mean + 2 SD = ${formatDeltaShort(threshold)}`;
+  } else if (historicalMax != null) {
+    // Fewer than 2 baseline years — fall back to above historical max
+    isAnomaly = focusDelta > historicalMax;
+    thresholdLabel = `above historical max of ${formatDeltaShort(historicalMax)}`;
+  }
+
+  if (isAnomaly) {
     return {
       isAnomaly: true,
-      headline: "This window looks abnormal compared to prior years.",
-      detail: `Compared to ${baselineRangeLabel}, typical top-neighborhood increases were about ${rangeText}. ${name} changed ${formatDeltaShort(focusDelta)} in the selected window. This is an anomaly.`,
+      headline: "This window looks anomalous relative to prior years — investigate further.",
+      detail: `Compared to ${baselineRangeLabel}, ${name}'s enforcement ratio change ranged from ${rangeText} (${thresholdLabel}). In the selected window, ${name} changed ${formatDeltaShort(focusDelta)} — above that threshold. This pattern warrants investigation; it does not establish cause.`,
     };
   }
 
   return {
     isAnomaly: false,
-    headline: "This window is in line with prior years.",
-    detail: `Compared to ${baselineRangeLabel}, typical top-neighborhood increases were about ${rangeText}. ${name} changed ${formatDeltaShort(focusDelta)} in the selected window - similar to that range.`,
+    headline: "This window is within the range of prior years.",
+    detail: `Compared to ${baselineRangeLabel}, ${name}'s enforcement ratio change ranged from ${rangeText} (${thresholdLabel}). In the selected window, ${name} changed ${formatDeltaShort(focusDelta)} — within that historical range.`,
   };
 }
 
@@ -253,7 +340,13 @@ export async function runReportWithFocus(
   focusWindow: FocusWindow,
   onProgress?: (done: number, total: number, label: string) => void
 ): Promise<ReportObjectWithFocus> {
-  const report = await runReport(config, onProgress);
+  const focusYearPair: YearPair = {
+    label: focusWindow.label,
+    baselineStart: focusWindow.baselineStart,
+    baselineEnd: focusWindow.baselineEnd,
+    compareStart: focusWindow.compareStart,
+    compareEnd: focusWindow.compareEnd,
+  };
 
   let focus: YearPairResult | null = null;
   try {
@@ -263,31 +356,78 @@ export async function runReportWithFocus(
       focusWindow.compareStart,
       focusWindow.compareEnd
     );
-    focus = summarizeCompareResult(
-      {
-        label: focusWindow.label,
-        baselineStart: focusWindow.baselineStart,
-        baselineEnd: focusWindow.baselineEnd,
-        compareStart: focusWindow.compareStart,
-        compareEnd: focusWindow.compareEnd,
-      },
-      data
-    );
+    focus = summarizeCompareResult(focusYearPair, data);
   } catch (err) {
     const message = err instanceof Error ? err.message : "data unavailable";
-    focus = unavailablePair(
-      {
-        label: focusWindow.label,
-        baselineStart: focusWindow.baselineStart,
-        baselineEnd: focusWindow.baselineEnd,
-        compareStart: focusWindow.compareStart,
-        compareEnd: focusWindow.compareEnd,
-      },
-      message
-    );
+    focus = unavailablePair(focusYearPair, message);
   }
 
-  const anomaly = assessAnomaly(focus, report.pairs);
+  // Build the same event-window pattern for every historical year BEFORE
+  // assessing anomalies — both baselines are filtered from these lists.
+  const focusPatternPairs = buildYearPairsFromFocus(
+    focusWindow,
+    config.startYear,
+    config.endYear
+  );
+  const focusPairs: YearPairResult[] = [];
+  for (let i = 0; i < focusPatternPairs.length; i++) {
+    const yp = focusPatternPairs[i];
+    onProgress?.(i, focusPatternPairs.length, yp.label);
+    // Reuse already-fetched focus data for the matching year — no extra call.
+    if (
+      focus &&
+      yp.baselineStart === focusWindow.baselineStart &&
+      yp.compareStart === focusWindow.compareStart
+    ) {
+      focusPairs.push({ ...focus, yearPair: yp });
+      continue;
+    }
+    try {
+      const data = await fetchCompareData(
+        yp.baselineStart,
+        yp.baselineEnd,
+        yp.compareStart,
+        yp.compareEnd
+      );
+      focusPairs.push(summarizeCompareResult(yp, data));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "data unavailable";
+      focusPairs.push(unavailablePair(yp, message));
+    }
+  }
+  onProgress?.(focusPatternPairs.length, focusPatternPairs.length, "done");
 
-  return { ...report, focus, focusEventLabel: focusWindow.eventLabel, anomaly };
+  // Anomaly baseline = pairs whose baseline year is strictly before the event
+  // year. This excludes the event pair (being assessed) and any right-censored
+  // pairs after it, so the threshold reflects only the pre-event period.
+  const focusEventYear = parseInt(focusWindow.baselineStart.slice(0, 4));
+
+  // Prefer the neighborhood the user selected; fall back to top mover.
+  const defaultMover = focus?.status === "ok" ? (focus.topPositive[0] ?? null) : null;
+  const requestedMover =
+    focusWindow.neighborhoodId && focus?.status === "ok"
+      ? (focus.allMovers.find((m) => m.neighborhood_id === focusWindow.neighborhoodId) ?? null)
+      : null;
+  const trackedMover = requestedMover ?? defaultMover;
+  const focusNbrId = trackedMover?.neighborhood_id ?? undefined;
+  const trackedNeighborhoodId = focusNbrId ?? "";
+  const trackedNeighborhoodName = trackedMover?.neighborhood_name ?? "—";
+
+  const eventBaseline = focusPairs.filter(
+    (p) => parseInt(p.yearPair.baselineStart.slice(0, 4)) < focusEventYear
+  );
+  const anomaly = assessAnomaly(focus, eventBaseline, focusNbrId);
+
+  return {
+    config,
+    generatedAt: new Date().toISOString(),
+    pairs: [],
+    rightCensored: config.endYear >= MAX_REPORT_YEAR,
+    focus,
+    focusPairs,
+    focusEventLabel: focusWindow.eventLabel,
+    trackedNeighborhoodId,
+    trackedNeighborhoodName,
+    anomaly,
+  };
 }

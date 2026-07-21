@@ -268,6 +268,7 @@ interface ControlsProps {
   baselineEnd: string;
   compareStart: string;
   compareEnd: string;
+  selectedNeighborhoodId?: string | null;
 
   onStartChange: (value: string) => void;
   onEndChange: (value: string) => void;
@@ -291,6 +292,7 @@ export default function Controls({
   baselineEnd,
   compareStart,
   compareEnd,
+  selectedNeighborhoodId,
   onStartChange,
   onEndChange,
   onCategoryChange,
@@ -509,6 +511,7 @@ export default function Controls({
                   baselineEnd,
                   compareStart,
                   compareEnd,
+                  neighborhoodId: selectedNeighborhoodId ?? undefined,
                 },
                 (done, total, label) => {
                   if (done >= total) {

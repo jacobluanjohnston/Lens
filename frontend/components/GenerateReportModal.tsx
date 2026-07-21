@@ -1,18 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MAX_REPORT_YEAR } from "@/lib/generateReport";
 
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
+// MIN_YEAR matches the SF current dataset which starts in 2018.
 const MIN_YEAR = 2018;
-const MAX_YEAR = 2026;
 
 export interface ReportConfig {
-  startMonth: number; // 1–12
-  endMonth: number;   // 1–12
   startYear: number;
   endYear: number;
 }
@@ -28,9 +22,6 @@ export default function GenerateReportModal({
   onClose,
   onConfirm,
 }: GenerateReportModalProps) {
-  // Defaults: Jan–Sep, 2021–2025 (Lurie / AC-friendly)
-  const [startMonth, setStartMonth] = useState(1);
-  const [endMonth, setEndMonth] = useState(9);
   const [startYear, setStartYear] = useState(2021);
   const [endYear, setEndYear] = useState(2025);
   const [error, setError] = useState<string | null>(null);
@@ -38,12 +29,12 @@ export default function GenerateReportModal({
   // Reset defaults each time the modal opens
   useEffect(() => {
     if (!open) return;
-    setStartMonth(1);
-    setEndMonth(9);
     setStartYear(2021);
     setEndYear(2025);
     setError(null);
   }, [open]);
+
+  const rightCensored = endYear >= MAX_REPORT_YEAR;
 
   if (!open) return null;
 
@@ -52,16 +43,12 @@ export default function GenerateReportModal({
       setError("End year must be after start year.");
       return;
     }
-    if (startMonth > endMonth) {
-      setError("End month must be on or after start month.");
-      return;
-    }
     setError(null);
-    onConfirm({ startMonth, endMonth, startYear, endYear });
+    onConfirm({ startYear, endYear });
   }
 
   const years = Array.from(
-    { length: MAX_YEAR - MIN_YEAR + 1 },
+    { length: MAX_REPORT_YEAR - MIN_YEAR + 1 },
     (_, i) => MIN_YEAR + i
   );
 
@@ -151,36 +138,6 @@ export default function GenerateReportModal({
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
-            <div style={labelStyle}>From month</div>
-            <select
-              value={startMonth}
-              onChange={(e) => setStartMonth(Number(e.target.value))}
-              style={{ ...fieldStyle, width: "100%" }}
-            >
-              {MONTHS.map((label, i) => (
-                <option key={label} value={i + 1}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <div style={labelStyle}>To month</div>
-            <select
-              value={endMonth}
-              onChange={(e) => setEndMonth(Number(e.target.value))}
-              style={{ ...fieldStyle, width: "100%" }}
-            >
-              {MONTHS.map((label, i) => (
-                <option key={label} value={i + 1}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
             <div style={labelStyle}>Start year</div>
             <select
               value={startYear}
@@ -211,8 +168,20 @@ export default function GenerateReportModal({
           </div>
         </div>
 
+        <p style={{ margin: "10px 0 0", fontSize: 12, color: "#64748b" }}>
+          Repeats the selected event window dates for every year in the range.
+        </p>
+
+        {rightCensored && (
+          <p style={{ margin: "8px 0 0", fontSize: 12, color: "#b45309" }}>
+            Data flag: end year {endYear} includes recent months that may be
+            incomplete due to reporting lag. The {endYear - 1}-{endYear} comparison
+            should be treated as provisional.
+          </p>
+        )}
+
         {error && (
-          <p style={{ margin: "12px 0 0", fontSize: 12, color: "#dc2626" }}>
+          <p style={{ margin: "8px 0 0", fontSize: 12, color: "#dc2626" }}>
             {error}
           </p>
         )}
