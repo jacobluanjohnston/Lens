@@ -1,8 +1,30 @@
 # Sprint 4 — Final Sprint
 
 **Product:** LENS
-**Date:** July 2026
+**Date:** July 14 – July 22, 2026
 **Spike backing the policy comparison feature:** `docs/spikes/three_era_enforcement_analysis.md`
+
+---
+
+## Burn-up
+
+![Sprint 4 burn-up](sprint4_burnup.png)
+
+**38 points completed** (25 must-do + 13 stretch) across 8 days.
+
+| Card | Points | Merged |
+|---|---|---|
+| Card 1 — Compare endpoint | 5 | Jul 17 |
+| Card 2 — Compare mode UI | 5 | Jul 17 |
+| Card 4 — Rankings sidebar | 3 | Jul 17 |
+| Card 3 — Policy event presets | 3 | Jul 18 |
+| Card 5 — Language simplification | 1 | Jul 18 |
+| Card 6 — Deployment | 3 | Jul 18 |
+| Card 8 — Lurie spike validation | 1 *(stretch)* | Jul 18 |
+| Card 7 — Controls bar responsive | 2 *(stretch)* | Jul 19 |
+| Card 12 — Mobile responsive spike | 2 *(stretch)* | Jul 19 |
+| Card 11 — CI tests | 5 | Jul 21 |
+| Card 13 — Generate Report PDF | 8 *(stretch)* | Jul 21 |
 
 ---
 
@@ -334,8 +356,10 @@ A spike writeup that records the non-obvious findings from the controls bar / pa
 
 ---
 
-### CARD 13 — Generate Report: year-over-year PDF export
-**Points: 8**
+### CARD 13 — Generate Report: year-over-year PDF export ✅
+**Points: 8 (stretch)**
+**Owner:** ishitag / jacobluanjohnston
+**Merged:** PR #94, Jul 21 2026
 **Blocked by:** CARD 2 (compare mode UI)
 
 #### What it is
@@ -349,15 +373,23 @@ A "Generate Report" button that automatically runs the compare analysis across m
 5. Exports a PDF with: one page per year-pair showing the choropleth, top 5 movers, and the plain-language summary
 
 #### Definition of Done
-- [ ] "Generate Report" button appears in compare mode
-- [ ] Clicking it opens a configuration modal: base month range (e.g. Jan–Sep), start year, end year
-- [ ] On confirm, runs the compare endpoint N times (one per year-pair) sequentially — shows a progress indicator
-- [ ] Collects results into a structured report object: year-pair, top 5 positive movers, top 5 negative movers, citywide median delta
-- [ ] PDF export uses a library (react-pdf or jsPDF) — no server-side rendering required
-- [ ] Each PDF page includes: year-pair label, top movers table with delta values, one-line plain-language summary per neighborhood
-- [ ] PDF is downloadable, not opened in a new tab
-- [ ] Report generation does not block the UI — user can still interact with the map while it runs
-- [ ] If any year-pair returns an error, it is noted in the PDF as "data unavailable" rather than crashing the whole export
+- [x] "Identify Anomaly" button appears in compare mode (renamed from "Generate Report" — avoids implying a verdict)
+- [x] Clicking it opens a configuration modal: start year, end year (defaults to full dataset range 2018–2026)
+- [x] On confirm, runs the compare endpoint N times sequentially — progress indicator shown above button
+- [x] Collects results into a structured report object with anomaly assessment, tracked neighborhood, year-pair deltas, citywide median
+- [x] PDF export uses jsPDF — no server-side rendering
+- [x] PDF includes: year-pair label, per-year delta table for tracked neighborhood, anomaly assessment (mean + 2 SD baseline), date windows, right-censoring flag if applicable, methodology note, sources
+- [x] PDF downloads directly — not opened in a new tab
+- [x] Report generation does not block the UI
+- [x] Year-pairs returning errors appear as "data unavailable" in the table without crashing export
+
+**What shipped vs. original spec:**
+- Simplified to single-section (event window dates repeated per year) rather than separate standard + event sections — cleaner and less confusing for the analyst
+- Renamed button to "Identify Anomaly" — surfacing an anomaly flag, not rendering a verdict (per LENS guardrails)
+- Anomaly threshold = mean + 2 SD of tracked neighborhood's pre-event historical deltas; event year and right-censored years excluded from baseline
+- Selected neighborhood threaded from map click through to PDF so report tracks what the analyst actually selected
+- Cross-year event validation: "Identify Anomaly" disabled with tooltip when date range spans more than one calendar year (breaks year-over-year pattern comparison)
+- Tooltip is viewport-aware — flips left/right anchor so it never clips off screen
 
 #### Acceptance Criteria
 - Analyst sets Jan–Sep, 2021–2025, clicks Generate Report → PDF downloads with 4 pages (one per year-pair)
