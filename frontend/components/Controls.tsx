@@ -305,6 +305,9 @@ export default function Controls({
   const [activePreset, setActivePreset] = useState("lurie-inauguration");
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportProgress, setReportProgress] = useState<string | null>(null);
+  const [identifyHovered, setIdentifyHovered] = useState(false);
+  const [tooltipAnchor, setTooltipAnchor] = useState<"left" | "right">("right");
+  const identifyWrapRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
@@ -420,56 +423,103 @@ export default function Controls({
 
       {activeLens === 2 && (
         <>
-          {compareMode && (
-            <div
-              style={{
-                position: "relative",
-                alignSelf: "flex-end",
-              }}
-            >
-              {reportProgress && (
-                <span
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    bottom: "100%",
-                    marginBottom: 4,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "#475569",
-                    whiteSpace: "nowrap",
-                    textAlign: "right",
-                  }}
-                >
-                  {reportProgress}
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => setReportModalOpen(true)}
+          {compareMode && (() => {
+            const crossesYear =
+              baselineEnd.slice(0, 4) > baselineStart.slice(0, 4) ||
+              compareEnd.slice(0, 4) > compareStart.slice(0, 4);
+            return (
+              <div
                 style={{
-                  padding: "8px 16px",
-                  borderRadius: 8,
-                  border: "1px solid rgba(255,255,255,.28)",
-                  background: "rgba(255,255,255,.22)",
-                  color: "#111827",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  fontFamily: "inherit",
-                  cursor: "pointer",
+                  alignSelf: "flex-end",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  gap: 4,
                 }}
               >
-                Generate Report
-              </button>
-            </div>
-          )}
+                {reportProgress && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#475569",
+                      whiteSpace: "nowrap",
+                      textAlign: "right",
+                    }}
+                  >
+                    {reportProgress}
+                  </span>
+                )}
+                <div
+                  ref={identifyWrapRef}
+                  style={{ position: "relative" }}
+                  onMouseEnter={() => {
+                    if (identifyWrapRef.current) {
+                      const rect = identifyWrapRef.current.getBoundingClientRect();
+                      setTooltipAnchor(rect.left < 260 ? "left" : "right");
+                    }
+                    setIdentifyHovered(true);
+                  }}
+                  onMouseLeave={() => setIdentifyHovered(false)}
+                >
+                  {crossesYear && identifyHovered && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "calc(100% + 6px)",
+                        ...(tooltipAnchor === "left" ? { left: 0 } : { right: 0 }),
+                        background: "rgba(15,23,42,.88)",
+                        color: "#f8fafc",
+                        fontSize: 11,
+                        padding: "5px 9px",
+                        borderRadius: 7,
+                        whiteSpace: "nowrap",
+                        pointerEvents: "none",
+                        zIndex: 100,
+                      }}
+                    >
+                      Each period must stay within one calendar year.
+                    </div>
+                  )}
+                <button
+                  type="button"
+                  className="identify-btn"
+                  disabled={crossesYear}
+                  onClick={() => setReportModalOpen(true)}
+                  title="Identify Anomaly"
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 8,
+                    border: "1px solid rgba(255,255,255,.28)",
+                    background: crossesYear ? "rgba(255,255,255,.08)" : "rgba(255,255,255,.22)",
+                    color: crossesYear ? "#94a3b8" : "#111827",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    fontFamily: "inherit",
+                    cursor: crossesYear ? "not-allowed" : "pointer",
+                    opacity: crossesYear ? 0.6 : 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                >
+                  Identify Anomaly
+                </button>
+                </div>
+              </div>
+            );
+          })()}
           <button
             type="button"
+            className="exit-compare-btn"
             aria-pressed={compareMode}
             onClick={() => onCompareModeChange(!compareMode)}
+            title={compareMode ? "Exit Compare" : "Before / After"}
             style={{
               alignSelf: "flex-end",
-              padding: "8px 16px",
+              padding: "6px 10px",
               borderRadius: 8,
               border: compareMode
                 ? "1px solid rgba(99,102,241,.45)"
@@ -478,12 +528,18 @@ export default function Controls({
                 ? "rgba(99,102,241,.14)"
                 : "rgba(255,255,255,.22)",
               color: compareMode ? "#4338ca" : "#475569",
-              fontSize: 11,
-              fontWeight: 700,
+              fontSize: 13,
+              fontWeight: 600,
+              fontFamily: "inherit",
               cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
             }}
           >
-            {compareMode ? "Exit Compare" : "Before / After"}
+            {compareMode ? "Exit Compare" : "Compare"}
           </button>
         </>
       )}

@@ -22,15 +22,15 @@ export default function GenerateReportModal({
   onClose,
   onConfirm,
 }: GenerateReportModalProps) {
-  const [startYear, setStartYear] = useState(2021);
-  const [endYear, setEndYear] = useState(2025);
+  const [startYear, setStartYear] = useState(MIN_YEAR);
+  const [endYear, setEndYear] = useState(MAX_REPORT_YEAR);
   const [error, setError] = useState<string | null>(null);
 
   // Reset defaults each time the modal opens
   useEffect(() => {
     if (!open) return;
-    setStartYear(2021);
-    setEndYear(2025);
+    setStartYear(MIN_YEAR);
+    setEndYear(MAX_REPORT_YEAR);
     setError(null);
   }, [open]);
 

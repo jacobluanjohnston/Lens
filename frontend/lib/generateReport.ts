@@ -87,7 +87,7 @@ function buildYearPairsFromFocus(
     parseInt(focusWindow.baselineStart.slice(0, 4));
 
   const pairs: YearPair[] = [];
-  for (let year = startYear; year < endYear; year++) {
+  for (let year = startYear; year + yearOffset <= endYear; year++) {
     const next = year + yearOffset;
     pairs.push({
       label: `${year}–${next}`,
