@@ -5,6 +5,7 @@ import type { Incident } from "@/types/incident";
 import type { LensData } from "@/types/lens";
 import type { CompareData } from "@/types/compare";
 import { fetchCompareData } from "@/lib/api";
+import { isProvisionalDate } from "@/lib/lensLogic";
 
 import Map from "@/components/Map";
 import Controls from "@/components/Controls";
@@ -166,8 +167,7 @@ export default function Home() {
       }
 
       // Provisional: end date within 90 days of today — data may still be filing
-      const endMs = new Date(end).getTime();
-      const provisional = (Date.now() - endMs) / 86_400_000 < 90;
+      const provisional = isProvisionalDate(end);
 
       setLensData(data.map((item: LensData) => ({ ...item, provisional })));
       setFetchId((n) => n + 1);

@@ -2,6 +2,7 @@
 
 import type { LensData } from "@/types/lens";
 import type { CompareData } from "@/types/compare";
+import { isProvisionalDate } from "@/lib/lensLogic";
 
 interface NeighborhoodPanelProps {
   neighborhood: LensData | null;
@@ -356,7 +357,7 @@ export default function NeighborhoodPanel({
               <Flag flagKey="per_capita_na" active={!neighborhood.per_capita_applicable} />
               <Flag
                 flagKey="provisional"
-                active={(Date.now() - new Date(compareRanges.compareEnd).getTime()) / 86_400_000 < 90}
+                active={isProvisionalDate(compareRanges.compareEnd)}
               />
             </div>
           </div>

@@ -33,8 +33,18 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Install dependencies
         run: pip install -r backend/requirements.txt
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
       - name: Lint
         run: ruff check backend/
@@ -46,6 +56,10 @@ jobs:
 
       - name: Run tests
         run: pytest backend/ pipeline/ --tb=short
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test -- --ci
 
 # Source: https://docs.github.com/en/actions/tutorials/build-and-test-code/python
 # Source: https://docs.astral.sh/ruff

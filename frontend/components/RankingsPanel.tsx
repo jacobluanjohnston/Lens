@@ -2,6 +2,7 @@
 
 import type { LensData } from "@/types/lens";
 import type { CompareData } from "@/types/compare";
+import { metricFor } from "@/lib/lensLogic";
 
 interface RankingsPanelProps {
   compareMode: boolean;
@@ -11,23 +12,6 @@ interface RankingsPanelProps {
   compareData: CompareData[];
   selectedId: string | null;
   onSelect: (id: string) => void;
-}
-
-function metricFor(
-  compareMode: boolean,
-  activeLens: 1 | 2 | 3,
-  lens1Mode: "raw" | "per_capita",
-  row: LensData | CompareData
-): number | null {
-  if (compareMode) {
-    return (row as CompareData).delta ?? null;
-  }
-  if (activeLens === 1) {
-    return lens1Mode === "raw"
-      ? ((row as LensData).raw_count ?? null)
-      : ((row as LensData).per_capita ?? null);
-  }
-  return (row as LensData).value ?? null;
 }
 
 function formatMetric(
