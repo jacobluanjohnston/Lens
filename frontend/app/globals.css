@@ -78,7 +78,7 @@ body {
 }
 
 /* Keep the controls inside the map space left of the 360px panel column. */
-@media (min-width: 641px) and (max-width: 1319px) {
+@media (min-width: 641px) and (max-width: 1500px) {
   .controls-bar {
     align-items: flex-end;
     flex-wrap: wrap;
